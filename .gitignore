@@ -1,0 +1,10 @@
+# Godot
+.godot/
+.import/
+*.translation
+
+# Build exportado (binário grande; gerar com Projeto > Exportar)
+build/
+
+# Capturas de teste
+tests/shots/

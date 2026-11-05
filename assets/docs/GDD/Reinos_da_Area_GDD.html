@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reinos da Área - Game Design Document v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#16120d;--ink-mid:#3a2f22;--ink-light:#6b5744;
+  --parchment:#f4efe5;--parchment2:#ede5d2;--parchment3:#dfd4b8;
+  --gold:#9a6f28;--gold-light:#c49040;--gold-pale:#e8d49a;
+  --blue-dark:#0f2540;--blue-mid:#1a3d6b;--blue-light:#c2d8f0;
+  --red-deep:#5c1515;--red-mid:#8a2424;
+  --teal-dark:#0e3828;--teal-mid:#1a5c42;
+  --white:#ffffff;
+  --serif:'Cinzel','Georgia',serif;
+  --body:'Libre Baskerville','Georgia',serif;
+  --sans:'Source Sans 3','Helvetica Neue',sans-serif;
+  --page-w:210mm;--page-h:297mm;--margin:14mm;--margin-sm:10mm;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:10pt}
+body{background:#b0a898;font-family:var(--body);color:var(--ink)}
+.page{width:var(--page-w);min-height:var(--page-h);height:var(--page-h);background:var(--parchment);margin:0 auto 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 6px 32px rgba(0,0,0,.35);page-break-after:always;break-after:page}
+.page::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:10}
+h1.display{font-family:var(--serif);font-size:34pt;font-weight:700;letter-spacing:.06em;line-height:1.1;color:var(--white)}
+h3.sub{font-family:var(--serif);font-size:9pt;font-weight:500;letter-spacing:.06em;color:var(--gold);text-transform:uppercase;margin-bottom:4pt}
+p.body{font-family:var(--body);font-size:8pt;line-height:1.72;color:var(--ink-mid);margin-bottom:6pt}
+p.body:last-child{margin-bottom:0}
+.label{font-family:var(--sans);font-size:7pt;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-light)}
+.rule-gold{display:block;height:1.5pt;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:7pt 0;border:none}
+.rule-thin{display:block;height:.4pt;background:var(--gold-pale);border:none;margin:5pt 0}
+.page-header{background:var(--blue-dark);padding:8pt var(--margin);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.page-header .header-title{font-family:var(--serif);font-size:7.5pt;font-weight:600;letter-spacing:.2em;color:var(--gold-light);text-transform:uppercase}
+.page-header .header-right{font-family:var(--sans);font-size:6.5pt;letter-spacing:.1em;color:rgba(255,255,255,.45)}
+.page-footer{background:var(--blue-dark);padding:5pt var(--margin);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-top:auto}
+.page-footer .footer-text{font-family:var(--sans);font-size:6pt;letter-spacing:.1em;color:rgba(255,255,255,.4)}
+.page-footer .page-num{font-family:var(--serif);font-size:8pt;font-weight:600;color:var(--gold-light)}
+.section-label{display:flex;align-items:center;gap:8pt;margin-bottom:7pt}
+.section-label .num{width:21pt;height:21pt;background:var(--blue-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:7.5pt;font-weight:700;color:var(--gold-light);flex-shrink:0}
+.section-label .num-alert{width:21pt;height:21pt;background:#ece4d2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:8pt;font-weight:700;color:#fff8ee;flex-shrink:0}
+.section-label h2{font-family:var(--serif);font-size:13pt;font-weight:600;letter-spacing:.06em;color:var(--blue-dark);text-transform:uppercase}
+.section-label::after{content:'';flex:1;height:1pt;background:linear-gradient(90deg,var(--gold),transparent)}
+.info-card{background:var(--white);border:.5pt solid var(--parchment3);border-radius:4pt;padding:7pt 9pt}
+.info-card-blue{background:var(--blue-dark);border-radius:4pt;padding:8pt 10pt}
+.accent-bar{border-left:2.5pt solid var(--gold);background:rgba(154,111,40,.06);border-radius:0 3pt 3pt 0;padding:5pt 8pt;margin:5pt 0}
+.tag{display:inline-block;font-family:var(--sans);font-size:5.2pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2pt 8pt;border-radius:10pt;border:.5pt solid;margin:2pt 2pt}
+.tag-blue{background:var(--blue-light);color:var(--blue-dark);border-color:var(--blue-mid)}
+.tag-gold{background:#f5ecd4;color:var(--gold);border-color:var(--gold-light)}
+.tag-teal{background:#d4ece0;color:var(--teal-dark);border-color:var(--teal-mid)}
+.tag-red{background:#f2d4d4;color:var(--red-deep);border-color:var(--red-mid)}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:1pt;align-items:flex-start}
+.img-placeholder{background:var(--parchment2);border:1pt dashed var(--parchment3);border-radius:4pt;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8pt;gap:4pt}
+.img-placeholder .ph-icon{width:20pt;height:20pt;opacity:.3}
+.img-placeholder .ph-label{font-family:var(--sans);font-size:6.5pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light)}
+.img-placeholder .ph-desc{font-family:var(--sans);font-size:6pt;color:var(--ink-light);opacity:.7}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:7pt}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7pt}
+.grid-12{display:grid;grid-template-columns:1fr 2fr;gap:9pt}
+.grid-21{display:grid;grid-template-columns:2fr 1fr;gap:9pt}
+.grid-13{display:grid;grid-template-columns:1fr 3fr;gap:9pt}
+.content{padding:var(--margin-sm) var(--margin);flex:1;display:flex;flex-direction:column}
+.formula{background:var(--ink);color:var(--gold-pale);font-family:'Courier New',monospace;font-size:7pt;border-radius:4pt;padding:6pt 9pt;line-height:1.85}
+.loop-step{display:flex;align-items:flex-start;gap:7pt;margin-bottom:5pt}
+.loop-step .step-dot{width:19pt;height:19pt;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:7.5pt;font-weight:700;flex-shrink:0;margin-top:.5pt}
+.loop-step .step-title{font-family:var(--serif);font-size:8pt;font-weight:600;color:var(--blue-dark);margin-bottom:1.5pt}
+.loop-step .step-desc{font-family:var(--body);font-size:7pt;line-height:1.6;color:var(--ink-mid)}
+.dot-1{background:#ddeef8;color:var(--blue-mid)}.dot-2{background:#f5ecd4;color:var(--gold)}.dot-3{background:#f2d4d4;color:var(--red-deep)}.dot-4{background:#d4ece0;color:var(--teal-dark)}.dot-5{background:#e8e4f0;color:#4a3880}.dot-6{background:var(--parchment2);color:var(--ink-light)}
+.world-row{display:flex;align-items:flex-start;gap:7pt;padding:5pt 0;border-bottom:.4pt solid var(--parchment3)}
+.world-row:last-child{border-bottom:none}
+.world-badge{font-family:var(--serif);font-size:6.5pt;font-weight:700;padding:2pt 5pt;border-radius:3pt;flex-shrink:0;min-width:36pt;text-align:center;line-height:1.4}
+.wb-1{background:#d4ece0;color:var(--teal-dark)}.wb-2{background:#f5ecd4;color:var(--gold)}.wb-3{background:#f2d4d4;color:var(--red-deep)}.wb-4{background:var(--ink);color:var(--gold-pale)}.wb-5{background:linear-gradient(135deg,#1a0a0a,#3a0a0a);color:var(--gold-pale);border:.5pt solid rgba(154,111,40,.4)}
+.world-text{font-family:var(--body);font-size:7pt;line-height:1.58;color:var(--ink-mid)}
+.world-text strong{font-weight:700;color:var(--ink)}
+.star-item{border-radius:4pt;padding:5pt 7pt;text-align:center}
+.si-gold{background:#f5ecd4}.si-silver{background:#f0f0ee}.si-bronze{background:#f4ded4}
+.star-icon{display:flex;justify-content:center;gap:2pt;margin-bottom:2pt}
+.star-lbl{font-family:var(--serif);font-size:6.5pt;font-weight:600;color:var(--ink-mid)}
+.star-desc{font-family:var(--sans);font-size:6pt;color:var(--ink-light);line-height:1.4;margin-top:2pt}
+.audio-block{background:var(--ink);border-radius:4pt;padding:7pt 9pt;margin-bottom:5pt}
+.audio-block .audio-title{font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--gold-light);margin-bottom:3pt}
+.audio-block .audio-desc{font-family:var(--body);font-size:7pt;line-height:1.55;color:rgba(255,255,255,.72)}
+.art-ref{background:var(--parchment2);border:.5pt solid var(--parchment3);border-radius:4pt;padding:6pt 8pt}
+.art-ref .ref-label{font-family:var(--sans);font-size:6pt;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:2pt}
+.gp-step{display:flex;gap:7pt;margin-bottom:7pt;align-items:flex-start}
+.gp-num{flex-shrink:0;width:17pt;height:17pt;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:7pt;font-weight:700;color:var(--white);margin-top:1pt}
+.gp-body{flex:1}
+.gp-title{font-family:var(--serif);font-size:7.5pt;font-weight:600;color:var(--blue-dark);margin-bottom:1.5pt}
+.gp-text{font-family:var(--body);font-size:7pt;line-height:1.6;color:var(--ink-mid)}
+.team-member{background:var(--white);border:.5pt solid var(--parchment3);border-radius:4pt;padding:6pt 8pt;text-align:center}
+.tm-name{font-family:var(--serif);font-size:9pt;font-weight:600;color:var(--blue-dark);margin-bottom:2pt}
+.tm-role{font-family:var(--sans);font-size:6.5pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.scope-bar{display:flex;align-items:center;gap:7pt;margin-bottom:4pt}
+.scope-label{font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);min-width:56pt}
+.scope-track{flex:1;height:5pt;background:var(--parchment2);border-radius:3pt;overflow:hidden}
+.scope-fill{height:100%;border-radius:3pt;background:linear-gradient(90deg,var(--blue-mid),var(--gold))}
+.scope-val{font-family:var(--serif);font-size:7pt;font-weight:600;color:var(--blue-dark);min-width:20pt;text-align:right}
+.combat-table{width:100%;border-collapse:collapse;font-size:7.5pt}
+.combat-table th{font-family:var(--serif);font-size:6.5pt;font-weight:600;letter-spacing:.08em;color:var(--white);background:var(--blue-dark);padding:4pt 6pt;text-align:left}
+.combat-table td{font-family:var(--body);font-size:7pt;color:var(--ink-mid);padding:4pt 6pt;border-bottom:.4pt solid var(--parchment3);vertical-align:top;line-height:1.5}
+.combat-table tr:last-child td{border-bottom:none}
+.combat-table tr:nth-child(even) td{background:rgba(154,111,40,.04)}
+.win-cell{color:var(--teal-dark);font-weight:700}
+.lose-cell{color:var(--red-deep);font-weight:700}
+.grid-demo-wrap{border:.5pt solid var(--parchment3);border-radius:4pt;background:var(--white);padding:6pt}
+.grid-demo-title{font-family:var(--sans);font-size:6pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4pt}
+.overview-table{width:100%;border-collapse:collapse}
+.overview-table tr{border-bottom:.4pt solid var(--parchment3)}
+.overview-table tr:last-child{border-bottom:none}
+.overview-table td{padding:3.5pt 4pt;vertical-align:top}
+.overview-table td:first-child{font-family:var(--sans);font-size:6.5pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);width:18mm;padding-top:5pt}
+.overview-table td:last-child{font-family:var(--body);font-size:7.5pt;line-height:1.5;color:var(--ink-mid)}
+.arch-card{border:.5pt solid var(--parchment3);border-radius:4pt;padding:7pt 8pt;margin-bottom:6pt}
+.arch-header{display:flex;align-items:center;gap:6pt;margin-bottom:5pt}
+.arch-dot{width:9pt;height:9pt;border-radius:50%;flex-shrink:0}
+.arch-name-text{font-family:var(--serif);font-size:9pt;font-weight:600;color:var(--blue-dark)}
+.arch-tag-right{margin-left:auto}
+.arch-passive{font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);margin-bottom:3pt;padding:3pt 6pt;background:rgba(154,111,40,.05);border-radius:3pt}
+.arch-active{font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);padding:3pt 6pt;background:rgba(15,37,64,.05);border-radius:3pt}
+.arch-label{font-family:var(--sans);font-size:7.5pt;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1pt}
+.upgrade-row{display:flex;gap:6pt;margin-bottom:4pt;align-items:flex-start}
+.upgrade-icon{font-size:13pt;flex-shrink:0;line-height:1;margin-top:1pt}
+.upgrade-body{flex:1}
+.upgrade-name{font-family:var(--serif);font-size:7.5pt;font-weight:600;color:var(--blue-dark)}
+.upgrade-desc{font-family:var(--body);font-size:6.5pt;color:var(--ink-mid);line-height:1.5}
+.cover{background:var(--blue-dark);display:flex;flex-direction:column;height:100%}
+.cover-hero{flex:1;padding:8mm var(--margin) 8mm;display:flex;flex-direction:column;justify-content:flex-end;position:relative;min-height:0}
+.cover-hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(154,111,40,.04) 30px,rgba(154,111,40,.04) 31px),repeating-linear-gradient(-45deg,transparent,transparent 30px,rgba(154,111,40,.04) 30px,rgba(154,111,40,.04) 31px)}
+.cover-img-placeholder {position: relative;flex: 1;min-height: 0;margin-bottom: 0;display: flex;align-items: stretch;justify-content: center;overflow: hidden;}
+.cover-img-placeholder img {width: 100%;height: 100%;object-fit: cover;display: block;border-radius: 8px;}
+.cover-img-placeholder .ph-label {font-family: var(--sans);font-size: 7pt;font-weight: 600;letter-spacing: .18em;text-transform: uppercase;color: rgba(255, 255, 255, 0.25);}
+.cover-gold-bar{height:3pt;background:linear-gradient(90deg,transparent,var(--gold-light),var(--gold),var(--gold-light),transparent);margin:7pt 0}
+.cover-tagline{font-family:var(--body);font-size:10pt;font-style:italic;color:rgba(255,255,255,.65);margin-bottom:12pt;letter-spacing:.02em}
+.cover-meta-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7pt;margin-top:8pt}
+.cover-meta-item{background:rgba(255,255,255,.06);border:.5pt solid rgba(154,111,40,.3);border-radius:3pt;padding:5pt}
+.cover-meta-item .meta-label{font-family:var(--sans);font-size:5.5pt;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-light);margin-bottom:2pt}
+.cover-meta-item .meta-value{font-family:var(--serif);font-size:7.5pt;font-weight:500;color:rgba(255,255,255,.85)}
+.cover-bottom{background:rgba(0,0,0,.3);padding:6pt var(--margin);display:flex;align-items:center;justify-content:space-between;border-top:1pt solid rgba(154,111,40,.25)}
+.cover-bottom .doc-type{font-family:var(--sans);font-size:6.5pt;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.cover-bottom .doc-year{font-family:var(--serif);font-size:7pt;color:var(--gold-light);letter-spacing:.1em}
+.cover-authors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8pt;margin-top:10pt}
+.cover-author-tag{font-family:var(--serif);font-size:8.5pt;font-weight:600;color:rgba(255, 255, 255, .85);background:rgba(255,255,255,.08);border:.5pt solid rgba(154,111,40,.4);border-radius:3pt;padding:5pt 8pt;text-align:center;letter-spacing:.03em}
+.icone-destaque {display:inline-block;width:14pt;height:14pt;vertical-align:middle;stroke:currentColor;stroke-width:1.5;fill:none;color:#000;}
+.icone-secundario {display:inline-block;width:10pt;height:10pt;vertical-align:middle;stroke:currentColor;stroke-width:1;fill:none;color:#000;}
+.icone-destaque-branco {display:inline-block;width:14pt;height:14pt;vertical-align:middle;stroke:currentColor;stroke-width:1.5;fill:none;color:#FFF;}
+.icone-secundario-branco {display:inline-block;width:10pt;height:10pt;vertical-align:middle;stroke:currentColor;stroke-width:1;fill:none;color:#FFF;}
+@page{size:A4 portrait;margin:0}
+@media print{body{background:white;margin:0;padding:0}.page{margin:0;box-shadow:none;page-break-after:always;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page:last-child{page-break-after:avoid;break-after:avoid}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== PÁGINA 01 - CAPA ===== -->
+<div class="page cover">
+  <div class="cover-hero">
+    <div class="cover-img-placeholder">
+      <img src="assets/capa.png" alt="Capa">
+    </div>
+    <div style="position:relative;z-index:2;">
+      <span class="label" style="color:var(--gold-light);letter-spacing:.22em;display:block;margin-bottom:5pt;">Game Design Document - Jogo Sério - Geometria Plana</span>
+      <h1 class="display">Reinos da Área</h1>
+      <div class="cover-gold-bar" style="width:80mm;"></div>
+      <p class="cover-tagline">Conquiste territórios. Calcule para vencer. Pense para sobreviver.</p>
+      <div class="cover-meta-row">
+        <div class="cover-meta-item"><div class="meta-label">Gênero</div><div class="meta-value">Strategy Puzzle</div></div>
+        <div class="cover-meta-item"><div class="meta-label">Plataforma</div><div class="meta-value">PC - Web</div></div>
+        <div class="cover-meta-item"><div class="meta-label">Público</div><div class="meta-value">12-16 anos</div></div>
+        <div class="cover-meta-item"><div class="meta-label">Fases</div><div class="meta-value">20 fases - 5 cenários</div></div>
+      </div>
+      <div style="margin-top:10pt;">
+        <div style="font-family:var(--sans);font-size:6.5pt;font-weight:600;letter-spacing:.15em;text-transform: uppercase;color:var(--gold-light);margin-bottom:5pt;text-align:center;">Acadêmicos</div>
+        <div class="cover-authors">
+          <span class="cover-author-tag">Enzo Camelo Vieira</span>
+          <span class="cover-author-tag">Gabriel Luis de Santana</span>
+          <span class="cover-author-tag">Bruno Faria Travessini</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">01</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 02 - HIGH CONCEPT + VISÃO GERAL ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">1. High Concept & 2. Visão Geral</span>
+  </div>
+  <div class="content" style="padding-bottom: 0pt;">
+    <div class="section-label"><div class="num">1</div><h2>High Concept</h2></div>
+    <div class="accent-bar" style="margin-bottom:7pt;">
+      <p style="font-family:var(--body);font-size:8pt;color:var(--ink-mid);"><strong>Reinos da Área</strong> - duplo significado intencional: <em>"reino"</em> evoca conquista e poder; <em>"área"</em> é tanto o conceito matemático central quanto o espaço físico disputado. Um título que carrega a essência do jogo inteiro.</p>
+    </div>
+    <div>
+      <p class="body"><strong>Reinos da Área</strong> é um jogo de conquista territorial onde a força de cada ataque é determinada pela área do reino controlado. O território inimigo aparece <strong>inteiramente visível</strong> no mapa - porém o <strong>grid não é exibido sobre ele</strong>. O jogador precisa olhar para a forma do reino inimigo e estimar quantos quadrados existem ali dentro. Calcular bem significa vencer. Estimar mal significa perder território.</p>
+      <div class="info-card" style="margin-bottom:5pt;border-left:2.5pt solid var(--blue-dark);padding:5pt 8pt;">
+        <h3 class="sub" style="color:var(--blue-dark);margin-bottom:2pt;">Mission - Objetivos no Jogo</h3>
+        <p class="body" style="font-size:7.5pt;margin-bottom:0;">Como o <strong>Arquiteto-Rei</strong>, sua missão é expandir as fronteiras do seu reino usando raciocínio geométrico como arma estratégica. Você enfrenta 10 reinos inimigos por fase, ao longo de 20 fases divididas em 5 grandes cenários medievais. Cada fase começa com uma <strong>Área X</strong> e o <strong>Domínio do Mapa em 0%</strong>.</p>
+      </div>
+      <p class="body">A inovação central está na <strong>assimetria de informação visual</strong>: o jogador vê seu território com grid completo e área precisa, enquanto os inimigos aparecem como formas sólidas sem grid. Isso força estimativa visual e decisão sob incerteza - geometria como ferramenta estratégica real, não exercício didático explícito.</p>
+    </div>
+    <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent; margin-top: 10pt; margin-bottom: 10pt; ">
+      <img src="assets/concept.jpeg" style="width:100%; height:auto; display:block; border-radius:4pt;"
+        alt="Concept Sketch - Mapa de Territórios">
+    </div>
+    <div class="section-label" style="margin-top:4pt;margin-bottom:5pt;"><div class="num">2</div><h2>Visão Geral do Jogo</h2></div>
+    <div class="grid-2" style="gap:4pt;">
+      <table class="overview-table">
+        <tr><td>Gênero</td><td><div class="tags-wrap"><span class="tag tag-blue">Strategy Puzzle</span><span class="tag tag-gold">4X Lite</span><span class="tag tag-teal">Stealth Learning</span></div></td></tr>
+        <tr><td>Plataforma</td><td>PC Desktop & Web Browser</td></tr>
+        <tr><td>Jogadores</td><td>1 - singleplayer</td></tr>
+        <tr><td>Status</td><td>Conceito expandido - MVP definido</td></tr>
+        <tr><td>Classificação</td><td>Livre (conteúdo educacional estratégico)</td></tr>
+      </table>
+      <table class="overview-table">
+        <tr><td>Público-alvo</td><td>12-16 anos - 7º EM ao 2º EM</td></tr>
+        <tr><td>Conteúdo</td><td>Geometria plana - Estimativa visual de área</td></tr>
+        <tr><td>Campanha</td><td>20 fases - 5 cenários - 10 rodadas/fase</td></tr>
+        <tr><td>Tema sério</td><td>Aprendizado implícito - Consequência estratégica</td></tr>
+        <tr><td>Idioma</td><td>Português Brasileiro</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">02</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 03 - DESIGN GOALS ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">3. Pilares de Design</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">3</div><h2>Pilares de Design</h2></div>
+    <p class="body" style="margin-bottom:8pt;">Os objetivos de design orientam todas as decisões criativas e técnicas. Cada mecânica implementada deve servir a pelo menos um desses pilares - garantindo que o jogo nunca se torne uma prova disfarçada de matemática.</p>
+    <div class="grid-2" style="gap:18pt;margin-bottom:38pt;">
+      <div class="info-card">
+        <h3 class="sub">01 - Aprendizado Invisível</h3>
+        <p class="body">O jogador nunca recebe uma equação para resolver. Ele recebe uma decisão de guerra. A matemática é o instrumento; a conquista territorial é o objetivo declarado. O jogo ensina geometria plana como consequência natural do gameplay, não como instrução explícita.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Métrica: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">Jogador internaliza estimativa de área sem aula formal.</span></div>
+      </div>
+      <div class="info-card">
+        <h3 class="sub">02 - Risco com Consequência Real</h3>
+        <p class="body">Errar uma estimativa de área custa território visível no mapa - feedback emocional e imediato. O jogo deve fazer o jogador sentir que calcular melhor resulta em ganhar mais, sem exceção. Nenhuma aleatoriedade deve anular o raciocínio correto.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Métrica: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">0% de aleatoriedade no resultado do combate.</span></div>
+      </div>
+      <div class="info-card">
+        <h3 class="sub">03 - Profundidade Emergente</h3>
+        <p class="body">Fácil de começar, difícil de dominar. Fases iniciais ensinam retângulos simples - contar quadrados direto no grid. Fases avançadas exigem decomposição de formas compostas e irregulares sob pressão de tempo. A complexidade cresce organicamente, nunca de forma abrupta.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Métrica: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">Curva de dificuldade sem picos abruptos entre cenários.</span></div>
+      </div>
+      <div class="info-card">
+        <h3 class="sub">04 - Identidade Narrativa Medieval</h3>
+        <p class="body">A fantasia de conquista medieval justifica as regras do mundo sem cortes-cenas longas. O jogador deve se sentir num tabuleiro de guerra, não num livro didático. Os castelos, a Cartógrafa e os reinos rivais com personalidade existem para dar peso às decisões geométricas.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Métrica: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">Jogador nunca sente que está "estudando matemática".</span></div>
+      </div>
+      <div class="info-card">
+        <h3 class="sub">05 - Calibração Progressiva</h3>
+        <p class="body">O Índice de Precisão das Estimativas gamifica o aprendizado matemático. O jogador quer estimar melhor porque isso lhe dá estrelas de ouro nas fases - não porque alguém disse que errou. A melhoria deve ter payoff tangível e imediato dentro do sistema de jogo.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Métrica: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">Jogadores repetem fases para melhorar o índice.</span></div>
+      </div>
+      <div class="info-card">
+        <h3 class="sub">06 - O que o Jogo Deve Evitar</h3>
+        <p class="body">Nenhuma tela de exercício matemático explícito. Nenhuma punição com linguagem de "resposta errada". Nenhuma sorte que invalide um cálculo correto. Não deve ser possível vencer de forma consistente por tentativa e erro sem raciocínio geométrico real.</p>
+        <div style="margin-top:5pt;padding-top:4pt;border-top:.4pt solid var(--parchment3);"><span class="label">Princípio: </span><span style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">Nunca uma prova disfarçada de jogo.</span></div>
+      </div>
+    </div>
+    <div class="info-card-blue" style="padding:8pt 11pt;">
+      <h3 class="sub" style="color:var(--gold-light);margin-bottom:5pt;"><i data-lucide="landmark" class="icone-destaque" style="color:var(--gold-light);"></i> Pilares de Design - Resumo Executivo</h3>
+      <div class="grid-3">
+        <div style="text-align:center;padding:0 5pt;border-right:.5pt solid rgba(255,255,255,.1);">
+          <div style="margin-bottom:2pt;"><i data-lucide="hexagon" class="icone-destaque" style="width:16pt;height:16pt;color:var(--white);"></i></div>
+          <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--white);margin-bottom:2pt;">Matemática Invisível</div>
+          <div style="font-family:var(--sans);font-size:6pt;color:rgba(255,255,255,.5);">Ensinar pela experiência estratégica</div>
+        </div>
+        <div style="text-align:center;padding:0 5pt;border-right:.5pt solid rgba(255,255,255,.1);">
+          <div style="font-size:13pt;margin-bottom:2pt;"><i data-lucide="swords" class="icone-destaque" style="width:16pt;height:16pt;color:var(--white);"></i></div>
+          <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--white);margin-bottom:2pt;">Risco Real</div>
+          <div style="font-family:var(--sans);font-size:6pt;color:rgba(255,255,255,.5);">Consequência imediata para cada escolha</div>
+        </div>
+        <div style="text-align:center;padding:0 5pt;">
+          <div style="margin-bottom:2pt;"><i data-lucide="chart-column-increasing" class="icone-destaque" style="width:16pt;height:16pt;color:var(--white);"></i></div>
+          <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--white);margin-bottom:2pt;">Profundidade Gradual</div>
+          <div style="font-family:var(--sans);font-size:6pt;color:rgba(255,255,255,.5);">De retângulos a polígonos irregulares</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">03</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 04 - CORE GAMEPLAY ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">4. Core Gameplay - Sistema de Combate</span>
+  </div>
+  <div class="content">
+    <div class="section-label">
+      <div class="num">4</div>
+      <h2>Core Gameplay - Sistema de Combate</h2>
+    </div>
+    <p class="body">O jogador é o <strong>único agente ativo</strong> no combate. Não existe turno inimigo - os reinos
+      rivais são estáticos e aguardam a decisão do Arquiteto-Rei. O resultado depende exclusivamente da comparação entre
+      a Área do Jogador e a Área do Inimigo, filtrada pela ação escolhida.</p>
+    <div class="grid-2" style="gap:10pt;margin-bottom:7pt;">
+      <div>
+        <h3 class="sub">As Três Ações Disponíveis</h3>
+        <div class="info-card" style="margin-bottom:5pt;padding:6pt 9pt;border-left:2.5pt solid var(--red-mid);">
+          <div style="font-family:var(--serif);font-size:12pt;font-weight:600;color:var(--red-deep);margin-bottom:3pt;"><i data-lucide="swords" class="icone-destaque"></i>
+            ATACAR</div>
+          <p style="font-family:var(--body);font-size:7.5pt;line-height:1.6;color:var(--ink-mid);">O jogador aposta que
+            seu território é <strong>maior</strong> que o do inimigo. Se a Área do Jogador for maior: o inimigo perde
+            território e o Domínio do Mapa sobe. Se a Área do Jogador for menor: o jogador perde 20% de sua área atual.
+            É a ação de maior risco e maior recompensa.</p>
+        </div>
+        <div class="info-card" style="margin-bottom:5pt;padding:6pt 9pt;border-left:2.5pt solid var(--blue-mid);">
+          <div style="font-family:var(--serif);font-size:12pt;font-weight:600;color:var(--blue-dark);margin-bottom:3pt;">
+            <i data-lucide="shield" class="icone-destaque"></i> DEFENDER</div>
+          <p style="font-family:var(--body);font-size:7.5pt;line-height:1.6;color:var(--ink-mid);">O jogador aposta que
+            o inimigo é <strong>maior</strong> que ele. Se o inimigo for maior: o jogador resiste ao ataque e não perde
+            área. Se o inimigo for menor (o jogador errou): o jogador perde 10% de sua área. Defender é mais seguro que
+            atacar, mas só é correto quando o inimigo é realmente maior.</p>
+        </div>
+        <div class="info-card" style="margin-bottom:5pt;padding:6pt 9pt;border-left:2.5pt solid var(--teal-mid);">
+          <div style="font-family:var(--serif);font-size:12pt;font-weight:600;color:var(--teal-dark);margin-bottom:3pt;">
+            <i data-lucide="undo-2" class="icone-destaque"></i> RECUAR</div>
+          <p style="font-family:var(--body);font-size:7.5pt;line-height:1.6;color:var(--ink-mid);">O jogador opta por
+            não combater. Sofre apenas uma <strong>penalidade mínima</strong> - redução de 3% no Domínio do Mapa. Nenhum
+            território é perdido. É a ação de menor risco, mas usada em excesso impede o avanço. Recuar é sempre muito
+            menos custoso do que errar Atacar ou Defender.</p>
+        </div>
+        <div class="accent-bar" style="border-color:var(--gold);">
+          <p style="font-family:var(--body);font-size:7.5pt;font-style:italic;color:var(--ink-mid);">A penalidade de
+            Recuar é deliberadamente muito menor do que errar Atacar ou Defender - incentivando o jogador a só agir
+            quando tem confiança no cálculo.</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="sub">Tabela de Resultados</h3>
+        <table class="combat-table" style="margin-bottom:7pt;">
+          <tr>
+            <th>Ação</th>
+            <th>Condição</th>
+            <th>Resultado</th>
+          </tr>
+          <tr>
+            <td><i data-lucide="swords" class="icone-secundario"></i> ATACAR</td>
+            <td>Jogador &gt; Inimigo</td>
+            <td class="win-cell"><i data-lucide="check" class="icone-secundario"></i> VITÓRIA</td>
+          </tr>
+          <tr>
+            <td><i data-lucide="swords" class="icone-secundario"></i> ATACAR</td>
+            <td>Jogador &lt; Inimigo</td>
+            <td class="lose-cell"><i data-lucide="x" class="icone-secundario"></i> DERROTA -20% área</td>
+          </tr>
+          <tr>
+            <td><i data-lucide="shield" class="icone-secundario"></i> DEFENDER</td>
+            <td>Inimigo &gt; Jogador</td>
+            <td class="win-cell"><i data-lucide="check" class="icone-secundario"></i> VITÓRIA</td>
+          </tr>
+          <tr>
+            <td><i data-lucide="shield" class="icone-secundario"></i> DEFENDER</td>
+            <td>Inimigo &lt; Jogador</td>
+            <td class="lose-cell"><i data-lucide="x" class="icone-secundario"></i> DERROTA -10% área</td>
+          </tr>
+          <tr>
+            <td><i data-lucide="undo-2" class="icone-secundario"></i> RECUAR</td>
+            <td>Qualquer</td>
+            <td style="font-weight:700;"><i data-lucide="undo-2" class="icone-secundario"></i> RECUO -3% área</td>
+          </tr>
+        </table>
+        <h3 class="sub" style="margin-top:4pt;">Modificadores de Terreno</h3>
+        <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;margin-bottom:5pt;">Os
+          modificadores ajustam o limiar de comparação de área - um reino em posição elevada pode resistir a adversários
+          ligeiramente maiores. São coerentes com a mecânica de área pura: não adicionam aleatoriedade, apenas alteram o
+          peso relativo das áreas comparadas.</p>
+        <div class="world-row">
+          <div class="world-badge wb-1" style="font-size:6pt;">Plano</div>
+          <div class="world-text"><strong>Fator 1.0 para ambos.</strong> Comparação direta de áreas. Padrão das fases
+            iniciais - sem modificação.</div>
+        </div>
+        <div class="world-row">
+          <div class="world-badge wb-3" style="font-size:6pt;">Serra</div>
+          <div class="world-text"><strong>Defensor ×1.25 - Atacante ×0.85.</strong> Território elevado é mais difícil de
+            conquistar - o inimigo "parece maior" ao defender.</div>
+        </div>
+        <div class="world-row" style="border:none;">
+          <div class="world-badge wb-2" style="font-size:6pt;">Costeiro</div>
+          <div class="world-text"><strong>Defensor ×0.90 - Atacante ×1.10.</strong> Território litorâneo é mais
+            vulnerável. Atacar é mais vantajoso; defender exige área própria maior.</div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule-thin">
+    <div class="grid-3" style="gap:6pt;margin-top:5pt;">
+      <div class="info-card" style="padding:5pt 7pt;">
+        <h3 class="sub" style="margin-bottom:3pt;">Objetivo da Fase</h3>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Cada fase tem <strong>10
+            rodadas</strong> contra 10 reinos inimigos. O jogador começa com Área X e o <strong>Domínio em 0%.</strong>
+          O objetivo é elevar o Domínio para ≥ 70% antes das rodadas acabarem.</p>
+      </div>
+      <div class="info-card" style="padding:5pt 7pt;">
+        <h3 class="sub" style="margin-bottom:3pt;">Condições de Vitória</h3>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Dominar ≥ 70% do mapa ao
+          final das 10 rodadas. O Domínio sobe em vitórias e recua em derrotas. Conquistar territórios maiores amplia a
+          área do jogador - e portanto seu poder de ataque futuro.</p>
+      </div>
+      <div class="info-card" style="padding:5pt 7pt;border-left:2.5pt solid var(--red-mid);">
+        <h3 class="sub" style="margin-bottom:3pt;color:var(--red-deep);">Condições de Derrota</h3>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Área do Jogador atingir
+          0, ou 10 rodadas esgotarem com Domínio abaixo de 70%. Atacar reinos maiores por erro de estimativa é a
+          principal causa de colapso do reino.</p>
+      </div>
+    </div>
+    <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent; margin-top: 15pt;">
+      <img src="assets/fundos/trilha.png" style="width:100%; height:auto; display:block; border-radius:4pt;" alt="Trilha de fundo">
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">04</span>
+  </div>
+</div>
+
+
+
+<!-- ===== PÁGINA 05 - MECÂNICAS (PASSO A PASSO) ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">5. Mecânicas - Passo a Passo</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">5</div><h2>Mecânicas - Passo a Passo</h2></div>
+    <p class="body" style="margin-bottom:8pt;">Esta seção detalha, passo a passo, as três mecânicas centrais que sustentam a experiência de jogo: a decisão de combate, o uso das habilidades de arquétipo e o ciclo de avanço entre rodadas e fases. Cada mecânica é descrita na ordem exata em que acontece durante o jogo.</p>
+
+    <h3 class="sub" style="margin-bottom:4pt;"><i data-lucide="swords" class="icone-secundario"></i> Mecânica 1 - Seleção e Resolução de Ataque</h3>
+    <div class="grid-2" style="gap:9pt;margin-bottom:9pt;">
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">1</div><div class="gp-body"><div class="gp-title">Jogador toca/clica no território inimigo da rodada</div><div class="gp-text">O reino inimigo é destacado com uma borda dourada pulsante, sinalizando que está selecionável.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">2</div><div class="gp-body"><div class="gp-title">Painel de ação se expande</div><div class="gp-text">Os três botões - Atacar, Defender, Recuar - aparecem na base da tela com ícone e custo/risco resumido.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">3</div><div class="gp-body"><div class="gp-title">Jogador escolhe uma ação</div><div class="gp-text">O botão escolhido acende; os outros dois ficam esmaecidos por 0.3s antes da confirmação automática.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">4</div><div class="gp-body"><div class="gp-title">Sistema compara Área do Jogador × Área do Inimigo</div><div class="gp-text">O cálculo ocorre em segundo plano - nenhum número é mostrado neste instante, preservando a tensão da estimativa.</div></div></div>
+      <div class="gp-step" style="margin-bottom:0;"><div class="gp-num">5</div><div class="gp-body"><div class="gp-title">Animação de resultado é disparada</div><div class="gp-text">Tinta se espalha (vitória), borda vermelha pulsa (derrota) ou o reino recua visualmente (recuo). Domínio do Mapa é atualizado no HUD.</div></div></div>
+    </div>
+
+    <h3 class="sub" style="margin-bottom:4pt;"><i data-lucide="sparkles" class="icone-secundario"></i> Mecânica 2 - Ativação de Habilidade de Arquétipo</h3>
+    <div class="grid-2" style="gap:9pt;margin-bottom:9pt;">
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">1</div><div class="gp-body"><div class="gp-title">Jogador pressiona o ícone de habilidade ativa</div><div class="gp-text">Disponível somente se houver Recursos Estratégicos suficientes e a habilidade não estiver em uso na fase.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">2</div><div class="gp-body"><div class="gp-title">Sistema verifica custo</div><div class="gp-text">Se o jogador não possui recursos suficientes, o ícone vibra e fica vermelho por 0.5s - sem outra penalidade.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">3</div><div class="gp-body"><div class="gp-title">Recursos Estratégicos são debitados</div><div class="gp-text">O contador de recursos no HUD anima decrescendo o valor correspondente ao custo da habilidade.</div></div></div>
+      <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">4</div><div class="gp-body"><div class="gp-title">Efeito da habilidade é aplicado ao território/rodada</div><div class="gp-text">Ex.: grid revelado temporariamente (Estrategista) ou bônus de terreno aplicado (Engenheiro).</div></div></div>
+      <div class="gp-step" style="margin-bottom:0;"><div class="gp-num">5</div><div class="gp-body"><div class="gp-title">Ícone entra em cooldown até a próxima fase</div><div class="gp-text">Um selo dourado cobre o ícone, comunicando que a habilidade já foi usada nesta fase.</div></div></div>
+    </div>
+
+    <h3 class="sub" style="margin-bottom:4pt;"><i data-lucide="repeat" class="icone-secundario"></i> Mecânica 3 - Avanço de Rodada e Fim de Fase</h3>
+    <div class="grid-21" style="gap:11pt;">
+      <div>
+        <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">1</div><div class="gp-body"><div class="gp-title">Resultado da rodada é confirmado</div><div class="gp-text">O contador de rodadas avança (ex.: 3/10 → 4/10) e o próximo reino inimigo é carregado no mapa.</div></div></div>
+        <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">2</div><div class="gp-body"><div class="gp-title">Sistema verifica condição de derrota</div><div class="gp-text">Se a Área do Jogador chegou a 0, a fase termina imediatamente em derrota - sem aguardar as rodadas restantes.</div></div></div>
+        <div class="gp-step" style="margin-bottom:4pt;"><div class="gp-num">3</div><div class="gp-body"><div class="gp-title">Sistema verifica se as 10 rodadas terminaram</div><div class="gp-text">Caso sim, compara o Domínio do Mapa final com o limiar de 70%.</div></div></div>
+        <div class="gp-step" style="margin-bottom:0;"><div class="gp-num">4</div><div class="gp-body"><div class="gp-title">Tela de Fim de Fase é exibida</div><div class="gp-text">Estrelas (ouro/prata/bronze) são calculadas pelo Índice de Precisão das Estimativas; XP e Recursos são distribuídos.</div></div></div>
+      </div>
+      <div>
+        <div class="info-card" style="padding:7pt 9pt;margin-bottom:6pt;">
+          <h3 class="sub" style="margin-bottom:5pt;"><i data-lucide="git-branch" class="icone-secundario"></i> Fluxograma - Ciclo de Fase</h3>
+          <svg viewBox="0 0 320 430" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="arrM" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="var(--blue-dark)"/></marker>
+            </defs>
+            <rect x="70" y="6" width="180" height="32" rx="6" fill="var(--blue-dark)"/>
+            <text x="160" y="26" text-anchor="middle" font-family="Source Sans 3" font-size="10" fill="#fff">Início da Fase</text>
+            <line x1="160" y1="38" x2="160" y2="60" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <rect x="60" y="62" width="200" height="32" rx="6" fill="var(--gold)"/>
+            <text x="160" y="82" text-anchor="middle" font-family="Source Sans 3" font-size="10" fill="#16120d">Rodada N (1 a 10)</text>
+            <line x1="160" y1="94" x2="160" y2="116" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <rect x="40" y="118" width="240" height="32" rx="6" fill="var(--white)" stroke="var(--parchment3)"/>
+            <text x="160" y="138" text-anchor="middle" font-family="Source Sans 3" font-size="9.5" fill="#3a2f22">Atacar / Defender / Recuar</text>
+            <line x1="160" y1="150" x2="160" y2="172" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <polygon points="160,172 230,206 160,240 90,206" fill="#f2d4d4" stroke="var(--red-mid)"/>
+            <text x="160" y="202" text-anchor="middle" font-family="Source Sans 3" font-size="8.5" fill="#5c1515">Área do Jogador</text>
+            <text x="160" y="214" text-anchor="middle" font-family="Source Sans 3" font-size="8.5" fill="#5c1515">chegou a 0?</text>
+            <line x1="230" y1="206" x2="280" y2="206" stroke="var(--blue-dark)" stroke-width="1.5"/>
+            <text x="284" y="203" font-family="Source Sans 3" font-size="8" fill="#3a2f22">Sim</text>
+            <line x1="280" y1="206" x2="280" y2="380" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <line x1="160" y1="240" x2="160" y2="262" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <text x="168" y="255" font-family="Source Sans 3" font-size="8" fill="#3a2f22">Não</text>
+            <polygon points="160,262 240,300 160,338 80,300" fill="#d4ece0" stroke="var(--teal-mid)"/>
+            <text x="160" y="296" text-anchor="middle" font-family="Source Sans 3" font-size="8.5" fill="#0e3828">10 rodadas</text>
+            <text x="160" y="308" text-anchor="middle" font-family="Source Sans 3" font-size="8.5" fill="#0e3828">concluídas?</text>
+            <line x1="80" y1="300" x2="50" y2="300" stroke="var(--blue-dark)" stroke-width="1.5"/>
+            <text x="10" y="297" font-family="Source Sans 3" font-size="8" fill="#3a2f22">Não</text>
+            <line x1="50" y1="300" x2="50" y2="78" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <line x1="160" y1="338" x2="160" y2="360" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <text x="168" y="353" font-family="Source Sans 3" font-size="8" fill="#3a2f22">Sim</text>
+            <rect x="50" y="362" width="220" height="32" rx="6" fill="var(--blue-dark)"/>
+            <text x="160" y="382" text-anchor="middle" font-family="Source Sans 3" font-size="9.5" fill="#fff">Domínio ≥ 70%?</text>
+            <line x1="270" y1="378" x2="280" y2="378" stroke="var(--blue-dark)" stroke-width="1.5"/>
+            <rect x="40" y="396" width="120" height="28" rx="6" fill="var(--teal-mid)"/>
+            <text x="100" y="414" text-anchor="middle" font-family="Source Sans 3" font-size="9" fill="#fff">Sim → Vitória</text>
+            <line x1="160" y1="394" x2="100" y2="396" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+            <rect x="180" y="396" width="120" height="28" rx="6" fill="var(--red-mid)"/>
+            <text x="240" y="414" text-anchor="middle" font-family="Source Sans 3" font-size="9" fill="#fff">Não → Derrota</text>
+            <line x1="220" y1="382" x2="280" y2="396" stroke="var(--blue-dark)" stroke-width="1.5" marker-end="url(#arrM)"/>
+          </svg>
+        </div>
+        <p style="font-family:var(--body);font-size:6.5pt;line-height:1.5;color:var(--ink-mid);">O fluxo se repete por rodada e só termina em Vitória, Derrota por zeragem de área, ou Derrota por Domínio insuficiente ao fim das 10 rodadas.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">05</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 06 - SISTEMAS DO JOGO - HABILIDADES E ARQUÉTIPOS ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">6. Sistemas do Jogo - Habilidades e Arquétipos</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">6</div><h2>Sistemas do Jogo - Habilidades e Arquétipos</h2></div>
+    <p class="body" style="margin-bottom:7pt;">Antes das trombetas soarem para uma nova fase, o Rei deve tomar uma decisão crucial: entregar sua confiança a <strong>apenas um</strong> dos seus três conselheiros (arquétipos). A névoa da guerra é densa e o monarca marcha às cegas, sem saber o tamanho ou o formato exato das defesas que o aguardam. Sua escolha deve ser guiada unicamente pelos rumores e informações táticas sobre os <strong>modificadores de terreno</strong> daquela região, ou, na falta deles, guiar-se pela sua pura afinidade e sede de vitória por um estilo de jogo específico.</p>
+    <div class="arch-card" style="border-left:3pt solid var(--gold);">
+      <div class="arch-header">
+        <div class="arch-dot" style="background:var(--gold);"></div>
+        <span class="arch-name-text"><i data-lucide="hammer" class="icone-destaque"></i> Engenheiro</span>
+        <span class="tag tag-gold arch-tag-right" style="font-size:5.5pt;">Expansão e Fortificação</span>
+      </div>
+      <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;margin-bottom:5pt;">Os mestres de obras do reino não apenas constroem defesas inexpugnáveis, mas sabem como reciclar as ruínas dos inimigos para expandir os domínios do Rei.</p>
+      <div class="arch-label">Passiva | Fortificações de Batalha</div>
+      <div class="arch-passive" style="margin-bottom:3pt;"><strong>História:</strong> Quando os tambores de guerra inimigos soam, as guildas de construtores trabalham dia e noite erguendo paliçadas e reforçando as muralhas de pedra. O reino se torna uma fortaleza impenetrável.<br><strong>Mecânica:</strong> Ao escolher a ação Defender, o jogador recebe automaticamente um bônus temporário de +5% na sua Área para o momento da comparação de combate daquela rodada.</div>
+      <div class="arch-label">Ativa | Espólios de Cerco (Desbloqueada na Fase 3)</div>
+      <div class="arch-active"><strong>História:</strong> Após seguidas campanhas vitoriosas, o Engenheiro lidera caravanas que saqueiam pedra, madeira e ferro dos reinos caídos, usando esse material para anexar terras rapidamente e erguer novos postos avançados.<br><strong>Mecânica:</strong> O Engenheiro converte seu ímpeto em território bruto. Ao ser ativada, a Área do jogador aumenta em células exatas (quadrados) de acordo com sua sequência de vitórias atual. (Ex: uma sequência de 4 vitórias adiciona +4 células reais à sua forma durante a batalha). Quanto maior a sequência, maior a expansão.</div>
+    </div>
+
+    <div class="arch-card" style="border-left:3pt solid var(--teal-mid);margin-top:5pt;">
+      <div class="arch-header">
+        <div class="arch-dot" style="background:var(--teal-mid);"></div>
+        <span class="arch-name-text"><i data-lucide="sword" class="icone-destaque"></i> Guerreiro</span>
+        <span class="tag tag-teal arch-tag-right" style="font-size:5.5pt;">Ímpeto e Força</span>
+      </div>
+      <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;margin-bottom:5pt;">A lei do mais forte dita as regras. O Guerreiro vive para a linha de frente e usa o medo e a assimilação para criar uma horda imbatível.</p>
+      <div class="arch-label">Passiva | Legião de Cativos</div>
+      <div class="arch-passive" style="margin-bottom:3pt;"><strong>História:</strong> O Rei é implacável, mas pragmático. Após cada conquista, os soldados sobreviventes do reino derrotado recebem uma escolha: juntar-se à vanguarda real ou perecer. A cada triunfo, o exército cresce como uma avalanche humana.<br><strong>Mecânica:</strong> Focada na ação Atacar. Cada vitória consecutiva aumenta o poder de ataque do jogador em +2% de bônus de Área (acumulando até um limite de +10% em 5 vitórias). Porém, a lealdade dos cativos é frágil: ao perder uma batalha, a moral quebra e o bônus retorna a 0%.</div>
+      <div class="arch-label">Ativa | Aço Duplo</div>
+      <div class="arch-active"><strong>História:</strong> Sentindo o cheiro de vitória iminente, o Rei abre os grandes portões dos arsenais reais e concede uma segunda espada para cada guerreiro da vanguarda.<br><strong>Mecânica:</strong> Ao ser ativada, o Rei inspira suas tropas e dobra o poder atual da habilidade passiva Legião de Cativos apenas para esta rodada. (Ex: se o jogador tem 3 vitórias e um bônus passivo de +6%, ao usar a ativa, o bônus de ataque salta para +12% naquela batalha).</div>
+    </div>
+
+    <div class="arch-card" style="border-left:3pt solid #2d5a8e;margin-top:5pt;">
+      <div class="arch-header">
+        <div class="arch-dot" style="background:#2d5a8e;"></div>
+        <span class="arch-name-text"><i data-lucide="eye" class="icone-destaque"></i> Estrategista</span>
+        <span class="tag tag-blue arch-tag-right" style="font-size:5.5pt;">Inteligência e Controle</span>
+      </div>
+      <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;margin-bottom:5pt;">Guerras não são ganhas apenas com aço, mas com segredos sussurrados nas sombras. O Estrategista remove a névoa da guerra antes mesmo das tropas marcharem.</p>
+      <div class="arch-label">Passiva | Infiltração Noturna</div>
+      <div class="arch-passive" style="margin-bottom:3pt;"><strong>História:</strong> Na calada da noite, antes das trombetas anunciarem o início da fase, batedores e espiões reais cruzam as fronteiras inimigas. Eles mapeiam postos de guarda e acampamentos, enviando corvos com as posições exatas para a tenda de comando.<br><strong>Mecânica:</strong> Automaticamente, no início de cada fase (rodada), 4 células do reino inimigo são reveladas aleatoriamente e ficam registradas de forma permanente na tela de combate, servindo como pontos de referência valiosos para o jogador estimar o tamanho da forma inimiga.</div>
+      <div class="arch-label">Ativa | Cartografia Roubada</div>
+      <div class="arch-active"><strong>História:</strong> Um mensageiro inimigo é interceptado nas estradas de terra carregando os mapas originais com as plantas completas do reino rival. O Rei e seus conselheiros têm apenas alguns instantes para memorizar as defesas antes que o pergaminho seja queimado para não deixar rastros.<br><strong>Mecânica:</strong> O grid completo do inimigo é revelado temporariamente sobre a tela. O tempo que a informação fica disponível depende do seu ritmo na guerra: os segundos de exibição são exatamente iguais ao seu número atual de vitórias em sequência (Ex: 3 vitórias em sequência = o grid inimigo pisca na tela por exatos 3 segundos). Permite tirar a prova real do tamanho inimigo em momentos cruciais.</div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">06</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 07 - SISTEMA DE CÁLCULO DE ÁREA (seção extra) ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">6.1 Sistema de Cálculo</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">6.1</div><h2>Sistema de Cálculo de Área</h2></div>
+    <p class="body">O cálculo de área em <strong>Reinos da Área</strong> não é baseado em fórmulas ensinadas diretamente. O fundamento é visual e concreto: <strong>a área de qualquer território é o número de quadrados do grid que estão dentro daquela forma.</strong> O jogador aprende isso por necessidade estratégica, não por instrução acadêmica.</p>
+    <div style="margin-top: 6pt;">
+      <h3 class="sub">Como o Grid Funciona</h3>
+      <p class="body" style="font-size:7.5pt;">O mapa é dividido por um grid quadriculado uniforme. Cada quadrado representa <strong>1 unidade de área (1 u²)</strong>. Para calcular a área do seu próprio território, o jogador conta - ou multiplica - os quadrados pintados de azul. O grid está sempre visível sobre o seu território.</p>
+      <h3 class="sub" style="margin-top:10pt;">O Desafio: Território Inimigo Sem Grid</h3>
+      <p class="body" style="font-size:7.5pt;">O território inimigo aparece <strong>inteiro e completamente visível</strong> no mapa - não há nada escondido. A grande mecânica é que <strong>o grid não aparece por cima dele.</strong> O jogador vê a forma do reino inimigo pintada de vermelho, mas precisa estimar mentalmente quantos quadrados caberiam dentro daquela forma, apenas observando-a. Nas fases iniciais, o grid ao <em>redor</em> do território inimigo serve como referência de tamanho. Nas fases avançadas, até essa referência desaparece.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7pt;">
+      <div style="text-align: center; margin-bottom: 15pt; margin-top: 15pt;">
+        <img src="assets/hud.png" style="width:100%; height:auto; display:block; border-radius:4pt; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" alt="HUD do jogo - Mapa com grid e territórios">
+        <p style="font-family:var(--sans); font-size:7.5pt; color:var(--ink-mid); margin-top:5pt; font-style:italic;">HUD de Batalha: Grid de precisão ativo no território aliado (azul) e área inimiga a ser estimada (vermelho).</p>
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;border-left:2.5pt solid var(--gold);">
+        <h3 class="sub" style="margin-bottom:3pt;">Revelação Pós-Combate</h3>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Após cada rodada, o grid aparece sobre o território inimigo por completo. O jogador vê a área real e compara com sua estimativa. Esse é o momento de aprendizado mais rico de todo o loop. Na tela aparece uma mensagem que diz exatamente a área do inimigo e faz o cálculo com os modificadores de terreno e das habilidades dos arquétipos usadas na batalha.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">07</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 08 - CORE GAME LOOP ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">7. Core Game Loop</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">7</div><h2>Core Game Loop</h2></div>
+    <div class="info-card-blue" style="padding:6pt 11pt;margin-bottom:9pt;text-align:center;">
+      <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--gold-pale);letter-spacing:.06em;">Observar <i data-lucide="arrow-right" class="icone-destaque-branco"></i> Estimar <i data-lucide="arrow-right" class="icone-destaque-branco"></i> Decidir <i data-lucide="arrow-right" class="icone-destaque-branco"></i> Combater <i data-lucide="arrow-right" class="icone-destaque-branco"></i> Aprender <i data-lucide="arrow-right" class="icone-destaque-branco"></i> Repetir</div>
+    </div>
+    <div>
+      <h3 class="sub">Ciclo de Rodada - 5 Etapas</h3>
+      <div class="loop-step">
+        <div class="step-dot dot-1">1</div>
+        <div class="step-content">
+          <div class="step-title">Observação</div>
+          <div class="step-desc">O jogador vê o mapa completo. Seu território: grid visível, área exata no HUD. O reino inimigo desta rodada: forma inteira visível, sem grid por cima. A Cartógrafa pode comentar: <em>"Este reino parece ocupar muitos quadrados ao norte…"</em></div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="step-dot dot-2">2</div>
+        <div class="step-content">
+          <div class="step-title">Estimativa Visual</div>
+          <div class="step-desc">O jogador observa a forma do reino inimigo e tenta contar mentalmente quantos quadrados do grid caberiam dentro dela. Nas fases iniciais, o grid ao redor serve como referência. Nas avançadas, apenas a forma está disponível. É aqui que o aprendizado matemático acontece de forma natural.</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="step-dot dot-3">3</div>
+        <div class="step-content">
+          <div class="step-title">Decisão Tática</div>
+          <div class="step-desc">Com a estimativa em mente, o jogador escolhe: <strong>Atacar</strong> (se acredita ser maior), <strong>Defender</strong> (se acredita que o inimigo é maior) ou <strong>Recuar</strong> (se a incerteza for alta demais). Cada escolha tem custo e benefício claros e assimétricos.</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="step-dot dot-4">4</div>
+        <div class="step-content">
+          <div class="step-title">Resolução de Combate</div>
+          <div class="step-desc">O sistema compara as áreas reais. O resultado é instantâneo e visível: o território muda de cor, o Domínio do Mapa sobe ou desce, e a área do jogador se ajusta. Uma animação clara comunica vitória, derrota ou recuo sem textos de punição.</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="step-dot dot-5">5</div>
+        <div class="step-content">
+          <div class="step-title">Revelação e Aprendizado</div>
+          <div class="step-desc">O grid aparece sobre o território inimigo por 3 segundos. O jogador vê a área real e compara com sua estimativa. O Índice de Precisão das Estimativas atualiza. O loop reinicia com o próximo dos 10 reinos inimigos da fase.</div>
+        </div>
+      </div>
+      <div class="accent-bar" style="margin-top:5pt;">
+        <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">O <strong>Índice de Precisão das Estimativas</strong> é o fio pedagógico que une todas as etapas: quanto mais precisa a estimativa, maior a pontuação - sem nunca usar linguagem de "acertou" ou "errou".</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7pt;">
+      <div class="info-card" style="padding:7pt;flex:1;">
+        <div style="font-family:var(--sans);font-size:6pt;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5pt;"><i data-lucide="map" class="icone-destaque"></i> Diagrama Visual do Loop</div>
+        <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent;">
+          <img src="assets/core-game-loop.png" style="width:100%; height:auto; display:block; border-radius:3pt;" alt="Core Game Loop">
+        </div>
+      </div>
+      <!-- Star objectives -->
+      <h3 class="sub" style="margin-bottom: 6pt;">Sistema de Estrelas - Objetivos por Fase</h3>
+      <div class="grid-3" style="gap: 6pt;">
+        <div class="star-item si-bronze">
+          <span class="star-icon">★</span>
+          <div class="star-lbl">Bronze - Conclusão</div>
+          <div class="star-desc">Completar a fase dentro do limite de rodadas disponíveis. Accessível para todos.</div>
+        </div>
+        <div class="star-item si-silver">
+          <span class="star-icon">★★</span>
+          <div class="star-lbl">Prata - Eficiência</div>
+          <div class="star-desc">Vencer usando ≤ 60% das rodadas disponíveis. Exige planejamento proativo.</div>
+        </div>
+        <div class="star-item si-gold">
+          <span class="star-icon">★★★</span>
+          <div class="star-lbl">Ouro - Precisão</div>
+          <div class="star-desc">IP ≥ 85% + vencer sem perder território algum. Certificado de domínio geométrico.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">08</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 09 - SISTEMAS DO JOGO - PROGRESSÃO ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">8. Progressão</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">8</div><h2>Progressão</h2></div>
+    <p class="body" style="margin-bottom:7pt;">A progressão não é linear - é uma pressão crescente que se manifesta em dois fenômenos simultâneos: o <strong>reino do jogador cresce</strong> a cada conquista, tornando o cálculo da própria área cada vez mais complexo; e a <strong>diferença de tamanho entre jogador e inimigos diminui</strong> a cada cenário, exigindo estimativas cada vez mais precisas para tomar a decisão certa entre atacar, defender ou recuar.</p>
+
+    <div class="grid-2" style="gap:9pt;margin-bottom:7pt;">
+      <div>
+        <h3 class="sub">O Reino Cresce e o Grid Encolhe</h3>
+        <p class="body" style="font-size:7.5pt;">A cada vitória, o jogador anexa território inimigo à sua forma. O reino cresce, mas o grid permanece com o mesmo tamanho de célula. Na prática, isso significa que <strong>estimar a própria área fica progressivamente mais difícil</strong>: no início são 8-12 quadrados fáceis de contar; no final de uma campanha longa, podem ser 40-60 quadrados em formas compostas e irregulares.</p>
+        <div class="info-card" style="padding:6pt 9pt;border-left:2.5pt solid var(--gold);margin-bottom:5pt;">
+          <h3 class="sub" style="margin-bottom:3pt;">Como o Grid Afeta a Decisão</h3>
+          <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.65;">
+            <strong>Cen. 1 (F.1-4):</strong> Reino pequeno, retangular. Contar é direto: largura × altura.<br>
+            <strong>Cen. 2 (F.5-8):</strong> Reino maior, quinas irregulares. Borda do grid exige estimativa parcial.<br>
+            <strong>Cen. 3 (F.9-12):</strong> Forma em L ou composta. Necessário decompor e somar partes.<br>
+            <strong>Cen. 4 (F.13-16):</strong> Polígonos com diagonais. Células parciais na borda - tolerância necessária.<br>
+            <strong>Cen. 5 (F.17-20):</strong> Formas sem padrão. Apenas 30 seg por rodada. Decomposição criativa sob pressão.
+          </p>
+        </div>
+        <div class="accent-bar" style="border-color:var(--blue-dark);">
+          <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);">O jogador nunca recebe uma fórmula. Aprende geometria plana <em>pela necessidade de sobreviver</em> - cada fase força uma nova estratégia de contagem.</p>
+        </div>
+        <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent; margin-top: 15pt;">
+          <img src="assets/fundos/rosa-dos-ventos.png" style="width:35%; height:auto; display:block; border-radius:4pt;" alt="HUD do jogo - Mapa com grid e territórios">
+        </div>
+      </div>
+      <div>
+        <h3 class="sub">A caminhada não é fácil</h3>
+        <p class="body" style="font-size:7.5pt;">Nos primeiros cenários, a diferença de tamanho entre o jogador e os inimigos é ampla o suficiente para que erros grosseiros de estimativa sejam absorvidos. Conforme a campanha avança, essa margem desaparece - e os <strong>modificadores de terreno</strong> passam a ter peso decisivo: um inimigo levemente menor em território de Serra (×1.25 defesa) pode ser, na prática, maior. Saber calcular deixa de ser suficiente; é preciso saber <em>para qual contexto</em> se está calculando.</p>
+        <div class="world-row">
+          <div class="world-badge wb-1" style="font-size:6pt;">Cen. 1<br>F.1-4</div>
+          <div class="world-text"><strong>Planícies de Aldrath</strong> - Terreno plano (fator ×1.0 para ambos). A diferença de área é larga e evidente. Cálculo direto é suficiente para decidir com segurança.</div>
+        </div>
+        <div class="world-row">
+          <div class="world-badge wb-2" style="font-size:6pt;">Cen. 2<br>F.5-8</div>
+          <div class="world-text"><strong>Vales de Kheldorn</strong> - Terreno de Serra surge (defensor ×1.25). A estimativa visual começa a enganar: inimigos aparentemente menores podem resistir ao ataque graças ao bônus de altitude.</div>
+        </div>
+        <div class="world-row">
+          <div class="world-badge wb-3" style="font-size:6pt;">Cen. 3<br>F.9-12</div>
+          <div class="world-text"><strong>Serra das Pedras Vivas</strong> - Sem grid de referência ao redor do inimigo. Formas compostas dificultam a estimativa e o modificador de Serra exige que o jogador saiba exatamente o quanto precisa superar para atacar com segurança.</div>
+        </div>
+        <div class="world-row">
+          <div class="world-badge wb-4" style="font-size:6pt;">Cen. 4<br>F.13-16</div>
+          <div class="world-text"><strong>Arquipélago do Oblívio</strong> - Terreno Costeiro (atacante ×1.10, defensor ×0.90) em ilhas. 45 segundos por rodada. A vantagem do atacante existe, mas só quem calcula com precisão consegue aproveitá-la antes do tempo acabar.</div>
+        </div>
+        <div class="world-row" style="border:none;">
+          <div class="world-badge wb-5" style="font-size:6pt;">Cen. 5<br>F.17-20</div>
+          <div class="world-text"><strong>Abismo Irregular</strong> - Modificadores mistos e formas sem padrão. 30 segundos por rodada. Fase 20: morte súbita. Calcular errado o modificador de terreno é tão fatal quanto estimar errado a área.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="rule-thin">
+
+    <h3 class="sub" style="margin-bottom:15pt;margin-top:15pt;">Por que os Arquétipos São Essenciais na Progressão</h3>
+    <div class="grid-3" style="gap:6pt;">
+      <div class="info-card" style="padding:6pt 8pt;border-left:2.5pt solid var(--gold);">
+        <h3 class="sub" style="margin-bottom:3pt;color:var(--gold);"><i data-lucide="hammer" class="icone-destaque"></i> Engenheiro</h3>
+        <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;">Com o reino crescendo e a diferença de área diminuindo, a passiva <em>Fortificações de Batalha</em> (+5% ao Defender) se torna decisiva nos cenários 3-5, quando a maioria dos inimigos já é comparável ou maior que o jogador. A ativa <em>Espólios de Cerco</em> recupera área real com base na sequência de vitórias - recompensa quem mantém o ritmo e planeja a expansão com cuidado.</p>
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;border-left:2.5pt solid var(--teal-mid);">
+        <h3 class="sub" style="margin-bottom:3pt;color:var(--teal-mid);"><i data-lucide="sword" class="icone-destaque"></i> Guerreiro</h3>
+        <p style="font-family:var(--body);font-size:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;">A passiva <em>Legião de Cativos</em> (+2% por vitória, até +10%) é poderosa nos cenários iniciais, mas perigosa nos finais: perder uma batalha zera tudo. A ativa <em>Aço Duplo</em> - que dobra o bônus de ataque por uma rodada - deve ser usada cirurgicamente em combates onde a estimativa é alta e confiante, nunca como aposta.</p>
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;border-left:2.5pt solid #2d5a8e;">
+        <h3 class="sub" style="margin-bottom:3pt;color:#2d5a8e;"><i data-lucide="eye" class="icone-destaque"></i> Estrategista</h3>
+        <p style="font-family:var(--body);font-size:7pt;color:var(--ink-mid);line-height:1.55;">Essencial nos cenários 3-5, quando o grid de referência ao redor do inimigo desaparece completamente. A passiva <em>Infiltração Noturna</em> (4 células reveladas) e a ativa <em>Cartografia Roubada</em> (grid visível por N segundos = número de vitórias em sequência) são as únicas ferramentas para confirmar a estimativa antes de uma decisão de alto risco.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">09</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 10 - NARRATIVA ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">9. Personagens</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">9</div><h2>Personagens</h2></div>
+    <h3 class="sub">História</h3>
+    <p class="body">No continente de Geometria, os reinos existem há séculos em equilíbrio frágil - cada um definido pela forma precisa de seu território e protegido pelas Leis da Forma. Mas o equilíbrio se rompe quando o Grande Império das Formas Irregulares começa a absorver os reinos vizinhos, violando os tratados geométricos que mantinham a paz.</p>
+    <p class="body" style="margin-bottom:7pt;">Você é o <strong>Arquiteto-Rei</strong>, herdeiro de um pequeno reino retangular nas Planícies de Aldrath. Seu reino é modesto, mas sua mente é afiada. Para sobreviver e contra-atacar, você precisa entender o que seus inimigos jamais compreenderam: a área de um território é sua maior arma.</p>
+    <h3 class="sub">Personagens</h3>
+    <div class="grid-2" style="gap:8pt;margin-bottom:6pt;">
+      <div>
+        <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--blue-dark);text-align:center;margin-bottom:3pt;">O Arquiteto-Rei (jogador)</div>
+        <p class="body" style="font-size:7pt;text-align:center;margin-bottom:4pt;">Jovem soberano herdeiro de um pequeno reino retangular. Inteligente, mas inexperiente. Seu arco é aprender - por necessidade e sobrevivência - a pensar geometricamente em cada decisão de guerra.</p>
+        <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent;">
+          <img src="assets/arquiteto-rei.png" style="width:100%; height:auto; display:block; border-radius:4pt;" alt="Arte - O Arquiteto-Rei">
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--blue-dark);text-align:center;margin-bottom:3pt;">A Cartógrafa (narradora e guia)</div>
+        <p class="body" style="font-size:7pt;text-align:center;margin-bottom:4pt;">Anciã sábia que guia o jogador pelas fases iniciais com dicas contextuais sobre o mapa. Sua voz é calma, quase acadêmica, mas nunca didática.</p>
+        <div class="img-placeholder" style="height:auto; padding:0; overflow:hidden; border:none; background:transparent;">
+          <img src="assets/cartografa.png" style="width:100%; height:auto; display:block; border-radius:4pt;" alt="Arte - A Cartógrafa">
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:var(--serif);font-size:8.5pt;font-weight:600;color:var(--blue-dark);margin-bottom:2pt;">Os Reinos Rivais (antagonistas)</div>
+      <p class="body" style="font-size:7.5pt;">Cada reino tem nome e personalidade geométrica. O <em>Reino de Aldrasq</em> é perfeitamente quadrado e orgulhoso de sua simetria. O <em>Ducado de Kermith</em> é um retângulo irregular expansionista. O <em>Império das Formas</em> é o vilão final - territórios caóticos que desafiam qualquer cálculo simples.</p>
+    </div>
+    <div class="accent-bar" style="margin-top:6pt;">
+      <p style="font-family:var(--body);font-size:7.5pt;font-style:italic;color:var(--ink-mid);">Conflito central: expandir o reino através de cálculo preciso enquanto o Império das Formas cresce caoticamente. A única arma do Arquiteto-Rei é a inteligência geométrica.</p>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">10</span>
+  </div>
+</div>
+
+<!-- ===== PÁGINA 11 - MUNDO / AMBIENTE ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">10. Mundo e Level Design</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">10</div><h2>Mundo e Level Design</h2></div>
+    <div>
+      <p class="body"><strong>Geometria</strong> é o continente onde o jogo se passa - um mundo medieval-fantástico cujas fronteiras foram seladas por antigas "Leis da Forma". A força de um reino não vem do exército, mas da extensão de seu território. O continente é dividido em <strong>5 grandes regiões</strong>, cada uma com atmosfera, arquitetura e formas geométricas próprias.</p>
+      <h3 class="sub" style="margin-top:6pt;">Os 5 Cenários do Continente de Geometria</h3>
+      <div class="world-row">
+        <div class="world-badge wb-1">I<br>F.1-4</div>
+        <div class="world-text"><strong>Planícies de Aldrath</strong> - Campos abertos, castelos de pedra simples com torres quadradas. Formas retangulares dominam. Grid de referência totalmente visível ao redor dos inimigos. Atmosfera de amanhecer medieval quente e acolhedora. A Cartógrafa está presente em todas as fases.</div>
+      </div>
+      <div class="world-row">
+        <div class="world-badge wb-2">II<br>F.5-8</div>
+        <div class="world-text"><strong>Vales de Kheldorn</strong> - Vales profundos, pontes de pedra, fortalezas sobre penhascos. Formas com quinas irregulares. Grid de referência reduzido (apenas 1 célula ao redor). Tom mais sombrio, névoa matinal nas montanhas. A Cartógrafa começa a se ausentar nas fases 7 e 8.</div>
+      </div>
+      <div class="world-row">
+        <div class="world-badge wb-3">III<br>F.9-12</div>
+        <div class="world-text"><strong>Serra das Pedras Vivas</strong> - Floresta densa com castelos entre as árvores. Formas em L e compostas imitam a irregularidade das colinas. Sem grid de referência ao redor do inimigo. A Cartógrafa desaparece completamente na fase 10. Tom verde-escuro e opressivo.</div>
+      </div>
+      <div class="world-row">
+        <div class="world-badge wb-4">IV<br>F.13-16</div>
+        <div class="world-text"><strong>Arquipélago do Oblívio</strong> - Ilhas conectadas por pontes de cristal. Formas com bordas diagonais. Sem referência de grid. Pressão de tempo: 45 segundos por rodada. Azuis profundos e roxos - atmosfera onírica e misteriosa.</div>
+      </div>
+      <div class="world-row" style="border:none;">
+        <div class="world-badge wb-5">V<br>F.17-20</div>
+        <div class="world-text"><strong>Abismo Irregular - O Teste Final</strong> - Ruínas de uma civilização geométrica. Polígonos aleatórios de até 12 lados, sem padrão. Pressão de tempo: 30 segundos. Tom monocromático chumbo e dourado. Fase 20: Morte Súbita - errar a primeira decisão encerra a fase imediatamente.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20pt;margin-top:20pt;">
+      <div style="text-align: center; margin-bottom: 15pt; margin-top: 10pt;">
+        <img src="assets/mapa.png"
+          style="width:100%; height:auto; display:block; border-radius:4pt; box-shadow: 0 4px 12px rgba(0,0,0,0.4);"
+          alt="HUD do jogo - Mapa com grid e territórios">
+        <p style="font-family:var(--sans); font-size:7.5pt; color:var(--ink-mid); margin-top:5pt; font-style:italic;">Geometria
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;">
+        <h3 class="sub" style="margin-bottom:3pt;">Arquitetura dos Castelos</h3>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Cada reino rival tem um castelo com silhueta que reflete sua personalidade geométrica: o Reino do Quadrado tem quatro torres idênticas; o Reino das Formas Compostas tem anexos irregulares e assimétricos. O jogador aprende a "ler" o inimigo pela arquitetura antes mesmo de ver o território.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">11</span>
+  </div>
+</div>
+
+
+
+<!-- ===== PÁGINA 12 - NARRATIVA ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">11. Narrativa</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">11</div><h2>Narrativa</h2></div>
+    <h3 class="sub">Contexto — O Continente de Geometria</h3>
+    <p class="body">No continente de <strong>Geometria</strong>, a força de um reino não é medida por exércitos, mas pela extensão e precisão de seu território. Durante séculos, as <em>Leis da Forma</em> mantiveram um equilíbrio frágil entre os reinos: cada nação era definida pela geometria exata de suas fronteiras, e toda disputa era resolvida pela comparação de áreas — não pelo derramamento de sangue.</p>
+
+    <h3 class="sub" style="margin-top:6pt;">História Principal</h3>
+    <p class="body">O equilíbrio se rompe quando o <strong>Grande Império das Formas Irregulares</strong> começa a absorver reinos vizinhos, violando os tratados geométricos que garantiam a paz. Seus territórios são intencionalmente deformados — polígonos caóticos sem padrão — tornando impossível para os reinos menores calcularem sua força antes de um confronto.</p>
+    <p class="body" style="margin-bottom:6pt;">Você é o <strong>Arquiteto-Rei</strong>, herdeiro de um pequeno reino retangular nas Planícies de Aldrath. Guiado pela <strong>Cartógrafa</strong>, você parte em campanha pelos cinco cenários do continente, enfrentando dez reinos rivais por fase. Cada vitória expande seu território; cada derrota encolhe as fronteiras que você jurou proteger.</p>
+
+    <h3 class="sub">Conflito Principal</h3>
+    <div class="accent-bar" style="margin-bottom:6pt;">
+      <p style="font-family:var(--body);font-size:7.5pt;font-style:italic;color:var(--ink-mid);">Expandir o reino através de cálculo preciso enquanto o Império das Formas cresce caoticamente com territórios projetados para confundir. A única arma do Arquiteto-Rei é a inteligência geométrica.</p>
+    </div>
+
+    <h3 class="sub">Linha do Tempo da Campanha</h3>
+    <svg viewBox="0 0 520 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;margin-bottom:6pt;">
+      <defs>
+        <marker id="arrN" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 z" fill="var(--gold)"/>
+        </marker>
+      </defs>
+      <!-- Timeline line -->
+      <line x1="20" y1="45" x2="500" y2="45" stroke="var(--gold)" stroke-width="1.5" marker-end="url(#arrN)"/>
+      <!-- Points -->
+      <circle cx="50"  cy="45" r="6" fill="var(--blue-dark)"/>
+      <circle cx="145" cy="45" r="6" fill="var(--blue-dark)"/>
+      <circle cx="240" cy="45" r="6" fill="var(--blue-dark)"/>
+      <circle cx="335" cy="45" r="6" fill="var(--blue-dark)"/>
+      <circle cx="430" cy="45" r="6" fill="var(--red-deep)"/>
+      <!-- Labels above -->
+      <text x="50"  y="32" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="var(--blue-dark)">Cenário I</text>
+      <text x="50"  y="22" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Planícies de Aldrath</text>
+      <text x="145" y="32" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="var(--blue-dark)">Cenário II</text>
+      <text x="145" y="22" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Vales de Kheldorn</text>
+      <text x="240" y="32" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="var(--blue-dark)">Cenário III</text>
+      <text x="240" y="22" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Serra das Pedras Vivas</text>
+      <text x="335" y="32" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="var(--blue-dark)">Cenário IV</text>
+      <text x="335" y="22" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Arquipélago do Oblívio</text>
+      <text x="430" y="32" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="var(--red-deep)">Cenário V</text>
+      <text x="430" y="22" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--red-deep)">Abismo Irregular</text>
+      <!-- Labels below -->
+      <text x="50"  y="60" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Fases 1–4</text>
+      <text x="50"  y="70" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Retângulos simples</text>
+      <text x="145" y="60" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Fases 5–8</text>
+      <text x="145" y="70" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Retângulos irregulares</text>
+      <text x="240" y="60" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Fases 9–12</text>
+      <text x="240" y="70" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Formas compostas</text>
+      <text x="335" y="60" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Fases 13–16</text>
+      <text x="335" y="70" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--ink-light)">Polígonos multi-lados</text>
+      <text x="430" y="60" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--red-deep)">Fases 17–20</text>
+      <text x="430" y="70" text-anchor="middle" font-family="Source Sans 3" font-size="5.5" fill="var(--red-deep)">Formas irregulares</text>
+    </svg>
+
+    <h3 class="sub">Personagens e seus Papéis na Narrativa</h3>
+    <div class="grid-3" style="gap:6pt;margin-top:4pt;">
+      <div class="info-card" style="padding:6pt 8pt;">
+        <div style="font-family:var(--serif);font-size:8pt;font-weight:600;color:var(--blue-dark);margin-bottom:3pt;">O Arquiteto-Rei</div>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Protagonista e avatar do jogador. Jovem soberano que aprende geometria como necessidade de sobrevivência. Seu arco narrativo vai da inexperiência ao domínio geométrico pleno.</p>
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;">
+        <div style="font-family:var(--serif);font-size:8pt;font-weight:600;color:var(--blue-dark);margin-bottom:3pt;">A Cartógrafa</div>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Mentora e narradora. Guia os Cenários I e II com dicas contextuais; silencia progressivamente até desaparecer no Cenário III, simbolizando a autonomia conquistada pelo jogador.</p>
+      </div>
+      <div class="info-card" style="padding:6pt 8pt;border-left:2.5pt solid var(--red-mid);">
+        <div style="font-family:var(--serif);font-size:8pt;font-weight:600;color:var(--red-deep);margin-bottom:3pt;">O Império das Formas</div>
+        <p style="font-family:var(--body);font-size:7pt;line-height:1.55;color:var(--ink-mid);">Antagonista final. Reinos com territórios caóticos e irregulares que desafiam qualquer cálculo simples — encarnação do caos geométrico que o Arquiteto-Rei deve superar.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">12</span>
+  </div>
+</div>
+
+
+
+
+
+<!-- ===== PÁGINA 13 - INTERFACE (UI) - WIREFRAMES ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">12. Interface (UI) - Wireframes</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">12</div><h2>Interface (UI) - Wireframes</h2></div>
+    <p class="body" style="margin-bottom:7pt;">Os wireframes abaixo definem a estrutura funcional das três telas centrais do jogo, sem ainda aplicar a arte final - servem como referência direta para implementação de layout e hierarquia de informação.</p>
+    <div class="grid-2" style="gap:9pt;margin-bottom:9pt;">
+      <div>
+        <h3 class="sub" style="margin-bottom:4pt;">Tela de Jogo - HUD Principal</h3>
+        <div style="border:1pt dashed var(--ink-light);border-radius:4pt;padding:5pt;background:var(--white);">
+          <div style="display:flex;justify-content:space-between;gap:3pt;margin-bottom:4pt;">
+            <div style="flex:1;border:1pt dashed var(--ink-light);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--ink-light);">Área: 20 u²</div>
+            <div style="flex:1;border:1pt dashed var(--ink-light);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--ink-light);">Domínio: 14%</div>
+            <div style="flex:1;border:1pt dashed var(--ink-light);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--ink-light);">Rodada 3/10</div>
+          </div>
+          <div style="border:1pt dashed var(--ink-light);border-radius:3pt;height:64pt;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);margin-bottom:4pt;">[ MAPA - Território Jogador + Reino Inimigo da Rodada ]</div>
+          <div style="display:flex;gap:3pt;margin-bottom:4pt;">
+            <div style="flex:1;border:1pt dashed var(--red-mid);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--red-deep);">ATACAR</div>
+            <div style="flex:1;border:1pt dashed var(--blue-mid);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--blue-dark);">DEFENDER</div>
+            <div style="flex:1;border:1pt dashed var(--teal-mid);border-radius:3pt;padding:3pt;text-align:center;font-family:var(--sans);font-size:6pt;color:var(--teal-dark);">RECUAR</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:3pt;">
+            <div style="flex:1;border:1pt dashed var(--ink-light);border-radius:3pt;padding:2pt;text-align:center;font-family:var(--sans);font-size:5.5pt;color:var(--ink-light);">Habilidade Ativa</div>
+            <div style="flex:1;border:1pt dashed var(--ink-light);border-radius:3pt;padding:2pt;text-align:center;font-family:var(--sans);font-size:5.5pt;color:var(--ink-light);">Recursos: 3</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="sub" style="margin-bottom:4pt;">Menu Principal</h3>
+        <div style="border:1pt dashed var(--ink-light);border-radius:4pt;padding:5pt;background:var(--white);height:100%;display:flex;flex-direction:column;justify-content:center;gap:5pt;">
+          <div style="text-align:center;font-family:var(--serif);font-size:9pt;color:var(--blue-dark);margin-bottom:6pt;">[ Logo - Reinos da Área ]</div>
+          <div style="border:1pt dashed var(--gold);border-radius:3pt;padding:4pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">Jogar Campanha</div>
+          <div style="border:1pt dashed var(--ink-light);border-radius:3pt;padding:4pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">Selecionar Arquétipo</div>
+          <div style="border:1pt dashed var(--ink-light);border-radius:3pt;padding:4pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">Mapa de Cenários</div>
+          <div style="border:1pt dashed var(--ink-light);border-radius:3pt;padding:4pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">Opções</div>
+        </div>
+      </div>
+    </div>
+    <h3 class="sub" style="margin-bottom:4pt;">Tela de Fim de Fase</h3>
+    <div style="border:1pt dashed var(--ink-light);border-radius:4pt;padding:7pt;background:var(--white);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:7pt;">
+        <div style="flex:1;">
+          <div style="font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);margin-bottom:3pt;">[ Estrelas Ouro/Prata/Bronze ]</div>
+          <div style="font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);margin-bottom:3pt;">Índice de Precisão: 92%</div>
+          <div style="font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">XP Ganho: +480 | Recursos: +1</div>
+        </div>
+        <div style="display:flex;gap:5pt;">
+          <div style="border:1pt dashed var(--gold);border-radius:3pt;padding:5pt 8pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--ink-light);">Repetir Fase</div>
+          <div style="border:1pt dashed var(--blue-mid);border-radius:3pt;padding:5pt 8pt;text-align:center;font-family:var(--sans);font-size:6.5pt;color:var(--blue-dark);">Próxima Fase</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-family:var(--body);font-size:6.5pt;color:var(--ink-light);margin-top:5pt;">Nota: a versão final aplica a Direção de Arte descrita na Seção 9 - bordas douradas, textura de pergaminho e tipografia Cinzel/Libre Baskerville sobre esta mesma estrutura de wireframe.</p>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">13</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 14 - DIREÇÃO DE ARTE ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">13. Direção de Arte</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">13</div><h2>Direção de Arte</h2></div>
+    <div class="grid-2" style="gap:10pt;margin-bottom:8pt;">
+      <div>
+        <h3 class="sub">Estilo Visual</h3>
+        <p class="body">A estética de <strong>Reinos da Área</strong> nasce da intersecção entre cartografia medieval iluminada do século XIII - com bordas douradas, pergaminhos texturizados e caligrafia serifada - e o design limpo e legível de estratégias modernas como <em>Into the Breach</em> e <em>Slay the Spire</em>. O resultado parece antigo, mas funciona como contemporâneo.</p>
+        <p class="body">O <strong>mapa é o protagonista visual.</strong> Territórios são polígonos com textura de pergaminho iluminado. Fronteiras são traços dourados feitos à mão. A transição entre territórios conquistados e não-conquistados acontece com animação de "tinta se espalhando" pelo pergaminho - evocando um mapa sendo reescrito em tempo real.</p>
+        <h3 class="sub" style="margin-top:7pt;">Castelos e Arquitetura Medieval</h3>
+        <p class="body">Cada reino possui um ícone de castelo estilizado em pixel art medieval de alta fidelidade. O castelo do jogador começa como um humilde <em>keep</em> normando de pedra cinza e evolui visivelmente conforme o reino cresce: torres surgem, muralhas se expandem, bandeiras com o brasão aparecem nas ameias. É uma representação visual direta da progressão de poder.</p>
+        <p class="body">Os castelos rivais refletem a personalidade geométrica de cada reino: o reino quadrado tem quatro torres idênticas nos cantos; o reino irregular tem adições arquitetônicas assimétricas que parecem ter sido construídas sem planejamento - ensinando ao jogador, visualmente, o que esperar daquele território.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8pt;">
+        <h3 class="sub" style="margin-top:7pt;">Tipografia</h3>
+        <div class="art-ref" style="margin-bottom:4pt;">
+          <div class="ref-label">Display / Títulos</div>
+          <div style="font-family:'Cinzel',serif;font-size:12pt;color:var(--blue-dark);">Cinzel - Reinos da Área</div>
+        </div>
+        <div class="art-ref" style="margin-bottom:4pt;">
+          <div class="ref-label">Corpo / Textos narrativos</div>
+          <div style="font-family:'Libre Baskerville',serif;font-size:9pt;color:var(--ink-mid);">Libre Baskerville - lore e
+            descrições.</div>
+        </div>
+        <div class="art-ref" style="margin-bottom:20pt;">
+          <div class="ref-label">Interface / HUD</div>
+          <div style="font-family:'Source Sans 3',sans-serif;font-size:9pt;color:var(--ink-mid);">Source Sans 3 - números e
+            dados de gameplay.</div>
+        </div>
+        <div class="info-card" style="padding:5pt 8pt;">
+          <h3 class="sub" style="margin-bottom:3pt;">Princípios de Animação</h3>
+          <p style="font-family:var(--body);font-size:6.5pt;line-height:1.55;color:var(--ink-mid);">
+            <strong>Conquista:</strong> tinta azul se espalha suavemente pelo novo território. 0.6s ease-out.<br>
+            <strong>Derrota:</strong> borda vermelha pulsante + número de área perdida em destaque por 2s.<br>
+            <strong>Revelação:</strong> grid aparece sobre o inimigo com animação de "desenho à mão". 0.4s.<br>
+            <strong>Castelo:</strong> animação de construção ao atingir novo nível de área do reino.
+          </p>
+        </div>
+        <div class="info-card" style="padding:5pt 8pt;">
+          <h3 class="sub" style="margin-bottom:3pt;">Referências</h3>
+          <p style="font-family:var(--body);font-size:6.5pt;line-height:1.55;color:var(--ink-mid);">Civilization VI - Risk - Territorial.io - War - Clash of Clans</p>
+        </div>
+      </div>
+    </div>
+    <img src="assets/evolucao-castelo.png" style="width:100%; height:auto; display:block; border-radius:4pt; margin-top:10pt" alt="Evolução do Castelo">
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">14</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 15 - LISTA DE ANIMAÇÕES ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">14. Animações</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">14</div><h2>Animações</h2></div>
+    <p class="body" style="margin-bottom:7pt;">Como <strong>Reinos da Área</strong> não possui personagens com locomoção livre (o jogador não controla um avatar em movimento), a lista de animações cobre territórios, castelo, UI e os retratos dos personagens narrativos - os elementos que de fato se movem na tela.</p>
+    <table class="combat-table">
+      <tr><th>Animação</th><th>Personagem/Objeto</th><th>Descrição</th><th>Duração</th><th>Prioridade</th></tr>
+      <tr><td>Idle Retrato</td><td>Cartógrafa</td><td>Leve respiração e piscar de olhos no retrato lateral durante diálogos</td><td>Loop 2.5s</td><td>Baixa</td></tr>
+      <tr><td>Idle Castelo</td><td>Castelo do Jogador</td><td>Bandeira ondulando suavemente, fumaça leve saindo das torres</td><td>Loop 3s</td><td>Baixa</td></tr>
+      <tr><td>Seleção de Território</td><td>Reino Inimigo</td><td>Borda dourada pulsante ao ser selecionado para a rodada</td><td>Loop 0.8s</td><td>Alta</td></tr>
+      <tr><td>Conquista</td><td>Território</td><td>Tinta azul se espalha suavemente sobre o novo território conquistado</td><td>0.6s</td><td>Alta</td></tr>
+      <tr><td>Derrota</td><td>Território do Jogador</td><td>Borda vermelha pulsante + número de área perdida em destaque</td><td>2s</td><td>Alta</td></tr>
+      <tr><td>Recuo</td><td>Reino Inimigo</td><td>Leve recuo visual da forma inimiga, sem alteração de território</td><td>0.4s</td><td>Média</td></tr>
+      <tr><td>Revelação de Grid</td><td>Território Inimigo</td><td>Grid surge com efeito de "desenho à mão" sobre a forma inimiga</td><td>0.4s + 3s exibição</td><td>Alta</td></tr>
+      <tr><td>Evolução do Castelo</td><td>Castelo do Jogador</td><td>Construção de novas torres/muralhas ao atingir novo nível de área</td><td>1.2s</td><td>Média</td></tr>
+      <tr><td>Uso de Habilidade Ativa</td><td>Ícone de Arquétipo</td><td>Brilho dourado expande do ícone até o território afetado</td><td>0.7s</td><td>Média</td></tr>
+      <tr><td>Transição de Fase</td><td>Mapa / Tela</td><td>Pergaminho "vira página" entre o fim de uma fase e o início da próxima</td><td>0.9s</td><td>Média</td></tr>
+      <tr><td>Conquista de Estrela</td><td>UI - Tela de Fim de Fase</td><td>Estrelas (bronze/prata/ouro) preenchem com brilho sequencial</td><td>1.5s</td><td>Baixa</td></tr>
+      <tr><td>Hover/Press de Botão</td><td>UI - Botões de Ação</td><td>Leve elevação e brilho dourado ao passar o cursor/tocar</td><td>0.15s</td><td>Baixa</td></tr>
+    </table>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">15</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 16 - ÁUDIO ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">15. Áudio</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">15</div><h2>Áudio - Som e Música</h2></div>
+    <p class="body" style="margin-bottom:8pt;">O design de áudio segue a mesma filosofia do visual: medieval por estética, moderno por função. Cada elemento sonoro serve a um propósito de gameplay - não é ornamental. O jogador deve conseguir entender o estado do jogo mesmo com os olhos fechados.</p>
+    <div class="grid-3" style="gap:7pt;margin-bottom:8pt;">
+      <div class="audio-block">
+        <div class="audio-title"><i data-lucide="music" style="color: #c49040; width: 10pt; height: 10pt; margin-right: 4pt; vertical-align: text-bottom;"></i> Trilha Sonora</div>
+        <div class="audio-desc">Orquestra de câmara medieval. Alaúde e violas de gamba durante a exploração - suave e pensativa. Percussão crescente de tambores militares durante a análise do inimigo. Fanfarra de trompas em vitórias. Melodia cromática descendente em derrotas. Cada cenário tem tema próprio: pastoral para Planícies, solene para Serras, misterioso para o Arquipélago, silencioso e tenso para o Abismo.</div>
+      </div>
+      <div class="audio-block">
+        <div class="audio-title"><i data-lucide="volume-2" style="color: #c49040; width: 10pt; height: 10pt; margin-right: 4pt; vertical-align: text-bottom;"></i> Efeitos Sonoros</div>
+        <div class="audio-desc">Som de pergaminho sendo desenrolado ao revelar o grid inimigo. Choque de espadas ao resolver combate. Régua de madeira deslizando ao estimar área. Sino grave quando a estimativa erra muito - sem texto de punição. Fanfarra ao subir o Índice de Precisão das Estimativas. Construção de pedra ao evoluir o castelo. Marchada militar ao encerrar fase com estrela.</div>
+      </div>
+      <div class="audio-block">
+        <div class="audio-title"><i data-lucide="wind" style="color: #c49040; width: 10pt; height: 10pt; margin-right: 4pt; vertical-align: text-bottom;"></i> Ambientação Sonora</div>
+        <div class="audio-desc">Planícies: vento suave, pássaros, cavalos ao longe. Vales: eco de montanha, cachoeira, vento mais forte. Serra: folhagem densa, grilos, galhos quebrando. Arquipélago: ondas do mar, gaivotas, vento salgado. Abismo: silêncio quase total, apenas vento e gotas d'água - tensão máxima antes da decisão final.</div>
+      </div>
+    </div>
+    <hr class="rule-gold">
+    <div class="grid-2" style="gap:9pt;margin-top:7pt;">
+      <div>
+        <h3 class="sub">Narrativa Sonora da Cartógrafa</h3>
+        <p class="body" style="font-size:7.5pt;">A voz da Cartógrafa é o elemento sonoro mais importante. Ela deve soar como uma avó sábia falando ao ouvido do jogador - nunca como uma professora dando aula. Suas falas contextualizam sem explicar diretamente:</p>
+        <div class="accent-bar"><p style="font-family:var(--body);font-size:7pt;font-style:italic;color:var(--ink-mid);">"Este reino parece largo mas não tão alto… decida com cuidado, Arquiteto."</p></div>
+        <div class="accent-bar" style="margin-top:4pt;"><p style="font-family:var(--body);font-size:7pt;font-style:italic;color:var(--ink-mid);">"Você era maior do que pensava. Da próxima vez, observe mais de perto antes de recuar."</p></div>
+        <p class="body" style="font-size:7.5pt;margin-top:5pt;">A Cartógrafa desaparece progressivamente no Cenário 3. O silêncio é proposital - o jogador nota a ausência e, paradoxalmente, se sente mais confiante por isso.</p>
+      </div>
+      <div>
+        <h3 class="sub">Feedback Sonoro das Estimativas</h3>
+        <p class="body" style="font-size:7.5pt;">O sistema opera em três camadas que se ativam ao final de cada rodada, durante a revelação do grid inimigo:</p>
+        <div class="world-row"><div class="world-badge wb-1" style="font-size:6pt;">Preciso</div><div class="world-text">Erro &lt;10%: sino cristalino, curto e agradável. Reforço positivo sem celebração exagerada.</div></div>
+        <div class="world-row"><div class="world-badge wb-2" style="font-size:6pt;">Razoável</div><div class="world-text">Erro 10-25%: nenhum som especial. Silêncio neutro - o jogador aprende visualmente.</div></div>
+        <div class="world-row" style="border:none;"><div class="world-badge wb-3" style="font-size:6pt;">Impreciso</div><div class="world-text">Erro &gt;25%: sino mais grave e longo. Não é punitivo - é um lembrete suave para calibrar melhor.</div></div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 15pt;">
+      <img src="assets/fundos/castelo.webp" style="width: 50%; border-radius: 4pt; margin-right: 50px;">
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">16</span>
+  </div>
+</div>
+
+
+
+<!-- ===== PÁGINA 17 - INTELIGÊNCIA ARTIFICIAL ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">16. Inteligência Artificial</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">16</div><h2>Inteligência Artificial</h2></div>
+    <p class="body" style="margin-bottom:7pt;"><strong>Reinos da Área</strong> não possui inimigos com movimento ou ataque ativo - o desafio nasce inteiramente da estimativa visual, não da reação a uma IA agressiva. Ainda assim, dois agentes do jogo operam por máquinas de estado finito (FSM): os <strong>Reinos Inimigos</strong> e a <strong>Cartógrafa</strong> (sistema de dica contextual).</p>
+    <div class="grid-2" style="gap:10pt;">
+      <div>
+        <h3 class="sub" style="margin-bottom:4pt;">FSM - Reino Inimigo</h3>
+        <p class="body" style="font-size:7pt;margin-bottom:5pt;">Cada reino inimigo alterna entre 4 estados visuais conforme o resultado das rodadas, comunicando seu status sem nenhum texto.</p>
+        <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+          <defs><marker id="arrF" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink-light)"/></marker></defs>
+          <circle cx="140" cy="40" r="34" fill="#f5ecd4" stroke="var(--gold)"/>
+          <text x="140" y="38" text-anchor="middle" font-family="Source Sans 3" font-size="8" fill="#3a2f22">Estável</text>
+          <text x="140" y="48" text-anchor="middle" font-family="Source Sans 3" font-size="6" fill="#6b5744">(não enfrentado)</text>
+          <circle cx="40" cy="150" r="34" fill="#ddeef8" stroke="var(--blue-mid)"/>
+          <text x="40" y="148" text-anchor="middle" font-family="Source Sans 3" font-size="8" fill="#0f2540">Em Alerta</text>
+          <text x="40" y="158" text-anchor="middle" font-family="Source Sans 3" font-size="6" fill="#6b5744">(jogador venceu rodada anterior)</text>
+          <circle cx="240" cy="150" r="34" fill="#f2d4d4" stroke="var(--red-mid)"/>
+          <text x="240" y="148" text-anchor="middle" font-family="Source Sans 3" font-size="8" fill="#5c1515">Vulnerável</text>
+          <text x="240" y="158" text-anchor="middle" font-family="Source Sans 3" font-size="6" fill="#6b5744">(área &lt; jogador)</text>
+          <circle cx="140" cy="248" r="34" fill="#d4ece0" stroke="var(--teal-mid)"/>
+          <text x="140" y="246" text-anchor="middle" font-family="Source Sans 3" font-size="8" fill="#0e3828">Conquistado</text>
+          <text x="140" y="256" text-anchor="middle" font-family="Source Sans 3" font-size="6" fill="#6b5744">(estado final)</text>
+          <line x1="115" y1="62" x2="58" y2="124" stroke="var(--ink-light)" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="165" y1="62" x2="222" y2="124" stroke="var(--ink-light)" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="55" y1="180" x2="120" y2="232" stroke="var(--ink-light)" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="225" y1="180" x2="160" y2="232" stroke="var(--ink-light)" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="60" y1="170" x2="220" y2="170" stroke="var(--ink-light)" stroke-width="1" stroke-dasharray="2,2"/>
+        </svg>
+        <p style="font-family:var(--body);font-size:6.5pt;color:var(--ink-light);margin-top:3pt;">Transições são puramente cosméticas (cor da borda do território) - nenhuma alteram a lógica de cálculo de área, que permanece sempre determinística.</p>
+      </div>
+      <div>
+        <h3 class="sub" style="margin-bottom:4pt;">FSM - Sistema de Dica da Cartógrafa</h3>
+        <p class="body" style="font-size:7pt;margin-bottom:5pt;">A Cartógrafa não reage ao jogador em tempo real - sua presença é determinada pelo Cenário/Fase atual, reforçando a curva de aprendizado sem nunca dar a resposta.</p>
+        <div class="world-row"><div class="world-badge wb-1" style="font-size:6pt;">Presente -<br>Ativa</div><div class="world-text">Cenários 1-2 (Fases 1-6). Comenta forma do inimigo antes de cada rodada e reage ao resultado.</div></div>
+        <div class="world-row"><div class="world-badge wb-2" style="font-size:6pt;">Presente -<br>Silenciosa</div><div class="world-text">Fases 7-9. Aparece visualmente no canto da tela, mas só comenta em derrotas - reduzindo a dependência do jogador.</div></div>
+        <div class="world-row" style="border:none;"><div class="world-badge wb-3" style="font-size:6pt;">Ausente</div><div class="world-text">Fase 10 em diante. Nenhuma dica contextual - o jogador depende exclusivamente da própria leitura visual do território.</div></div>
+        <div class="accent-bar" style="margin-top:6pt;"><p style="font-family:var(--body);font-size:7pt;font-style:italic;color:var(--ink-mid);">A transição de estado da Cartógrafa é fixa por fase (não condicional ao desempenho) - garantindo que todo jogador enfrente o mesmo nível de autonomia na mesma etapa da curva de aprendizado.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">17</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 18 - GAMEPLAY EXAMPLE ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">17. Gameplay Example</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">17</div><h2>Gameplay Example</h2></div>
+    <p class="body" style="margin-bottom:7pt;">Esta é a <strong>Fase 15 no Cenário 4 - Arquipélago do Oblívio</strong>.O grid de referência já não está visível ao redor do inimigo. O jogador inicia com <strong>Área = 2.348 u²</strong> e <strong>Domínio = 62%</strong> na 4ª rodada.</p>
+    <div>
+      <div class="gp-step">
+        <div class="gp-num">1</div>
+        <div class="gp-body">
+          <div class="gp-title">Observação - O Jogador Vê o Mapa</div>
+          <div class="gp-text">O HUD mostra: <em>"Sua área: 2.348 u² - Domínio: 62% - Rodada 4/10."</em> O território do jogador exibe o grid azul completo. O Reino Inimigo aparece inteiro no mapa, pintado de vermelho, mas sem o grid sobre ele. A Cartógrafa comenta: <em>"Este reino parece amplo. Observe bem sua forma antes de agir."</em></div>
+        </div>
+      </div>
+      <div class="gp-step">
+        <div class="gp-num">2</div>
+        <div class="gp-body">
+          <div class="gp-title">Estimativa - Contagem Visual do Inimigo</div>
+          <div class="gp-text">O jogador observa o Reino Inimigo. É um polígono vermelho muito irregular, típico de fases avançadas. O jogador deve realizar a estimativa da área do Reino Inimigo rapidamente, e então fazer o cálculo com a porcentagem de modificador de terreno ou da habilidade do arquétipo usado.</div>
+        </div>
+      </div>
+      <div class="gp-step">
+        <div class="gp-num">3</div>
+        <div class="gp-body">
+          <div class="gp-title">Decisão Tática - Comparação e Escolha</div>
+          <div class="gp-text">O jogador compara e acredita ser maior. A ação correta é <strong>ATACAR.</strong> Pressiona o botão com confiança.</div>
+        </div>
+      </div>
+      <div class="gp-step">
+        <div class="gp-num">4</div>
+        <div class="gp-body">
+          <div class="gp-title">Resolução - Resultado do Combate</div>
+          <div class="gp-text">O sistema compara: Área do Jogador vs Área do Reino Inimigo. A animação de tinta azul se espalha sobre o vermelho. O Domínio sobe de 62% para 72%. HUD: <em>"Vitória! Domínio +10%."</em> e mostra as áreas de ambos e a diferença das áreas em porcentagem.</div>
+        </div>
+      </div>
+      <div class="gp-step">
+        <div class="gp-num">5</div>
+        <div class="gp-body">
+          <div class="gp-title">Revelação - O Grid Aparece Sobre o Inimigo</div>
+          <div class="gp-text">Ao final, o grid surge sobre o território vermelho conquistado. O jogador confirma seu cálculo e aprende onde errou. O <strong>Índice de Precisão das Estimativas</strong> sobe para 78%. A Cartógrafa comenta: <em>"Muito bem. Você viu o que precisava ver."</em> A próxima rodada começa.</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7pt;">
+      <div style="text-align: center; margin-bottom: 10pt; margin-top: 10pt;">
+        <img src="assets/hud.png"
+          style="width:100%; height:auto; display:block; border-radius:4pt; box-shadow: 0 4px 12px rgba(0,0,0,0.4);"
+          alt="HUD do jogo - Mapa com grid e territórios">
+        <p style="font-family:var(--sans); font-size:7.5pt; color:var(--ink-mid); margin-top:5pt; font-style:italic;">Imagem ilustrativa, mas que reflete uma ideia da tela de combate no futuro.</p>
+      </div>
+      <div class="info-card" style="padding:5pt 8pt;">
+        <h3 class="sub" style="margin-bottom:3pt;">O Aprendizado Oculto</h3>
+        <p style="font-family:var(--body);font-size:6.5pt;line-height:1.55;color:var(--ink-mid);">Nesta rodada, o jogador descobriu por conta própria que <strong>largura × altura = área</strong> de um retângulo. Não houve instrução. Houve necessidade estratégica - e a estimativa correta resultou em vitória imediata. Este é o núcleo pedagógico do jogo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">18</span>
+  </div>
+</div>
+
+
+<!-- ===== PÁGINA 19 - TEMA SÉRIO + EQUIPE ===== -->
+<div class="page">
+  <div class="page-header">
+    <span class="header-title">Reinos da Área - Game Design Document</span>
+    <span class="header-right">18. Tema e Aspecto Sério</span>
+  </div>
+  <div class="content">
+    <div class="section-label"><div class="num">18</div><h2>Tema e Aspecto Sério</h2></div>
+    <div class="grid-2" style="gap:9pt;margin-bottom:9pt;">
+      <div>
+        <h3 class="sub">Tema Abordado</h3>
+        <p class="body"><strong>Geometria plana aplicada à estimativa de área</strong> - o jogo aborda o raciocínio espacial e a estimativa visual de área de figuras planas sem nenhuma instrução explícita. A progressão parte de formas simples e regulares (retângulos - Cenário 1: Planícies de Aldrath) e avança gradualmente para configurações cada vez mais complexas: irregularidades de borda (Cenário 2: Vales de Kheldorn), formas compostas em L e T (Cenário 3: Serra das Pedras Vivas), polígonos com bordas diagonais (Cenário 4: Arquipélago do Oblívio) e polígonos sem padrão definido (Cenário 5: Abismo Irregular).</p>
+        <h3 class="sub" style="margin-top:6pt;">Como Aparece no Jogo</h3>
+        <p class="body" style="font-size:7.5pt;">A geometria nunca é nomeada como tal. Ela existe como <strong>mecânica de sobrevivência territorial</strong>: calcular área equivale a ter poder militar; errar a estimativa significa perder território. O jogador estima, age, erra e aprende pela revelação visual pós-combate - e na próxima situação análoga, sua estimativa é mais precisa. O ciclo de aprendizagem é completo, intrínseco e invisível.</p>
+        <h3 class="sub" style="margin-top:6pt;">Aprendizado por Indução</h3>
+        <p class="body" style="font-size:7.5pt;">O design evita instrução direta. O jogador não recebe fórmulas: ele descobre por conta própria que a área de um retângulo é <em>largura × altura</em> porque precisa dessa lógica para vencer. Em formas compostas, aprende decomposição porque é a única estratégia funcional dentro do tempo disponível. Nos cenários finais, os modificadores de terreno forçam o jogador a calcular não apenas a área bruta, mas a área <em>ponderada pelo contexto estratégico</em> - um raciocínio proporcional emergente.</p>
+      </div>
+      <div>
+        <div class="info-card-blue" style="padding:9pt 11pt;margin-bottom:7pt;">
+          <h3 class="sub" style="color:var(--gold-light);margin-bottom:6pt;font-size:11px;"><i data-lucide="scale" class="icone-destaque" style="color:var(--gold-light);"></i> Integração: Aprendizado <i data-lucide="arrow-left-right" class="icone-destaque" style="color:var(--gold-light);"></i> Gameplay</h3>
+          <div style="font-family:var(--body);font-size:7.5pt;line-height:1.75;color:rgba(255,255,255,.82);">
+            <p style="margin-bottom:4pt;"><i data-lucide="check" class="icone-destaque-branco"></i> Raciocínio geométrico emerge por necessidade estratégica</p>
+            <p style="margin-bottom:4pt;"><i data-lucide="check" class="icone-destaque-branco"></i> Erros têm consequência emocional e visual imediata</p>
+            <p style="margin-bottom:4pt;"><i data-lucide="check" class="icone-destaque-branco"></i> Índice de Precisão das Estimativas quantifica a evolução</p>
+            <p style="margin-bottom:4pt;"><i data-lucide="check" class="icone-destaque-branco"></i> Revelação pós-combate fecha o ciclo de aprendizagem</p>
+            <p style="margin-bottom:4pt;"><i data-lucide="check" class="icone-destaque-branco"></i> Modificadores de terreno introduzem raciocínio proporcional</p>
+            <p style="margin-bottom:4pt;"><i data-lucide="x" class="icone-destaque-branco"></i> Nenhuma tela de exercício matemático explícito</p>
+            <p style="margin-bottom:0;"><i data-lucide="x" class="icone-destaque-branco"></i> Nenhuma linguagem de "resposta errada" ou "tente de novo"</p>
+          </div>
+        </div>
+        <div class="accent-bar" style="border-color:var(--teal-mid);margin-bottom:7pt;">
+          <p style="font-family:var(--body);font-size:7.5pt;color:var(--ink-mid);"><strong>Princípio central:</strong> o jogo nunca pode funcionar como uma prova disfarçada. Todo raciocínio matemático deve emergir da experiência estratégica. O jogador desenvolve competências geométricas sem jamais ter a percepção de que está em processo de aprendizagem formal.</p>
+        </div>
+        <div class="info-card" style="padding:7pt 9pt;">
+          <h3 class="sub" style="margin-bottom:4pt;">Relação com a Literatura de Jogos Sérios</h3>
+          <p style="font-family:var(--body);font-size:7pt;line-height:1.6;color:var(--ink-mid);">O design segue os princípios de <em>aprendizagem baseada em jogos</em> (Gee, 2003): contexto significativo, consequência das ações e ciclos de feedback imediato. A progressão de dificuldade - de formas regulares a polígonos irregulares sob pressão de tempo - respeita a teoria da carga cognitiva (Sweller, 1988), introduzindo complexidade somente quando a habilidade anterior está consolidada pelo jogo.</p>
+        </div>
+      </div>
+    </div>
+    <div style="background-image: url('assets/fundos/trilha.png'); background-size: cover; background-position: center; border-radius: 6pt; padding: 55pt; display: flex; justify-content: center; gap: 130pt; align-items: center; margin-top: 35pt;">
+      <img src="assets/fundos/bussola.png" style="width: 60px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
+      <img src="assets/fundos/coroa.png" style="width: 60px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); margin-top: 35pt;">
+      <img src="assets/fundos/castelo-icone.png" style="width: 60px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); margin-bottom: 35pt;">
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="footer-text">Reinos da Área - Game Design Document</span>
+    <span class="page-num">19</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

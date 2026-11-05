@@ -42,6 +42,7 @@ func _battle(n: int, arch: String, tutorial: bool, wait: float, name: String, re
 	await get_tree().process_frame
 
 func _run() -> void:
+	await _show(TitleScreen.new(), 3.5, "00_title")
 	await _show(MainMenu.new(), 0.5, "01_menu")
 	GameState.archetype = ""
 	await _show(ArchetypeSelect.new(), 0.5, "02_archetype")
@@ -54,3 +55,36 @@ func _run() -> void:
 	await _battle(9, "ESTRATEGISTA", false, 2.5, "07_battle9_serra")
 	await _battle(13, "GUERREIRO", false, 2.5, "08_battle13_arq")
 	await _battle(17, "ENGENHEIRO", false, 2.5, "09_battle17_abismo")
+	# painéis extras
+	GameState.archetype = "GUERREIRO"
+	GameState.tutorial_done = true
+	var b := BattleScreen.new()
+	b.setup(5)
+	add_child(b)
+	await get_tree().create_timer(1.0).timeout
+	b.end_panel.show_summary({"won": true, "reason": "ROUNDS", "phase": 5, "dominance": 80.0, "wins": 7, "losses": 1, "retreats": 2, "ip": 88.0, "stars": 3, "xp": 1250, "score": 950}, true, true)
+	await get_tree().create_timer(2.6).timeout
+	await _shot("10_endpanel_win")
+	b.end_panel.show_summary({"won": false, "reason": "ROUNDS", "phase": 5, "dominance": 40.0, "wins": 3, "losses": 5, "retreats": 2, "ip": 41.0, "stars": 0, "xp": 300, "score": 300}, false, false)
+	await get_tree().create_timer(1.6).timeout
+	await _shot("11_endpanel_lose")
+	b.end_panel.visible = false
+	b._open_pause()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("12_pause")
+	b.queue_free()
+	await get_tree().process_frame
+	var m := MainMenu.new()
+	add_child(m)
+	await get_tree().create_timer(0.4).timeout
+	m._open_options()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("13_options")
+	m.queue_free()
+	await get_tree().process_frame
+	var cm := CampaignMap.new()
+	cm.auto_brief = 5
+	add_child(cm)
+	await get_tree().create_timer(0.8).timeout
+	await _shot("14_briefing")
+	cm.queue_free()

@@ -5,18 +5,30 @@
 
 extends Node2D
 class_name TerritoryRenderer
-@export var textura_fundo : Texture2D
+## Parâmetros do pergaminho por cenário: base, mancha, tinta, motivo, intensidade, cor da grade
+const SCENARIO_LOOK := [
+	{"base": Color(0.80, 0.72, 0.52), "stain": Color(0.55, 0.42, 0.22), "ink": Color(0.25, 0.17, 0.08), "motif": 0, "str": 0.0, "grid": Color(0.28, 0.18, 0.08, 0.40)},
+	{"base": Color(0.77, 0.67, 0.46), "stain": Color(0.50, 0.38, 0.20), "ink": Color(0.30, 0.20, 0.08), "motif": 1, "str": 0.16, "grid": Color(0.28, 0.18, 0.08, 0.40)},
+	{"base": Color(0.67, 0.63, 0.56), "stain": Color(0.36, 0.33, 0.28), "ink": Color(0.18, 0.16, 0.14), "motif": 2, "str": 0.14, "grid": Color(0.15, 0.13, 0.11, 0.42)},
+	{"base": Color(0.56, 0.67, 0.72), "stain": Color(0.25, 0.38, 0.50), "ink": Color(0.10, 0.20, 0.30), "motif": 3, "str": 0.16, "grid": Color(0.07, 0.15, 0.25, 0.42)},
+	{"base": Color(0.32, 0.27, 0.40), "stain": Color(0.12, 0.08, 0.18), "ink": Color(0.85, 0.65, 0.95), "motif": 4, "str": 0.20, "grid": Color(0.88, 0.78, 1.00, 0.34)},
+]
+var grid_line_color : Color = COLOR_GRID_LINE
+var _bg : ColorRect
+var _bg_mat : ShaderMaterial
 
 # ─────────────────────────────────────────────
 #  PALETA MEDIEVAL
 # ─────────────────────────────────────────────
 const COLOR_GRID_BG       := Color("#bba375")
-const COLOR_GRID_LINE     := Color(1, 1, 1, 0.45)
-const COLOR_PLAYER_FILL   := Color(0.16, 0.38, 0.72, 0.72)
-const COLOR_PLAYER_BORDER := Color(0.45, 0.72, 1.00, 0.90)
+const COLOR_GRID_LINE     := Color(0.28, 0.18, 0.08, 0.40)
+const COLOR_PLAYER_FILL   := Color(0.12, 0.30, 0.66, 0.74)
+const COLOR_PLAYER_BORDER := Color(0.55, 0.76, 1.00, 0.85)
+const COLOR_PLAYER_INK    := Color(0.05, 0.10, 0.28, 0.95)
+const COLOR_ENEMY_INK     := Color(0.28, 0.04, 0.04, 0.95)
 const COLOR_PLAYER_INNER  := Color(0.20, 0.50, 0.85, 0.18)
-const COLOR_ENEMY_FILL    := Color(0.44, 0.08, 0.08, 0.90)
-const COLOR_ENEMY_BORDER  := Color(0.70, 0.18, 0.18, 0.00)
+const COLOR_ENEMY_FILL    := Color(0.60, 0.10, 0.10, 0.84)
+const COLOR_ENEMY_BORDER  := Color(0.95, 0.55, 0.45, 0.70)
 const COLOR_GOLD          := Color(0.96, 0.78, 0.30, 1.0)
 const COLOR_DIVIDER       := Color(0.76, 0.58, 0.18, 0.82)
 
@@ -60,6 +72,18 @@ var vs_icon          : Sprite2D
 
 func _ready() -> void:
 	set_process(true)
+	_bg = ColorRect.new()
+	_bg.show_behind_parent = true
+	_bg.size = Vector2(cell_size * grid_cols, cell_size * grid_rows)
+	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bg_mat = ShaderMaterial.new()
+	_bg_mat.shader = load("res://shaders/parchment.gdshader")
+	_bg_mat.set_shader_parameter("rect_size", _bg.size)
+	_bg_mat.set_shader_parameter("burn", 0.3)
+	_bg_mat.set_shader_parameter("vignette", 0.32)
+	_bg.material = _bg_mat
+	add_child(_bg)
+	set_scenario(0)
 	vs_icon = Sprite2D.new()
 	if ResourceLoader.exists("res://assets/icons/vs.png"):
 		vs_icon.texture = load("res://assets/icons/vs.png")
@@ -106,6 +130,17 @@ func _process(delta: float) -> void:
 # ─────────────────────────────────────────────
 #  API
 # ─────────────────────────────────────────────
+## Aparência do pergaminho por cenário (0..4).
+func set_scenario(index: int) -> void:
+	var look: Dictionary = SCENARIO_LOOK[clampi(index, 0, SCENARIO_LOOK.size() - 1)]
+	_bg_mat.set_shader_parameter("base_color", look["base"])
+	_bg_mat.set_shader_parameter("stain_color", look["stain"])
+	_bg_mat.set_shader_parameter("ink_color", look["ink"])
+	_bg_mat.set_shader_parameter("motif", look["motif"])
+	_bg_mat.set_shader_parameter("motif_strength", look["str"])
+	grid_line_color = look["grid"]
+	queue_redraw()
+
 func set_territories(p_cells: Dictionary, e_cells: Dictionary) -> void:
 	player_cells   = p_cells
 	enemy_cells    = e_cells
@@ -162,8 +197,8 @@ func play_result_flash(type: String) -> void:
 	var total_w := cell_size * grid_cols
 	var total_h := cell_size * grid_rows
 	if type == "WIN":
-		_flash_color = Color(0.25, 0.95, 0.35, 1.0)
-		for i in 40:
+		_flash_color = Color(1.0, 0.85, 0.40, 1.0)
+		for i in (8 if GameState.reduce_motion else 40):
 			_particles.append({
 				"pos": Vector2(randf_range(0, total_w), randf_range(0, total_h)),
 				"size": randf_range(10.0, 30.0),
@@ -173,7 +208,7 @@ func play_result_flash(type: String) -> void:
 			})
 	elif type == "LOSE":
 		_flash_color = Color(0.95, 0.15, 0.15, 1.0)
-		for i in 40:
+		for i in (8 if GameState.reduce_motion else 40):
 			_particles.append({
 				"pos": Vector2(randf_range(0, total_w), randf_range(0, total_h)),
 				"size": randf_range(12.0, 32.0),
@@ -183,7 +218,7 @@ func play_result_flash(type: String) -> void:
 			})
 	elif type == "DRAW":
 		_flash_color = Color(0.85, 0.85, 0.85, 1.0)
-		for i in 35:
+		for i in (6 if GameState.reduce_motion else 35):
 			_particles.append({
 				"pos": Vector2(randf_range(-total_w * 0.8, total_w * 0.1), randf_range(0, total_h)),
 				"length": randf_range(80.0, 300.0),
@@ -317,41 +352,12 @@ func _has_full_side(t: int, side: int) -> bool:
 func _draw() -> void:
 	var total_w := cell_size * grid_cols
 	var total_h := cell_size * grid_rows
-	var map_rect := Rect2(0, 0, total_w, total_h)
-
-	# 1. Fundo do mapa
-	if textura_fundo:
-		var tex_size := textura_fundo.get_size()
-		var map_ratio := float(total_w) / float(total_h)
-		var tex_ratio := tex_size.x / tex_size.y
-		var src_w := tex_size.x
-		var src_h := tex_size.y
-		var src_x := 0.0
-		var src_y := 0.0
-		if tex_ratio > map_ratio:
-			src_w = tex_size.y * map_ratio
-			src_x = (tex_size.x - src_w) / 2.0
-		else:
-			src_h = tex_size.x / map_ratio
-			src_y = (tex_size.y - src_h) / 2.0
-		draw_texture_rect_region(textura_fundo, map_rect, Rect2(src_x, src_y, src_w, src_h))
-	else:
-		draw_rect(map_rect, COLOR_GRID_BG)
-
 	var mid_x := (grid_cols / 2) * cell_size
 
 	_draw_territory(player_cells, COLOR_PLAYER_FILL, COLOR_PLAYER_BORDER, true)
 	_draw_territory(enemy_cells, COLOR_ENEMY_FILL, COLOR_ENEMY_BORDER, false)
 	_draw_ink()
 	_draw_grid()
-
-	# brilho interno do território do jogador
-	for key in player_cells.keys():
-		var cell: Vector2i = key
-		var c := COLOR_PLAYER_INNER
-		c.a *= _anim_progress
-		if int(player_cells[cell]) == 0:
-			draw_rect(Rect2(cell.x * cell_size + 1, cell.y * cell_size + 1, cell_size - 2, cell_size - 2), c)
 
 	# bordas de destaque (seleção do inimigo e derrota)
 	if pulse_enemy:
@@ -361,13 +367,16 @@ func _draw() -> void:
 		var a2 := (0.5 + 0.5 * sin(_defeat_time * TAU * 2.0)) * clampf(_defeat_time, 0.0, 1.0)
 		_draw_border(player_cells, Color(0.95, 0.15, 0.15, a2), 6.0, true)
 
-	draw_line(Vector2(mid_x, 0), Vector2(mid_x, total_h), COLOR_DIVIDER, DIVIDER_WIDTH)
-	draw_line(Vector2(mid_x + 1, 0), Vector2(mid_x + 1, total_h), Color(1.0, 0.90, 0.55, 0.18), 1.0)
+	var dash := 22.0
+	var y := 0.0
+	while y < total_h:
+		draw_line(Vector2(mid_x, y), Vector2(mid_x, minf(y + dash, total_h)), COLOR_DIVIDER, DIVIDER_WIDTH)
+		y += dash * 1.7
 
 	# overlay de brilho e partículas
 	if _flash_alpha > 0.0:
 		var fc := _flash_color
-		fc.a = _flash_alpha * (0.60 if _result_type != "DRAW" else 0.15)
+		fc.a = _flash_alpha * (0.26 if _result_type != "DRAW" else 0.12)
 		draw_rect(Rect2(0, 0, total_w, total_h), fc)
 		for p in _particles:
 			if _result_type == "WIN":
@@ -388,10 +397,13 @@ func _draw_territory(cells: Dictionary, fill_col: Color, border_col: Color, is_p
 		var c := fill_col
 		c.a *= alpha_mult
 		_fill_cell(cell, int(cells[cell]), c)
+	var ink := COLOR_PLAYER_INK if is_player else COLOR_ENEMY_INK
+	ink.a *= alpha_mult
+	_draw_border(cells, ink, BORDER_LINE_WIDTH + 1.5, is_player)
 	var bc := border_col
 	bc.a *= alpha_mult
 	if bc.a > 0.0:
-		_draw_border(cells, bc, BORDER_LINE_WIDTH, is_player)
+		_draw_border(cells, bc, 1.4, is_player)
 
 ## Contorno do território: lados completos sem vizinho coberto + diagonal dos meios-blocos.
 func _draw_border(cells: Dictionary, col: Color, width: float, is_player: bool) -> void:
@@ -459,16 +471,16 @@ func _draw_grid() -> void:
 			var x := cx * s
 			var y := cy * s
 			# topo e esquerda sempre; base e direita só na fronteira do grid visível
-			draw_line(Vector2(x, y + 0.5), Vector2(x + s, y + 0.5), COLOR_GRID_LINE, GRID_LINE_WIDTH)
-			draw_line(Vector2(x + 0.5, y), Vector2(x + 0.5, y + s), COLOR_GRID_LINE, GRID_LINE_WIDTH)
+			draw_line(Vector2(x, y + 0.5), Vector2(x + s, y + 0.5), grid_line_color, GRID_LINE_WIDTH)
+			draw_line(Vector2(x + 0.5, y), Vector2(x + 0.5, y + s), grid_line_color, GRID_LINE_WIDTH)
 			if not _grid_visible(Vector2i(cx + 1, cy)):
-				draw_line(Vector2(x + s - 0.5, y), Vector2(x + s - 0.5, y + s), COLOR_GRID_LINE, GRID_LINE_WIDTH)
+				draw_line(Vector2(x + s - 0.5, y), Vector2(x + s - 0.5, y + s), grid_line_color, GRID_LINE_WIDTH)
 			if not _grid_visible(Vector2i(cx, cy + 1)):
-				draw_line(Vector2(x, y + s - 0.5), Vector2(x + s, y + s - 0.5), COLOR_GRID_LINE, GRID_LINE_WIDTH)
+				draw_line(Vector2(x, y + s - 0.5), Vector2(x + s, y + s - 0.5), grid_line_color, GRID_LINE_WIDTH)
 
 func _draw_star_sparkle(pos: Vector2, size: float, rot: float, alpha: float, phase: float) -> void:
 	var pulse := (sin(phase) * 0.4 + 0.6) * alpha
-	var c := Color(1.0, 1.0, 1.0, pulse)
+	var c := Color(1.0, 0.92, 0.55, pulse)
 	var dir1 := Vector2(cos(rot), sin(rot)) * size
 	var dir2 := Vector2(cos(rot + PI / 2.0), sin(rot + PI / 2.0)) * size
 	draw_line(pos - dir1, pos + dir1, c, 2.5, true)

@@ -10,7 +10,7 @@
 |---|---|---|---|
 | Strategy Puzzle | PC · Web | 12–16 anos | 20 fases · 5 cenários |
 
-**Acadêmicos:** Enzo Camelo Vieira · Gabriel Luis de Santana · Bruno Faria Travessini
+**Acadêmicos:** Enzo Camelo Vieira
 
 > **Sobre esta versão (v5).** Atualiza o GDD v4 com as decisões tomadas na implementação da N2 (protótipo v0.2). As mudanças em relação à v4 estão marcadas com **[v5]**. As principais: arquétipos do Relatório PAC IV, terreno "Vale", progressão de formas, Índice de Precisão (IP) derivado das decisões, estrelas, Recursos Estratégicos, unidades de medida progressivas, menu/mapa de campanha/tutorial e a fórmula de combate.
 

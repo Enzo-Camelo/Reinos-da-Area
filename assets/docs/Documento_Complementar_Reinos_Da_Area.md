@@ -1,6 +1,6 @@
 # Apresentação do Protótipo: Reinos da Área
 
-**Acadêmicos:** Bruno Faria Travessini, Enzo Camelo Vieira e Gabriel Luís de Santana
+**Acadêmicos:** Enzo Camelo Vieira
 
 > **Versão atualizada para o protótipo v0.2 (N2).** A comparação com o GDD abaixo registra o que foi fiel, o que divergiu e por quê. O GDD correspondente é a **v5**.
 
@@ -98,6 +98,16 @@ O áudio é uma ferramenta de **feedback tátil e tensão**, não ornamento.
 > Os sons novos (`sino_preciso.wav`, `sino_impreciso.wav`, `pagina.wav`) foram **sintetizados por código** como substitutos de desenvolvimento; podem ser trocados por gravações finais mantendo os mesmos nomes de chave em `AudioManager.gd`.
 
 ---
+
+### 3.1 Refatoração visual do front-end (v0.2.1)
+
+- **Tema global medieval:** `MedievalTheme` define fontes, botões, painéis, tooltips e sliders; `OrnateStyleBox` desenha por código painéis de couro com borda dourada dupla, chanfros e rebites.
+- **Pergaminho procedural (`shaders/parchment.gdshader`):** ruído, manchas, borda queimada e vinheta; o campo de batalha ganha um motivo por cenário (colinas, rochas, ondas, rachaduras). Substitui a grama em pixel art.
+- **Tela de título** com brasão, título dourado com brilho, brasas e "Pressione qualquer tecla"; menu com estandarte à esquerda e capa emoldurada à direita.
+- **HUD profissional:** barra de Domínio com meta, rodadas em escudos, medalhão de tempo, selos de tecla, moedas de RE e painel de resultado com chips de variação.
+- **Mapa de campanha** com selos de cera sobre a ilustração, trilha tracejada e briefing em pergaminho; **fim de fase** como "crônica da batalha" com medalhões e contagem animada.
+- **Boas práticas:** pausa com confirmação, navegação por teclado e foco visível, opção "Reduzir movimento", *tooltips* e *juice* (números flutuantes, tremor na derrota).
+- `assets/ui/bussola.png` **não é usado**: contém marca d'água de banco de imagens.
 
 ## 5. Animações via Código (Procedurais e Tweens)
 

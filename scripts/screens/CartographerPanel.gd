@@ -9,9 +9,17 @@ var _label : Label
 var _token := 0
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(900, 64)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	UiKit.apply_panel_style(self, Color(0.1, 0.075, 0.04, 0.92), UiKit.C_BORDER_GOLD, 2, 2, 2, 2, 8, 6)
+	custom_minimum_size = Vector2(760, 72)
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	tooltip_text = "Clique para dispensar"
+	var sb := OrnateStyleBox.new(Color(0.17, 0.13, 0.085, 0.96), Color(0.075, 0.055, 0.035, 0.96))
+	sb.studs = false
+	sb.set_content_margin_all(8.0)
+	add_theme_stylebox_override("panel", sb)
+	gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed:
+			_token += 1
+			visible = false)
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 14)
 	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -22,7 +30,7 @@ func _ready() -> void:
 		tr.texture = tex
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		tr.custom_minimum_size = Vector2(52, 52)
+		tr.custom_minimum_size = Vector2(56, 56)
 		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hb.add_child(tr)
 	_label = UiKit.make_label("", 17, UiKit.C_TEXT_WHITE, "Libre Baskerville")
@@ -72,9 +80,11 @@ func _say(text: String, seconds: float) -> void:
 	_token += 1
 	var my := _token
 	_label.text = text
+	_label.visible_ratio = 0.0
 	visible = true
 	var tw := create_tween()
 	tw.tween_property(self, "modulate:a", 1.0, 0.25)
+	tw.tween_property(_label, "visible_ratio", 1.0, clampf(text.length() * 0.018, 0.4, 2.0))
 	await get_tree().create_timer(seconds).timeout
 	if my != _token:
 		return

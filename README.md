@@ -23,9 +23,12 @@ ReinosDaArea/
 │   ├── autoload/GameState.gd     ← autoload: progresso salvo (user://reinos_save.cfg)
 │   ├── data/                     ← CampaignData (20 fases), ArchetypeData
 │   ├── systems/                  ← CombatResolver, AccuracyTracker, UnitFormatter
-│   ├── ui/                       ← UiKit (paleta e controles), ScreenTransition
-│   └── screens/                  ← MainMenu, ArchetypeSelect, CampaignMap, BattleScreen,
+│   ├── ui/                       ← UiKit, MedievalTheme (Theme global), OrnateStyleBox, ScreenTransition
+│   │   └── widgets/              ← DominanceBar, RoundTracker, TimerMedallion, ResourcePips, KeyBadge,
+│   │                                PhaseNode, StarMedal, FloatingText, OptionsPanel, PauseMenu
+│   └── screens/                  ← TitleScreen, MainMenu, ArchetypeSelect, CampaignMap, BattleScreen,
 │                                    PhaseEndPanel, CartographerPanel, TutorialOverlay
+├── shaders/                      ← parchment (pergaminho por cenário), vignette, gold_sheen
 ├── tests/                        ← run_tests.gd, integration_test.tscn, screenshot_test.tscn
 ├── assets/                       ← audios, cursor, fonts, icons, ui, docs
 └── build/Desktop/                ← build exportado (reexportar para a v0.2)
@@ -39,7 +42,7 @@ ReinosDaArea/
 
 ## Fluxo do jogo
 
-`Menu` → `Seleção de arquétipo` → `Mapa de campanha` → `Briefing` → `Batalha (10 rodadas)` → `Fim de fase` (estrelas, IP, XP).
+`Tela de título` → `Menu` → `Seleção de arquétipo` → `Mapa de campanha` → `Briefing` → `Batalha (10 rodadas)` → `Fim de fase` (estrelas, IP, XP).
 
 Na primeira vez na Fase 1, a Cartógrafa conduz um tutorial curto.
 
@@ -52,7 +55,16 @@ Na primeira vez na Fase 1, a Cartógrafa conduz um tutorial curto.
 | **R** | Recuar |
 | **E** | Ativar a habilidade do arquétipo |
 | **Enter / Espaço** | Próxima rodada (na tela de resultado) |
-| **Esc** | Voltar ao mapa |
+| **Esc** | Pausar (na batalha) · voltar (nos menus) |
+
+## Interface
+
+- **Tema medieval global** (`MedievalTheme` + `OrnateStyleBox`): painéis de couro com borda dourada dupla e rebites, tooltips e sliders no mesmo estilo.
+- **Campo de batalha em pergaminho** (shader), com aparência própria por cenário (planície, vale com curvas de nível, serra hachurada, arquipélago com ondas, abismo com rachaduras); reinos em aguada azul/vermelha com contorno de pena.
+- **HUD da batalha:** Domínio com bandeira na meta de 70%, histórico das 10 rodadas em escudos, relógio circular, selos de tecla (A/D/R/E/Enter), moedas de Recurso Estratégico e *tooltips* nas estatísticas.
+- **Pausa (Esc):** congela o relógio; abandonar a fase pede confirmação. **Opções:** música, efeitos, tela cheia e "Reduzir movimento".
+- **Navegação por teclado** nos menus e no mapa (setas + Enter).
+- **Tutorial** com holofote no elemento explicado.
 
 ## Mecânicas
 

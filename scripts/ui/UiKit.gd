@@ -123,6 +123,9 @@ static func make_section(min_width: int, expand: bool, margins: Vector4i) -> Mar
 		mc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return mc
 
+static func wire_button_sounds(btn: Button) -> void:
+	_wire_button_sounds(btn)
+
 static func _wire_button_sounds(btn: Button) -> void:
 	btn.mouse_entered.connect(func(): if not btn.disabled: AudioManager.play_sfx("ui_hover", 0.05))
 	btn.pressed.connect(func(): AudioManager.play_sfx("ui_click"))
@@ -189,14 +192,10 @@ static func make_action_button(titulo: String, subtitulo: String, bg_dark: Color
 		lbl_sub.name = "LblSub"
 		text_vbox.add_child(lbl_sub)
 
-	var sb_normal := box(bg_dark, C_BORDER_GOLD, 2, 6)
-	var sb_hover := box(bg_dark.lightened(0.14), C_TEXT_GOLD2, 2, 6)
-	var sb_pressed := box(bg_dark.darkened(0.12), C_BORDER_GOLD, 2, 6)
-	var sb_disabled := box(bg_dark.darkened(0.30), C_SEPARATOR, 2, 6)
-	btn.add_theme_stylebox_override("normal", sb_normal)
-	btn.add_theme_stylebox_override("hover", sb_hover)
-	btn.add_theme_stylebox_override("pressed", sb_pressed)
-	btn.add_theme_stylebox_override("disabled", sb_disabled)
+	btn.add_theme_stylebox_override("normal", OrnateStyleBox.button(bg_dark, "normal"))
+	btn.add_theme_stylebox_override("hover", OrnateStyleBox.button(bg_dark, "hover"))
+	btn.add_theme_stylebox_override("pressed", OrnateStyleBox.button(bg_dark, "pressed"))
+	btn.add_theme_stylebox_override("disabled", OrnateStyleBox.button(bg_dark, "disabled"))
 	_wire_button_sounds(btn)
 	return btn
 
@@ -205,21 +204,35 @@ static func make_menu_button(text: String, size: Vector2 = Vector2(360, 64), bg:
 	var btn := Button.new()
 	btn.text = text
 	btn.custom_minimum_size = size
-	btn.focus_mode = Control.FOCUS_NONE
+	btn.focus_mode = Control.FOCUS_ALL
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	btn.add_theme_font_size_override("font_size", font_size)
 	btn.add_theme_color_override("font_color", C_TEXT_GOLD)
 	btn.add_theme_color_override("font_hover_color", C_TEXT_GOLD2)
+	btn.add_theme_color_override("font_focus_color", C_TEXT_GOLD2)
 	btn.add_theme_color_override("font_disabled_color", C_TEXT_MUTED)
 	var f := get_font("Cinzel")
 	if f:
 		btn.add_theme_font_override("font", f)
-	btn.add_theme_stylebox_override("normal", box(bg, C_BORDER_GOLD, 2, 6))
-	btn.add_theme_stylebox_override("hover", box(bg.lightened(0.14), C_TEXT_GOLD2, 2, 6))
-	btn.add_theme_stylebox_override("pressed", box(bg.darkened(0.12), C_BORDER_GOLD, 2, 6))
-	btn.add_theme_stylebox_override("disabled", box(bg.darkened(0.3), C_SEPARATOR, 2, 6))
+	btn.add_theme_stylebox_override("normal", OrnateStyleBox.button(bg, "normal"))
+	btn.add_theme_stylebox_override("hover", OrnateStyleBox.button(bg, "hover"))
+	btn.add_theme_stylebox_override("pressed", OrnateStyleBox.button(bg, "pressed"))
+	btn.add_theme_stylebox_override("disabled", OrnateStyleBox.button(bg, "disabled"))
+	btn.add_theme_stylebox_override("focus", OrnateStyleBox.button(bg, "focus"))
 	_wire_button_sounds(btn)
 	return btn
+
+## Painel ornamentado (couro + ouro). kind: "panel" | "scroll" | "hud"
+static func ornate_panel(kind: String = "panel", alpha: float = 0.96) -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb: StyleBox = OrnateStyleBox.panel(alpha)
+	if kind == "scroll":
+		sb = OrnateStyleBox.scroll()
+	p.add_theme_stylebox_override("panel", sb)
+	return p
+
+static func make_ink_label(txt: String, size: int, font_hint: String = "Libre Baskerville") -> Label:
+	return make_label(txt, size, Color8(54, 36, 16), font_hint)
 
 ## Célula "TÍTULO / valor" para grades de estatísticas. Retorna o Label do valor.
 static func add_stat_cell(grid: GridContainer, label: String, value: String, color: Color, icon_path: String = "") -> Label:

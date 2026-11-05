@@ -16,6 +16,8 @@ var xp             : int    = 0
 var music_volume   : float  = 0.8
 var sfx_volume     : float  = 1.0
 var tutorial_done  : bool   = false
+var fullscreen     : bool   = true
+var reduce_motion  : bool   = false
 
 func _ready() -> void:
 	load_game()
@@ -61,6 +63,8 @@ func save_game() -> void:
 	cfg.set_value("player", "tutorial_done", tutorial_done)
 	cfg.set_value("audio", "music", music_volume)
 	cfg.set_value("audio", "sfx", sfx_volume)
+	cfg.set_value("display", "fullscreen", fullscreen)
+	cfg.set_value("display", "reduce_motion", reduce_motion)
 	cfg.save(SAVE_PATH)
 
 func load_game() -> void:
@@ -76,3 +80,5 @@ func load_game() -> void:
 	tutorial_done  = bool(cfg.get_value("player", "tutorial_done", false))
 	music_volume   = float(cfg.get_value("audio", "music", 0.8))
 	sfx_volume     = float(cfg.get_value("audio", "sfx", 1.0))
+	fullscreen     = bool(cfg.get_value("display", "fullscreen", true))
+	reduce_motion  = bool(cfg.get_value("display", "reduce_motion", false))

@@ -241,11 +241,9 @@ func finish_round() -> void:
 
 func _end_phase(reason: String) -> void:
 	ended = true
-	var won := reason == "ROUNDS" and dominance >= AccuracyTracker.BRONZE_MIN_DOM
+	var star_count := AccuracyTracker.stars(dominance) if reason == "ROUNDS" else 0
+	var won := star_count > 0
 	var ip := AccuracyTracker.phase_ip(ip_values)
-	var star_count := 0
-	if won:
-		star_count = AccuracyTracker.stars(dominance, ip)
 	var medal_xp: int = AccuracyTracker.STAR_XP[star_count]
 	var xp := player_score + medal_xp
 	phase_ended.emit({

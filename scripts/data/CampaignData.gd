@@ -4,6 +4,8 @@ class_name CampaignData
 extends RefCounted
 
 const TOTAL_PHASES := 20
+## Estrelas (somadas na campanha) exigidas a cada novo terreno: II = 8, III = 16, IV = 24, V = 32.
+const STARS_PER_SCENARIO := 8
 
 ## Modificadores sorteados por rodada no Abismo Irregular: [atacante, defensor, nome]
 const MIXED_TERRAINS := [
@@ -53,6 +55,9 @@ const SCENARIOS := [
 
 static func scenario_index(phase: int) -> int:
 	return clampi((phase - 1) / 4, 0, SCENARIOS.size() - 1)
+
+static func stars_required(phase: int) -> int:
+	return scenario_index(phase) * STARS_PER_SCENARIO
 
 ## Retorna a configuração completa de uma fase (1..20).
 static func get_phase(n: int) -> Dictionary:

@@ -117,16 +117,6 @@ func _make_card(id: String) -> Control:
 	vb.add_child(btn)
 	if _first_btn == null or is_current:
 		_first_btn = btn
-
-	# a carta sobe um pouco ao passar o mouse ou receber foco
-	card.pivot_offset = Vector2(260, 350)
-	var lift := func(on: bool):
-		var tw := card.create_tween()
-		tw.tween_property(card, "scale", Vector2.ONE * (1.025 if on else 1.0), 0.14).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	card.mouse_entered.connect(lift.bind(true))
-	card.mouse_exited.connect(lift.bind(false))
-	btn.focus_entered.connect(lift.bind(true))
-	btn.focus_exited.connect(lift.bind(false))
 	return card
 
 func _add_block(parent: Control, title: String, body: String) -> void:

@@ -102,7 +102,7 @@ func _build_banner() -> void:
 	vb.add_child(gap)
 
 	var has_progress := GameState.archetype != "" and GameState.unlocked_phase > 1
-	_continue_btn = UiKit.make_menu_button("CONTINUAR — FASE %d" % GameState.unlocked_phase, Vector2(440, 64), UiKit.C_GREEN_DIM)
+	_continue_btn = UiKit.make_menu_button("CONTINUAR — FASE %d" % GameState.unlocked_phase if GameState.star_gate_text() == "" else "CONTINUAR — JUNTE ESTRELAS", Vector2(440, 64), UiKit.C_GREEN_DIM)
 	_continue_btn.visible = has_progress
 	var b_play := UiKit.make_menu_button("JOGAR CAMPANHA", Vector2(440, 64))
 	var b_arch := UiKit.make_menu_button("CONSELHEIRO", Vector2(440, 64))

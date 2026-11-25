@@ -27,13 +27,47 @@ const CARTO_TEXT := {
 	"ABSENT": "Ausente",
 }
 
-## Posição de cada fase na imagem mapa.png (2576×1405, coordenadas da visualização).
-const NODE_POS := [
-	Vector2(235, 955), Vector2(430, 810), Vector2(330, 650), Vector2(540, 560),
-	Vector2(770, 905), Vector2(885, 730), Vector2(955, 560), Vector2(800, 410),
-	Vector2(1210, 830), Vector2(1350, 700), Vector2(1450, 540), Vector2(1330, 330),
-	Vector2(1760, 520), Vector2(1730, 840), Vector2(1900, 940), Vector2(1960, 640),
-	Vector2(2160, 640), Vector2(2200, 900), Vector2(2400, 650), Vector2(2360, 820),
+## Traçado da estrada desenhada em mapa.png (coordenadas numa imagem de 2576×1405).
+const ROAD := [
+	# Planícies
+	Vector2(185, 995), Vector2(245, 952), Vector2(315, 922), Vector2(380, 892), Vector2(445, 852),
+	Vector2(469, 822), Vector2(445, 795), Vector2(380, 760), Vector2(320, 725), Vector2(302, 697),
+	Vector2(325, 670), Vector2(390, 632), Vector2(445, 587), Vector2(495, 566), Vector2(550, 566),
+	Vector2(605, 582), Vector2(650, 575), Vector2(690, 567),
+	# passagem atrás das montanhas e Vales
+	Vector2(735, 508), Vector2(790, 477), Vector2(860, 486), Vector2(897, 522), Vector2(892, 565),
+	Vector2(875, 600), Vector2(900, 630), Vector2(935, 670), Vector2(932, 710), Vector2(895, 765),
+	Vector2(845, 825), Vector2(830, 860), Vector2(860, 895), Vector2(925, 915),
+	# Serra
+	Vector2(1000, 900), Vector2(1050, 872), Vector2(1085, 830), Vector2(1105, 770), Vector2(1140, 710),
+	Vector2(1195, 665), Vector2(1250, 630), Vector2(1300, 602), Vector2(1350, 592), Vector2(1400, 591),
+	Vector2(1475, 600), Vector2(1540, 627), Vector2(1595, 668),
+	# pedras do Arquipélago
+	Vector2(1651, 700), Vector2(1706, 725), Vector2(1749, 758), Vector2(1816, 788), Vector2(1856, 781),
+	Vector2(1906, 795), Vector2(1956, 785), Vector2(1996, 770), Vector2(2040, 759),
+]
+## Trecho da estrada de cada cenário: as 4 fases ficam igualmente espaçadas entre os dois pontos.
+const REGION_SPANS := [
+	[Vector2(315, 922), Vector2(640, 576)],
+	[Vector2(778, 480), Vector2(905, 910)],
+	[Vector2(1085, 830), Vector2(1460, 598)],
+	[Vector2(1630, 690), Vector2(1996, 770)],
+]
+## Abismo (fases 17–20): um selo logo abaixo de cada pedra voadora, sem tampá-la.
+const ROCK_NODES := [
+	Vector2(2120, 740),   # pedra da esquerda
+	Vector2(2260, 720),  # pedra abismo
+	Vector2(2430, 635),   # cristal da direita
+	Vector2(2334, 420),   # ilha do topo: o Império das Formas
+]
+## Ponto de curvatura de cada salto (fases 16→17, 17→18, 18→19 e 19→20).
+## A linha é puxada na direção do ponto, sem chegar a tocá-lo. null = linha reta.
+## Para a linha chegar por baixo de uma fase, o ponto precisa ter o mesmo x dela.
+const JUMP_CONTROLS := [
+	null,                 # 16→17: reta
+	Vector2(2190, 645),   # 17→18: arco suave por cima
+	Vector2(2400, 962),   # 18→19: curva por baixo
+	Vector2(2334, 545),   # 19→20: curva leve, entrando por baixo da 20
 ]
 const MAP_SRC := Vector2(2576, 1405)
 const HEADER_H := 66.0
@@ -46,6 +80,7 @@ var _brief_phase := 0
 var _map_rect : Rect2
 var _trail : Control
 var _nodes : Array[PhaseNode] = []
+var _node_pos : Array[Vector2] = []
 ## Se > 0, abre o briefing dessa fase ao entrar (botão Continuar do menu).
 var auto_brief := 0
 
@@ -69,6 +104,7 @@ func _ready() -> void:
 		t.size = _map_rect.size
 		add_child(t)
 
+	_node_pos = node_positions()
 	_trail = Control.new()
 	_trail.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_trail.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -78,7 +114,12 @@ func _ready() -> void:
 	_build_nodes()
 	add_child(_build_header())
 
-	var focus_phase := clampi(GameState.unlocked_phase, 1, CampaignData.TOTAL_PHASES)
+	var focus_phase := GameState.latest_playable_phase()
+	if GameState.star_gate_text() != "":
+		add_child(_build_gate_notice(GameState.star_gate_text()))
+	# "Continuar" não abre uma fase travada por falta de estrelas
+	if auto_brief > 0 and not GameState.is_unlocked(auto_brief):
+		auto_brief = 0
 	_nodes[focus_phase - 1].grab_focus.call_deferred()
 	if not GameState.has_seen("prologue"):
 		_tell_story("prologue", StoryData.prologue(), func():
@@ -86,6 +127,17 @@ func _ready() -> void:
 				_open_briefing(auto_brief))
 	elif auto_brief > 0:
 		_open_briefing.call_deferred(auto_brief)
+
+## Faixa no rodapé avisando por que o próximo terreno está fechado.
+func _build_gate_notice(text: String) -> Control:
+	var p := PanelContainer.new()
+	p.add_theme_stylebox_override("panel", UiKit.box(Color(0.12, 0.08, 0.04, 0.96), UiKit.C_BORDER_GOLD, 2, 6, 10))
+	p.position = Vector2(960 - 600, 1080 - 70)
+	p.custom_minimum_size = Vector2(1200, 0)
+	var l := UiKit.make_label("★ " + text, 20, UiKit.C_TEXT_GOLD2, "Libre Baskerville")
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	p.add_child(l)
+	return p
 
 ## Mostra uma cena da história, marca como vista e segue em frente.
 func _tell_story(key: String, pages: Array, then: Callable) -> void:
@@ -96,8 +148,71 @@ func _tell_story(key: String, pages: Array, then: Callable) -> void:
 		then.call_deferred())
 	add_child(s)
 
+## Distância percorrida na estrada até o ponto dela mais próximo de p.
+static func road_distance(p: Vector2) -> float:
+	var walked := 0.0
+	var best := 0.0
+	var best_gap := INF
+	for i in range(ROAD.size() - 1):
+		var a: Vector2 = ROAD[i]
+		var b: Vector2 = ROAD[i + 1]
+		var q := Geometry2D.get_closest_point_to_segment(p, a, b)
+		var gap := p.distance_to(q)
+		if gap < best_gap:
+			best_gap = gap
+			best = walked + a.distance_to(q)
+		walked += a.distance_to(b)
+	return best
+
+static func road_point(distance: float) -> Vector2:
+	var left := maxf(distance, 0.0)
+	for i in range(ROAD.size() - 1):
+		var a: Vector2 = ROAD[i]
+		var b: Vector2 = ROAD[i + 1]
+		var length := a.distance_to(b)
+		if left <= length:
+			return a.lerp(b, left / length)
+		left -= length
+	return ROAD[ROAD.size() - 1]
+
+## Posição de cada fase na imagem (fase 1 primeiro): estrada até a 16, pedras voadoras depois.
+static func node_positions() -> Array[Vector2]:
+	var out : Array[Vector2] = []
+	for span in REGION_SPANS:
+		var from := road_distance(span[0])
+		var to := road_distance(span[1])
+		for k in 4:
+			out.append(road_point(lerpf(from, to, k / 3.0)))
+	for p in ROCK_NODES:
+		out.append(p)
+	return out
+
+## Pontos do caminho entre a fase de índice i e a seguinte: pela estrada ou num salto em arco.
+static func path_between(i: int) -> PackedVector2Array:
+	var nodes := node_positions()
+	var a := nodes[i]
+	var b := nodes[i + 1]
+	var points := PackedVector2Array()
+	var first_jump := REGION_SPANS.size() * 4 - 1
+	if i < first_jump:
+		var from := road_distance(a)
+		var to := road_distance(b)
+		var steps := maxi(2, int((to - from) / 4.0))
+		for s in steps + 1:
+			points.append(road_point(lerpf(from, to, s / float(steps))))
+	else:
+		var control: Variant = JUMP_CONTROLS[i - first_jump]
+		var bend: Vector2 = (a + b) / 2.0 if control == null else control
+		for s in 49:
+			var t := s / 48.0
+			points.append(a.lerp(bend, t).lerp(bend.lerp(b, t), t))
+	return points
+
+func _to_screen(p: Vector2) -> Vector2:
+	return _map_rect.position + p * (_map_rect.size.x / MAP_SRC.x)
+
 func _screen_pos(i: int) -> Vector2:
-	return _map_rect.position + NODE_POS[i] * (_map_rect.size.x / MAP_SRC.x)
+	return _to_screen(_node_pos[i])
 
 func _build_nodes() -> void:
 	_nodes.clear()
@@ -111,33 +226,44 @@ func _build_nodes() -> void:
 		if n.unlocked:
 			n.tooltip_text = "Fase %d — %s\nTerreno: %s\nTempo: %ds por rodada\nMelhor: %s" % [
 				p, cfg["scenario_name"], CampaignData.terrain_text(cfg), int(cfg["time"]), UiKit.star_text(GameState.get_stars(p))]
+		elif GameState.missing_stars(p) > 0:
+			n.tooltip_text = "Fase %d — bloqueada.\nEste terreno exige %d estrelas (você tem %d)." % [
+				p, CampaignData.stars_required(p), GameState.total_stars()]
 		else:
 			n.tooltip_text = "Fase %d — bloqueada.\nConclua a fase anterior." % p
 		n.pressed.connect(func(): _open_briefing(p))
 		add_child(n)
 		_nodes.append(n)
 
-## Trilha tracejada entre os selos; trechos já percorridos em dourado.
+## Trilha tracejada (estrada e saltos); trechos já percorridos em dourado.
 func _draw_trail() -> void:
+	const DASH := 12.0
+	const SPACE := 10.0
 	for i in range(CampaignData.TOTAL_PHASES - 1):
-		var a := _screen_pos(i)
-		var b := _screen_pos(i + 1)
 		var done := GameState.is_unlocked(i + 2)
-		var col := Color(0.95, 0.78, 0.30, 0.95) if done else Color(0.18, 0.11, 0.05, 0.6)
-		var mid := (a + b) / 2.0 + Vector2(0, -22.0 if (i % 2 == 0) else 22.0)
-		var prev := a
-		var dash_on := true
-		var seg := 0.0
-		for s in range(1, 25):
-			var tt := s / 24.0
-			var q := a.lerp(mid, tt).lerp(mid.lerp(b, tt), tt)
-			seg += prev.distance_to(q)
-			if dash_on:
-				_trail.draw_line(prev, q, col, 4.0, true)
-			if seg > (14.0 if dash_on else 9.0):
-				dash_on = not dash_on
-				seg = 0.0
-			prev = q
+		var col := Color(1.0, 0.82, 0.28) if done else Color(0.93, 0.88, 0.74, 0.85)
+		var path := path_between(i)
+		var dash := PackedVector2Array([_to_screen(path[0])])
+		var drawing := true
+		var walked := 0.0
+		for j in range(1, path.size()):
+			var from := _to_screen(path[j - 1])
+			var to := _to_screen(path[j])
+			walked += from.distance_to(to)
+			if drawing:
+				dash.append(to)
+			if walked >= (DASH if drawing else SPACE):
+				if drawing:
+					_stroke(dash, col)
+				drawing = not drawing
+				dash = PackedVector2Array([to])
+				walked = 0.0
+		if drawing and dash.size() > 1:
+			_stroke(dash, col)
+
+func _stroke(points: PackedVector2Array, col: Color) -> void:
+	_trail.draw_polyline(points, Color(0.12, 0.07, 0.02, 0.85), 8.0, true)
+	_trail.draw_polyline(points, col, 4.0, true)
 
 func _build_header() -> Control:
 	var bar := PanelContainer.new()
@@ -167,6 +293,11 @@ func _build_header() -> Control:
 	var l1 := UiKit.make_label("Conselheiro: %s" % arch_txt, 18, UiKit.C_TEXT_WHITE, "Source Sans 3")
 	l1.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(l1)
+	var total := UiKit.make_label("★ %d" % GameState.total_stars(), 22, UiKit.C_TEXT_GOLD2, "Source Sans 3")
+	total.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	total.tooltip_text = "Estrelas somadas. Cada novo terreno exige mais %d." % CampaignData.STARS_PER_SCENARIO
+	total.mouse_filter = Control.MOUSE_FILTER_STOP
+	hb.add_child(total)
 	var pips := ResourcePips.new()
 	pips.custom_minimum_size = Vector2(170, 30)
 	pips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -235,7 +366,7 @@ func _open_briefing(p: int) -> void:
 		["Grade de referência", _ring_text(int(cfg["ref_ring"]))],
 		["Unidade de medida", UNIT_TEXT[cfg["unit_mode"]]],
 		["Cartógrafa", CARTO_TEXT[cfg["cartographer"]]],
-		["Objetivo", "Dominar 70% do mapa em 10 rodadas" + (" — MORTE SÚBITA: um erro encerra a fase" if cfg["sudden_death"] else "")],
+		["Objetivo", "Terminar as 10 rodadas com 60% de Domínio ou mais" + (" — MORTE SÚBITA: um erro encerra a fase" if cfg["sudden_death"] else "")],
 	]
 	for r in rows:
 		var hb := HBoxContainer.new()
@@ -251,8 +382,8 @@ func _open_briefing(p: int) -> void:
 		vb.add_child(hb)
 
 	vb.add_child(_rule())
-	var best := "Melhor: %s   Precisão: %d%%\nPrata: precisão %d%%+   •   Ouro: precisão %d%%+" % [UiKit.star_text(GameState.get_stars(p)),
-		int(GameState.get_best_ip(p)), int(AccuracyTracker.SILVER_MIN_IP), int(AccuracyTracker.GOLD_MIN_IP)]
+	var best := "Melhor: %s   Precisão: %d%%\nBronze 60%% (passa)   •   Prata 80%%   •   Ouro 100%% de Domínio" % [
+		UiKit.star_text(GameState.get_stars(p)), int(GameState.get_best_ip(p))]
 	var bl := UiKit.make_label(best, 19, Color8(120, 62, 10), "Source Sans 3")
 	bl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(bl)

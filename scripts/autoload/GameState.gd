@@ -25,7 +25,33 @@ func _ready() -> void:
 	load_game()
 
 func is_unlocked(phase: int) -> bool:
-	return DEBUG_UNLOCK_ALL or phase <= unlocked_phase
+	return DEBUG_UNLOCK_ALL or (phase <= unlocked_phase and missing_stars(phase) == 0)
+
+func total_stars() -> int:
+	var total := 0
+	for v in stars.values():
+		total += int(v)
+	return total
+
+## Quantas estrelas faltam para entrar no terreno dessa fase.
+func missing_stars(phase: int) -> int:
+	return maxi(0, CampaignData.stars_required(phase) - total_stars())
+
+## Fase mais avançada que pode ser jogada agora.
+func latest_playable_phase() -> int:
+	var p := clampi(unlocked_phase, 1, CampaignData.TOTAL_PHASES)
+	while p > 1 and not is_unlocked(p):
+		p -= 1
+	return p
+
+## Texto explicando a trava de estrelas que segura o avanço ("" quando não há trava).
+func star_gate_text() -> String:
+	var missing := missing_stars(unlocked_phase)
+	if missing == 0 or DEBUG_UNLOCK_ALL:
+		return ""
+	var cfg := CampaignData.get_phase(unlocked_phase)
+	return "Faltam %d estrela(s) para entrar em %s (%d de %d). Repita fases para melhorar medalhas." % [
+		missing, cfg["scenario_name"], total_stars(), CampaignData.stars_required(unlocked_phase)]
 
 func get_stars(phase: int) -> int:
 	return int(stars.get(phase, 0))

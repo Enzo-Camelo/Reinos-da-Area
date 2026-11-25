@@ -86,7 +86,7 @@ Os três perfis táticos substituem o modelo anterior de atributos padronizados,
 
 - **Estrategista**
   - *Olho de Águia* (passiva): projeta 2 células de grade adicionais ao redor do adversário como referencial visual.
-  - *Análise de Campo* (ativa, 1 Recurso Estratégico): exibe a área real do oponente por 5 segundos.
+  - *Análise de Campo* (ativa, 1 Recurso Estratégico): revela o quadriculado do oponente por 5 segundos, sem informar o valor da área.
   - *Objetivo:* solucionar a falta de alternativas de visualização e dar suporte analítico.
 - **Engenheiro**
   - *Consolidação* (passiva): reduz o prejuízo por derrota de 20% para 15%.
@@ -164,8 +164,8 @@ A interface exibe a unidade correspondente com uma indicação sutil da equival�
 |---|---|
 | **Índice de Precisão (IP)** | Derivado das decisões, sem entrada de estimativa (evita virar um exercício). Decisão certa = 100; recuo = 70 (margem < 5%) ou 40; erro = 50 / 25 / 0 conforme a margem real (< 5% / < 15% / ≥ 15%). IP da fase = média. |
 | **Som de precisão** | IP ≥ 90: sino cristalino; 40–89: silêncio; < 40: sino grave. |
-| **Fim de fase** | Sempre 10 rodadas. Vitória: Domínio ≥ 70% ao final. |
-| **Estrelas** | Bronze: 70% ao final. Prata: Bronze e IP ≥ 75%. Ouro: Bronze e IP ≥ 85%. Vale a mais alta. |
+| **Fim de fase** | Sempre 10 rodadas. Vitória: Domínio ≥ 60% ao final. |
+| **Estrelas** | Domínio final: Bronze 60%, Prata 80%, Ouro 100%. Novo terreno exige estrelas somadas (8, 16, 24, 32). |
 | **Derrota imediata** | Área abaixo de 4 u², ou qualquer erro na Fase 20 (morte súbita). |
 | **Cartógrafa** | Máquina de estados fixa por fase: ativa (1–6), silenciosa (7–9), ausente (10+). |
 | **Teclas** | A (atacar), D (defender), R (recuar), E (habilidade), Esc (voltar ao mapa). |

@@ -36,7 +36,7 @@ O protótipo v0.1 focou em validar o núcleo do *Game Design Document*: o **Core
 |---|---|
 | **Arquétipos:** o GDD v4 trazia Fortificações/Espólios, Legião de Cativos/Aço Duplo e Infiltração/Cartografia Roubada; o protótipo usa Consolidação/Muralha, Embalo/Golpe Decisivo e Olho de Águia/Análise de Campo. | O Relatório PAC IV (mais recente) redefiniu as habilidades com custo em Recursos Estratégicos; a equipe decidiu que ele prevalece. O GDD v5 foi atualizado. |
 | **Índice de Precisão sem estimativa digitada.** | Pedir um número ao jogador seria uma "tela de exercício", contra o Pilar 06. O IP é derivado da decisão e da margem real entre as áreas. |
-| **Fim de fase:** o GDD dizia "70% ao final das 10 rodadas" mas a estrela Prata pedia "≤ 60% das rodadas". | Passou a haver sempre 10 rodadas. Após teste com jogadores, Prata e Ouro passaram a depender só da precisão (75% e 85%): 70% até a 6ª rodada era inalcançável sem o Golpe Decisivo. |
+| **Fim de fase:** o GDD dizia "70% ao final das 10 rodadas" mas a estrela Prata pedia "≤ 60% das rodadas". | Passou a haver sempre 10 rodadas. Após teste com jogadores, as medalhas passaram a depender do Domínio final (Bronze 60%, Prata 80%, Ouro 100%) e cada novo terreno exige estrelas somadas (8, 16, 24, 32). A regra de 70% até a 6ª rodada era inalcançável sem o Golpe Decisivo. |
 | **Formas por cenário:** GDD (quinas irregulares → L/T → diagonais → polígonos de 12 lados) × Relatório (meios-blocos → trapézios → complexas → vazadas). | Valeu o Relatório; o GDD v5 foi atualizado. |
 | **Recuar:** o protótipo v0.1 descontava 5% da área, contrariando o GDD. | Corrigido: Recuar custa 3% de Domínio e preserva a área. |
 

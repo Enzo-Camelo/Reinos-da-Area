@@ -360,7 +360,7 @@ func _build_top_bar(parent: Control) -> void:
 	dom_row.add_child(UiKit.make_label("DOMÍNIO", 15, C_TEXT_GOLD, "Cinzel"))
 	bar_dominance = DominanceBar.new()
 	bar_dominance.custom_minimum_size = Vector2(440, 28)
-	bar_dominance.tooltip_text = "Domine 70% do mapa até a rodada 10 para vencer a fase."
+	bar_dominance.tooltip_text = "Domínio ao fim da rodada 10: 60% Bronze (passa de fase), 80% Prata, 100% Ouro."
 	dom_row.add_child(bar_dominance)
 	lbl_dominance_pct = UiKit.make_label("0%", 20, C_TEXT_GOLD2, "Cinzel")
 	lbl_dominance_pct.custom_minimum_size = Vector2(54, 0)
@@ -808,18 +808,33 @@ func _update_objective(hint: String) -> void:
 	var rounds_left: int = GameManager.TOTAL_ROUNDS - game_manager.current_round
 	if game_manager.current_phase != GameManager.Phase.RESULT:
 		rounds_left += 1
+	# próxima medalha ainda não alcançada
+	var dom := game_manager.dominance
+	var best_possible := rounds_left
+	if GameState.archetype == "GUERREIRO" and (not game_manager.skill_used_phase or game_manager.strike_active):
+		best_possible += 1
+	var have := ["", "Bronze", "Prata", "Ouro"][AccuracyTracker.stars(dom)] as String
 	var text := ""
-	if game_manager.dominance >= AccuracyTracker.BRONZE_MIN_DOM:
-		text = "Meta atingida! Segure 70%% até o fim (rodadas restantes: %d)" % rounds_left
+	if dom >= AccuracyTracker.GOLD_MIN_DOM:
+		text = "Ouro alcançado! Recuar tira Domínio."
 	else:
-		var wins_needed := int(ceil((AccuracyTracker.BRONZE_MIN_DOM - game_manager.dominance) / CombatResolver.WIN_DOMINANCE))
-		var best_possible := rounds_left
-		if GameState.archetype == "GUERREIRO" and (not game_manager.skill_used_phase or game_manager.strike_active):
-			best_possible += 1
-		if wins_needed > best_possible:
-			text = "Meta de 70% fora de alcance: treine até o fim ou recomece pela pausa (Esc)"
+		var target := AccuracyTracker.BRONZE_MIN_DOM
+		var target_name := "passar (Bronze)"
+		if dom >= AccuracyTracker.SILVER_MIN_DOM:
+			target = AccuracyTracker.GOLD_MIN_DOM
+			target_name = "o Ouro"
+		elif dom >= AccuracyTracker.BRONZE_MIN_DOM:
+			target = AccuracyTracker.SILVER_MIN_DOM
+			target_name = "a Prata"
+		var wins_needed := int(ceil((target - dom) / CombatResolver.WIN_DOMINANCE))
+		if wins_needed <= best_possible:
+			text = "Para %s: %d vitória(s) em %d rodada(s)" % [target_name, wins_needed, rounds_left]
+			if have != "":
+				text = "%s na mão!  %s" % [have, text]
+		elif have != "":
+			text = "%s na mão! Evite recuar para não perder Domínio." % have
 		else:
-			text = "Meta: faltam %d vitória(s) em %d rodada(s)" % [wins_needed, rounds_left]
+			text = "Bronze fora de alcance: treine até o fim ou recomece pela pausa (Esc)"
 	if hint != "":
 		text += "   •   " + hint
 	lbl_objective.text = text
@@ -840,7 +855,12 @@ func _on_phase_ended(summary: Dictionary) -> void:
 	var gained := GameState.record_phase(phase_n, won, int(summary["stars"]), float(summary["ip"]), int(summary["xp"]))
 	AudioManager.stop_music()
 	AudioManager.play_music("phase_win" if won else "phase_lose")
-	end_panel.show_summary(summary, phase_n < CampaignData.TOTAL_PHASES, gained)
+	var has_next := phase_n < CampaignData.TOTAL_PHASES
+	var gate := ""
+	if won and has_next and not GameState.is_unlocked(phase_n + 1):
+		has_next = false
+		gate = GameState.star_gate_text()
+	end_panel.show_summary(summary, has_next, gained, gate)
 
 # ─────────────────────────────────────────────
 #  HABILIDADES
@@ -856,9 +876,8 @@ func _on_skill_activated(id: String) -> void:
 	_update_force_labels()
 	if id == "ANALISE_CAMPO":
 		renderer.reveal_enemy_temporarily(GameManager.ANALYSIS_SECONDS)
-		var f := UnitFormatter.format_area(game_manager.enemy_area, cfg)
-		var extra: String = "  " + str(f["sub"]) if f["sub"] != "" else ""
-		_toast("Análise de Campo — área real do inimigo: %s%s" % [f["main"], extra], GameManager.ANALYSIS_SECONDS)
+		# só o quadriculado: o cálculo da área continua por conta do jogador
+		_toast("Análise de Campo: quadriculado do inimigo revelado. Faça as contas!", 2.0)
 	elif id == "MURALHA":
 		_toast("Muralha de Emergência — seu território ×1,25 nesta rodada", 3.5)
 	else:

@@ -11,7 +11,7 @@ const STEPS := [
 	"À direita está o reino inimigo, liso por dentro. Use a malha ao redor como régua: quantos quadrados tem a base? E a altura? Multiplique.",
 	"Se a SUA força for maior, ATAQUE (A). Se o INIMIGO for mais forte, DEFENDA (D). Em dúvida, RECUE (R): custa 3% de Domínio. O terreno multiplica as forças!",
 	"Fique de olho no relógio: quando ele zera, você recua. Errar custa território: atacar errado tira 20% da área; defender errado, 10%.",
-	"Cada vitória vale 10% de Domínio: conquiste 70% em 10 rodadas. Depois de cada rodada, um relatório compara os reinos e mostra o cálculo. É assim que se aprende!",
+	"Cada vitória vale 10% de Domínio: termine as 10 rodadas com 60% ou mais para passar. Depois de cada rodada, um relatório compara os reinos e mostra o cálculo. É assim que se aprende!",
 	"Aqui está a habilidade do seu conselheiro (E), 1× por fase. E se esquecer alguma regra, abra COMO JOGAR (H): o relógio para enquanto você lê.",
 ]
 ## Posição do painel da Cartógrafa em cada passo (fora do alvo destacado).

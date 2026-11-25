@@ -1,12 +1,13 @@
 ## AccuracyTracker.gd
-## Índice de Precisão (IP) derivado das decisões + estrelas da fase.
+## Índice de Precisão (IP) derivado das decisões + estrelas da fase (dadas pelo Domínio).
 ## Não há entrada de estimativa: o IP mede o quão bem a decisão acompanhou a diferença real.
 class_name AccuracyTracker
 extends RefCounted
 
-const BRONZE_MIN_DOM := 70.0
-const SILVER_MIN_IP := 75.0
-const GOLD_MIN_IP := 85.0
+## Domínio final mínimo de cada medalha. Sem Bronze, a fase é perdida.
+const BRONZE_MIN_DOM := 60.0
+const SILVER_MIN_DOM := 80.0
+const GOLD_MIN_DOM := 100.0
 ## XP extra pela medalha, indexado pelo número de estrelas.
 const STAR_XP := [0, 150, 350, 600]
 
@@ -40,15 +41,12 @@ static func sound_for(ip: float) -> String:
 		return "imprecise"
 	return ""
 
-## Estrelas: 3 ouro, 2 prata, 1 bronze, 0 nenhuma.
-## Bronze = vencer a fase; Prata e Ouro dependem só da precisão das decisões.
-static func stars(final_dom: float, ip: float) -> int:
-	if final_dom < BRONZE_MIN_DOM:
-		return 0
-	# compara o mesmo valor arredondado que a tela mostra
-	var shown := roundf(ip)
-	if shown >= GOLD_MIN_IP:
+## Estrelas: 3 ouro, 2 prata, 1 bronze, 0 nenhuma (derrota).
+static func stars(final_dom: float) -> int:
+	if final_dom >= GOLD_MIN_DOM:
 		return 3
-	if shown >= SILVER_MIN_IP:
+	if final_dom >= SILVER_MIN_DOM:
 		return 2
-	return 1
+	if final_dom >= BRONZE_MIN_DOM:
+		return 1
+	return 0

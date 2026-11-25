@@ -11,7 +11,7 @@ const DATA := {
 		"passive_name": "Olho de Águia",
 		"passive_desc": "Projeta 2 células de grade adicionais ao redor do adversário como referencial visual.",
 		"active_name": "Análise de Campo",
-		"active_desc": "Exibe a área real do oponente por 5 segundos.",
+		"active_desc": "Revela o quadriculado do oponente por 5 segundos.",
 		"cost": 1,
 		"goal": "Suporte analítico: mais formas de visualizar o inimigo.",
 		"color": Color8(60, 110, 190),

@@ -1,8 +1,9 @@
-## DominanceBar.gd — barra de Domínio ornamentada, com bandeira na meta de 70% e preenchimento animado.
+## DominanceBar.gd — barra de Domínio ornamentada, com bandeira na meta do Bronze (60%), marca da Prata (80%) e preenchimento animado.
 class_name DominanceBar
 extends Control
 
-const GOAL := 70.0
+const GOAL := AccuracyTracker.BRONZE_MIN_DOM
+const SILVER := AccuracyTracker.SILVER_MIN_DOM
 var value := 0.0          # valor exibido (animado)
 var target := 0.0
 var _tw : Tween
@@ -44,6 +45,8 @@ func _draw() -> void:
 		var x := bar.position.x + bar.size.x * i / 10.0
 		draw_line(Vector2(x, bar.end.y - 5), Vector2(x, bar.end.y), Color(0, 0, 0, 0.45), 1.0)
 	draw_rect(bar, UiKit.C_BORDER_GOLD, false, 2.0)
+	var sx := bar.position.x + bar.size.x * SILVER / 100.0
+	draw_line(Vector2(sx, 3), Vector2(sx, bar.end.y + 3), Color8(205, 210, 220), 2.0)
 	var gx := bar.position.x + bar.size.x * GOAL / 100.0
 	draw_line(Vector2(gx, 1), Vector2(gx, bar.end.y + 3), UiKit.C_TEXT_GOLD2, 2.0)
 	var flag := UiKit.C_TEXT_GOLD2 if value >= GOAL else UiKit.C_RED_BORDER

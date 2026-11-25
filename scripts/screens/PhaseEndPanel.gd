@@ -12,7 +12,7 @@ const STAR_NAMES  := ["Bronze", "Prata", "Ouro"]
 const REASONS := {
 	"AREA": "Seu reino foi reduzido a quase nada.",
 	"SUDDEN_DEATH": "Morte súbita: a primeira decisão errada encerra a fase.",
-	"ROUNDS": "Domínio insuficiente: eram necessários 70% do mapa.",
+	"ROUNDS": "Sem medalha: era preciso pelo menos 60% de Domínio (Bronze).",
 }
 const INK := Color8(54, 36, 16)
 const INK_MUTED := Color8(112, 82, 44)
@@ -74,6 +74,8 @@ func _ready() -> void:
 	vb.add_child(_star_caption)
 	_goal = UiKit.make_label("", 17, INK_MUTED, "Source Sans 3")
 	_goal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_goal.custom_minimum_size = Vector2(760, 0)
 	vb.add_child(_goal)
 
 	vb.add_child(_rule())
@@ -137,15 +139,16 @@ func _stat_col(parent: Control, title: String) -> Label:
 ## Diz o que falta para a próxima medalha.
 static func goal_text(won: bool, star_count: int) -> String:
 	if not won:
-		return "Vença a fase (70% de Domínio) para ganhar a medalha de Bronze."
+		return "Vença a fase com %d%% de Domínio para ganhar o Bronze." % int(AccuracyTracker.BRONZE_MIN_DOM)
 	if star_count == 1:
-		return "Próxima medalha: Prata com precisão de %d%% ou mais." % int(AccuracyTracker.SILVER_MIN_IP)
+		return "Próxima medalha: Prata com %d%% de Domínio." % int(AccuracyTracker.SILVER_MIN_DOM)
 	if star_count == 2:
-		return "Próxima medalha: Ouro com precisão de %d%% ou mais." % int(AccuracyTracker.GOLD_MIN_IP)
+		return "Próxima medalha: Ouro com %d%% de Domínio." % int(AccuracyTracker.GOLD_MIN_DOM)
 	return "Medalha máxima conquistada!"
 
 ## summary: dicionário de GameManager.phase_ended. re_gained: RE das medalhas novas.
-func show_summary(summary: Dictionary, has_next: bool, re_gained: int) -> void:
+## gate: aviso de que faltam estrelas para o próximo terreno ("" se não há trava).
+func show_summary(summary: Dictionary, has_next: bool, re_gained: int, gate: String = "") -> void:
 	var won: bool = summary["won"]
 	var star_count: int = summary["stars"]
 	if won:
@@ -167,6 +170,8 @@ func show_summary(summary: Dictionary, has_next: bool, re_gained: int) -> void:
 	_btn_next.visible = won and has_next
 	_reason.visible = _reason.text != ""
 	_goal.text = goal_text(won, star_count)
+	if gate != "":
+		_goal.text += "\n" + gate
 	_story.text = StoryData.epilogue(int(summary["phase"]), won)
 	_dom_val.text = "0%"
 	_ip_val.text = "0%"

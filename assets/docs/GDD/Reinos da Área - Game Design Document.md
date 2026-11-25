@@ -123,10 +123,10 @@ Os modificadores ajustam o peso relativo das áreas comparadas; não adicionam a
 
 ### Objetivo da fase
 
-Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Área X e Domínio 0%. O objetivo é terminar com **Domínio ≥ 70%**.
+Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Área X e Domínio 0%. O objetivo é terminar com **Domínio ≥ 60%**.
 
-- **Vitória:** Domínio ≥ 70% ao final das 10 rodadas **[v5: a fase sempre dura as 10 rodadas]**.
-- **Derrota:** Domínio < 70% ao final das 10 rodadas; área do jogador abaixo de 4 u² (rede de segurança); ou, na Fase 20, **qualquer decisão errada** (morte súbita).
+- **Vitória:** Domínio ≥ 60% ao final das 10 rodadas **[v5: a fase sempre dura as 10 rodadas]**.
+- **Derrota:** Domínio < 60% ao final das 10 rodadas; área do jogador abaixo de 4 u² (rede de segurança); ou, na Fase 20, **qualquer decisão errada** (morte súbita).
 
 ---
 
@@ -152,7 +152,7 @@ Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Á
 
 1. O resultado é confirmado e o contador avança (ex.: 3/10 → 4/10).
 2. O sistema verifica a condição de derrota imediata (área abaixo de 4 u²; erro na Fase 20).
-3. Se as 10 rodadas terminaram, compara o Domínio final com 70%.
+3. Se as 10 rodadas terminaram, compara o Domínio final com 60%.
 4. A **Tela de Fim de Fase** exibe estrelas, Índice de Precisão, XP e Recursos.
 
 ### Fluxo do ciclo de fase
@@ -161,7 +161,7 @@ Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Á
 Início da fase → Rodada N (1..10) → Atacar / Defender / Recuar
    → Área abaixo do mínimo (ou erro na Fase 20)?  Sim → Derrota
    → 10 rodadas concluídas?  Não → próxima rodada
-   → Sim → Domínio ≥ 70%?  Sim → Vitória (estrelas)  |  Não → Derrota
+   → Sim → Domínio ≥ 60%?  Sim → Vitória (estrelas)  |  Não → Derrota
 ```
 
 ---
@@ -174,7 +174,7 @@ Antes das trombetas soarem, o Rei entrega sua confiança a apenas um de três co
 |---|---|---|---|
 | Lema | Inteligência e Controle | Expansão e Fortificação | Ímpeto e Força |
 | **Passiva** | **Olho de Águia** — projeta +2 células de grade ao redor do adversário como referencial visual. | **Consolidação** — o prejuízo por Atacar errado cai de 20% para 15%. | **Embalo de Combate** — +5% de área efetiva por vitória consecutiva (até +15%). Zera ao recuar ou perder. |
-| **Ativa** | **Análise de Campo** (1 RE) — exibe a área real do inimigo e o grid dele por 5 s. | **Muralha de Emergência** (2 RE) — dá ao seu território o modificador de montanha (×1,25) por uma rodada. | **Golpe Decisivo** (1 RE) — dobra o ganho no sucesso, mas duplica a penalidade no revés. |
+| **Ativa** | **Análise de Campo** (1 RE) — revela o grid do inimigo por 5 s, sem informar o valor da área. | **Muralha de Emergência** (2 RE) — dá ao seu território o modificador de montanha (×1,25) por uma rodada. | **Golpe Decisivo** (1 RE) — dobra o ganho no sucesso, mas duplica a penalidade no revés. |
 | Objetivo | Suporte analítico para quem prefere informação. | Escolhas defensivas e controle de perdas. | Alto risco e alta recompensa. |
 
 > A passiva do Estrategista só tem efeito onde a grade de referência é limitada (Vales em diante); nas Planícies o grid já cobre todo o mapa.
@@ -248,11 +248,13 @@ Vale a insígnia mais alta conquistada.
 
 | Insígnia | Condição |
 |---|---|
-| ★ **Bronze — Conclusão** | Domínio ≥ 70% ao final da rodada 10. (+150 XP) |
-| ★★ **Prata — Boa precisão** | Bronze **e** IP da fase ≥ 75%. (+350 XP) |
-| ★★★ **Ouro — Precisão** | Bronze **e** IP da fase ≥ 85%. (+600 XP) |
+| ★ **Bronze — Conclusão** | Domínio ≥ 60% ao final da rodada 10. Sem o Bronze, a fase é perdida. (+150 XP) |
+| ★★ **Prata** | Domínio ≥ 80%. (+350 XP) |
+| ★★★ **Ouro** | Domínio de 100%. (+600 XP) |
 
-> **Recalibração após teste com jogadores.** A Prata anterior (70% até a 6ª rodada) era inalcançável sem o Golpe Decisivo, pois 6 vitórias somam no máximo 60%. O Ouro exigia zero derrotas, e quem acertava 90% recebia só Bronze.
+O IP continua sendo exibido como retorno sobre as decisões, mas não define a medalha.
+
+**Trava de terreno.** Para entrar em um novo cenário, além de vencer a fase anterior, é preciso somar estrelas na campanha: 8 (II), 16 (III), 24 (IV) e 32 (V).
 
 ---
 
@@ -372,7 +374,7 @@ Cinco colunas (cenários) com quatro fases cada. Cada fase mostra estrelas ou ca
 
 ### Tela de jogo — HUD principal
 
-- **Barra superior:** área total (na unidade da fase), barra de Domínio com meta de 70%, 10 marcadores de rodada, Mundo/Fase e terreno.
+- **Barra superior:** área total (na unidade da fase), barra de Domínio com meta de 60% e marca de 80%, 10 marcadores de rodada, Mundo/Fase e terreno.
 - **Painel inferior, esquerda:** terreno da rodada, sequência de vitórias, tempo, força de ataque e de defesa (já com os modificadores) e Precisão.
 - **Painel inferior, centro:** botões **ATACAR [A] · DEFENDER [D] · RECUAR [R]**; após a decisão, o resultado, o cálculo e **PRÓXIMA RODADA**.
 - **Painel inferior, direita:** arquétipo ativo, passiva, ativa (botão **ATIVAR**, tecla E) e medidor de RE.

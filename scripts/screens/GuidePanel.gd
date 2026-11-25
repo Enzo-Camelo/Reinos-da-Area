@@ -83,8 +83,8 @@ func _show_tab(index: int) -> void:
 	_heading(TABS[index].to_upper())
 	match index:
 		0:
-			_p("Você é o Arquiteto-Rei. Para libertar cada região do Império das Formas, domine 70% do mapa em até 10 rodadas.")
-			_p("Cada vitória vale +10% de Domínio. Na prática: vença pelo menos 7 das 10 rodadas.")
+			_p("Você é o Arquiteto-Rei. Para libertar cada região do Império das Formas, termine as 10 rodadas de cada fase com pelo menos 60% de Domínio.")
+			_p("Cada vitória vale +10% de Domínio. Na prática: vença pelo menos 6 das 10 rodadas.")
 			_p("Recuar custa 3% de Domínio. Se sua área cair abaixo de 4 blocos, a fase termina.")
 			_p("A linha dourada acima dos botões mostra, o tempo todo, quantas vitórias ainda faltam.")
 		1:
@@ -130,12 +130,13 @@ func _show_tab(index: int) -> void:
 				_p("%s — %s: %s\n%s [E], %d RE: %s" % [str(d["name"]).to_upper(), d["passive_name"], d["passive_desc"],
 					d["active_name"], d["cost"], d["active_desc"]], 17)
 		4:
-			_p("A medalha depende da sua PRECISÃO: a média da nota das decisões na fase.")
-			_p("BRONZE — vencer a fase (70%% de Domínio).    +%d XP\nPRATA — vencer com precisão de %d%% ou mais.    +%d XP\nOURO — vencer com precisão de %d%% ou mais.    +%d XP" % [
-				AccuracyTracker.STAR_XP[1], int(AccuracyTracker.SILVER_MIN_IP), AccuracyTracker.STAR_XP[2],
-				int(AccuracyTracker.GOLD_MIN_IP), AccuracyTracker.STAR_XP[3]])
+			_p("A medalha depende do DOMÍNIO no fim da fase. Sem o Bronze, a fase é perdida.")
+			_p("BRONZE — %d%% de Domínio (passa de fase).    +%d XP\nPRATA — %d%% de Domínio.    +%d XP\nOURO — %d%% de Domínio.    +%d XP" % [
+				int(AccuracyTracker.BRONZE_MIN_DOM), AccuracyTracker.STAR_XP[1], int(AccuracyTracker.SILVER_MIN_DOM),
+				AccuracyTracker.STAR_XP[2], int(AccuracyTracker.GOLD_MIN_DOM), AccuracyTracker.STAR_XP[3]])
+			_p("NOVOS TERRENOS exigem estrelas somadas, além da fase anterior vencida: Vales 8, Serra 16, Arquipélago 24 e Abismo 32. Repita fases para melhorar medalhas.")
 			_p("Cada medalha NOVA também rende 1 Recurso Estratégico (RE), usado nas habilidades. Ouro de primeira = +3 RE. Melhorar uma medalha depois paga a diferença.")
-			_p("Nota de cada decisão: acerto = 100. Recuo = 70 se os reinos eram quase iguais (diferença menor que 5%), senão 40. Erro = 50, 25 ou 0, conforme a diferença (quanto mais óbvia, menor a nota).")
+			_p("A Precisão mostrada na batalha é um termômetro das suas decisões; ela não muda a medalha.")
 		5:
 			_p("A — Atacar\nD — Defender\nR — Recuar\nE — Habilidade do conselheiro (1× por fase)\nH — Abrir este guia na batalha (o relógio para)\nV — Mostrar ou esconder o relatório da rodada\nEnter / Espaço — Próxima rodada\nEsc — Pausar ou voltar")
 

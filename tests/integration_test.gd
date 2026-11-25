@@ -66,7 +66,7 @@ func _run() -> void:
 		check(gm.ended, "fase %d: terminou" % n)
 		check(gm.retreats == 10 or gm.ended, "fase %d: 10 recuos" % n)
 		check(is_equal_approx(gm.dominance, 0.0), "fase %d: recuos não passam de 0%% de domínio" % n)
-		check(AccuracyTracker.stars(gm.dominance, 0.0) == 0, "fase %d: sem estrelas" % n)
+		check(AccuracyTracker.stars(gm.dominance) == 0, "fase %d: sem estrelas" % n)
 		b.queue_free()
 		await get_tree().process_frame
 
@@ -108,6 +108,45 @@ func _run() -> void:
 		check(gs2.resources == expected or gm.ended, "%s: RE debitado (esperado %d, tem %d)" % [arch, expected, gs2.resources])
 		b.queue_free()
 		await get_tree().process_frame
+
+	print("Vitória, derrota e trava de estrelas")
+	var gs3 = get_tree().root.get_node("GameState")
+	for case in [[5, false, 0], [6, true, 1]]:
+		gs3.archetype = "ENGENHEIRO"
+		gs3.tutorial_done = true
+		var bw := BattleScreen.new()
+		bw.setup(1)
+		add_child(bw)
+		await get_tree().create_timer(0.7).timeout
+		var gmw: GameManager = bw.game_manager
+		var result := {}
+		gmw.phase_ended.connect(func(s): result.merge(s))
+		# vence as N primeiras rodadas; nas demais erra (derrota não tira Domínio)
+		for r in 10:
+			var right: String = CombatResolver.resolve(0, gmw.player_area, gmw.enemy_area, gmw.terrain, gmw.current_effects())["correct"]
+			var attack: bool = (right == "ATTACK") == (r < case[0])
+			gmw.resolve_action(GameManager.Action.ATTACK if attack else GameManager.Action.DEFEND)
+			gmw.finish_round()
+			if gmw.ended:
+				break
+			await get_tree().create_timer(0.7).timeout
+		check(result.get("rounds", 0) == 10, "fase deve ir até a rodada 10")
+		check(result.get("won") == case[1] and result.get("stars") == case[2],
+				"%d vitórias: venceu=%s estrelas=%d (%s)" % [case[0], case[1], case[2], str(result)])
+		bw.queue_free()
+		await get_tree().process_frame
+
+	gs3.unlocked_phase = 5
+	gs3.stars = {1: 2, 2: 2, 3: 2, 4: 1}
+	check(gs3.is_unlocked(4) and not gs3.is_unlocked(5), "7 estrelas não abrem o terreno II")
+	check(gs3.latest_playable_phase() == 4 and gs3.star_gate_text() != "", "continua na fase 4, com aviso")
+	gs3.stars = {1: 2, 2: 2, 3: 2, 4: 2}
+	check(gs3.is_unlocked(5) and gs3.star_gate_text() == "", "8 estrelas abrem o terreno II")
+	gs3.unlocked_phase = 9
+	gs3.stars = {1: 3, 2: 3, 3: 3, 4: 3, 5: 1, 6: 1, 7: 1}
+	check(not gs3.is_unlocked(9), "15 estrelas não abrem o terreno III")
+	gs3.stars[8] = 1
+	check(gs3.is_unlocked(9), "16 estrelas abrem o terreno III")
 
 	print("Fase 20 morte súbita")
 	get_tree().root.get_node("GameState").archetype = "ENGENHEIRO"

@@ -104,12 +104,12 @@ func test_accuracy() -> void:
 	check(AccuracyTracker.round_ip({"result": "DRAW", "margin": 0.03, "action": 2}) == 70.0, "recuo margem pequena = 70")
 	check(AccuracyTracker.round_ip({"result": "DRAW", "margin": 0.30, "action": 2}) == 40.0, "recuo margem grande = 40")
 	check(AccuracyTracker.sound_for(95.0) == "precise" and AccuracyTracker.sound_for(60.0) == "" and AccuracyTracker.sound_for(20.0) == "imprecise", "faixas de som")
-	check(AccuracyTracker.stars(60.0, 90.0) == 0, "sem 70% = 0 estrelas")
-	check(AccuracyTracker.stars(80.0, 70.0) == 1, "bronze: venceu com precisão < 75")
-	check(AccuracyTracker.stars(80.0, 75.0) == 2, "prata (precisão >= 75)")
-	check(AccuracyTracker.stars(80.0, 84.4) == 2, "84% mostrado ainda é prata")
-	check(AccuracyTracker.stars(80.0, 84.6) == 3, "85% mostrado é ouro")
-	check(AccuracyTracker.stars(90.0, 90.0) == 3, "90% de precisão é ouro, mesmo com uma derrota")
+	check(AccuracyTracker.stars(59.0) == 0, "abaixo de 60% = sem medalha")
+	check(AccuracyTracker.stars(60.0) == 1 and AccuracyTracker.stars(79.0) == 1, "bronze de 60% a 79%")
+	check(AccuracyTracker.stars(80.0) == 2 and AccuracyTracker.stars(97.0) == 2, "prata de 80% a 99%")
+	check(AccuracyTracker.stars(100.0) == 3, "ouro só com 100%")
+	check(CampaignData.stars_required(4) == 0 and CampaignData.stars_required(5) == 8, "terreno II exige 8 estrelas")
+	check(CampaignData.stars_required(9) == 16 and CampaignData.stars_required(13) == 24 and CampaignData.stars_required(17) == 32, "+8 por terreno")
 
 func test_units() -> void:
 	print("UnitFormatter")

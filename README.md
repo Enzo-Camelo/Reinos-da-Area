@@ -2,7 +2,7 @@
 
 > *Conquiste territórios. Calcule para vencer.*
 
-**Reinos da Área** é um jogo de estratégia territorial feito em **Godot 4**, em que o jogador aprende **cálculo de área** jogando. A cada rodada o reino inimigo aparece inteiro, mas **sem quadriculado**: o jogador estima quantos quadrados cabem nele, compara com o seu próprio reino (que tem o quadriculado) e decide entre **Atacar**, **Defender** ou **Recuar**. São **20 fases em 5 cenários**, com 10 rodadas por fase. A meta é dominar 70% do mapa.
+**Reinos da Área** é um jogo de estratégia territorial feito em **Godot 4**, em que o jogador aprende **cálculo de área** jogando. A cada rodada o reino inimigo aparece inteiro, mas **sem quadriculado**: o jogador estima quantos quadrados cabem nele, compara com o seu próprio reino (que tem o quadriculado) e decide entre **Atacar**, **Defender** ou **Recuar**. São **20 fases em 5 cenários**, com 10 rodadas por fase. A meta é dominar pelo menos 60% do mapa.
 
 Versão atual: **v0.2** (protótipo jogável da campanha completa). Autores: Enzo Camelo Vieira, Gabriel Luís de Santana e Bruno Faria Travessini.
 
@@ -109,7 +109,7 @@ No menu de **Opções**: volume da música e dos efeitos, tela cheia e **Reduzir
 
 ## 6. Objetivo, regras e progressão
 
-**Objetivo:** em cada fase, chegar a **70% de Domínio** do mapa ao final das **10 rodadas**.
+**Objetivo:** em cada fase, terminar as **10 rodadas** com pelo menos **60% de Domínio** do mapa (medalha de Bronze).
 
 ### Regras básicas (combate determinístico, sem sorte)
 
@@ -129,15 +129,16 @@ Atacar e Defender são opostos: **sempre existe exatamente uma decisão certa**.
 
 ### Condições de vitória, derrota e progressão
 
-- **Vitória da fase:** Domínio ≥ 70% depois da 10ª rodada. A fase seguinte é liberada no mapa.
+- **Vitória da fase:** Domínio ≥ 60% depois da 10ª rodada. A fase seguinte é liberada no mapa.
+- **Novo terreno (a cada 4 fases):** além da fase anterior vencida, exige estrelas somadas na campanha: **8** (Vales), **16** (Serra), **24** (Arquipélago) e **32** (Abismo). Dá para repetir fases e melhorar medalhas.
 - **Derrota da fase** (pode repetir quantas vezes quiser):
-  - terminar as 10 rodadas com Domínio abaixo de 70%;
+  - terminar as 10 rodadas com Domínio abaixo de 60% (sem medalha);
   - ou ficar com **menos de 4 unidades de área**;
   - ou, na **Fase 20 (morte súbita)**, errar uma única decisão.
 - **Medalhas** (vale a melhor conquistada):
-  - ★ Bronze: 70% de Domínio ao final das 10 rodadas (+150 XP).
-  - ★★ Prata: Bronze e Índice de Precisão ≥ 75% (+350 XP).
-  - ★★★ Ouro: Bronze e Índice de Precisão ≥ 85% (+600 XP).
+  - ★ Bronze: 60% de Domínio ao final das 10 rodadas (+150 XP).
+  - ★★ Prata: 80% de Domínio (+350 XP).
+  - ★★★ Ouro: 100% de Domínio (+600 XP).
 - **Índice de Precisão (IP):** mede o quanto suas decisões foram certas (100 por decisão certa; recuo vale 70 ou 40; erro vale 50, 25 ou 0 conforme a margem). Você não digita estimativas: o jogo calcula pelas decisões.
 - **Pontuação:** vitória na rodada = 100 pontos + bônus de sequência (+50 por vitória seguida) + bônus de velocidade (até 200); derrota = −50. XP da fase = pontos + bônus da medalha.
 - **Recursos Estratégicos (RE):** você começa com 3 e ganha **+1 por medalha nova** em cada fase (Ouro de primeira = +3; melhorar depois paga a diferença). São gastos nas habilidades ativas.
@@ -159,7 +160,7 @@ A diferença de tamanho entre os reinos vai diminuindo ao longo da campanha (de 
 
 | | Passiva (sempre ativa) | Ativa (1× por fase, custa RE) |
 |---|---|---|
-| **Estrategista** | *Olho de Águia*: +2 células de quadriculado ao redor do inimigo | *Análise de Campo* (1 RE): mostra a área real e o quadriculado do inimigo por 5 s |
+| **Estrategista** | *Olho de Águia*: +2 células de quadriculado ao redor do inimigo | *Análise de Campo* (1 RE): revela o quadriculado do inimigo por 5 s (sem informar a área) |
 | **Engenheiro** | *Consolidação*: errar ao atacar custa 15% em vez de 20% | *Muralha de Emergência* (2 RE): seu território vale ×1,25 por 1 rodada |
 | **Guerreiro** | *Embalo de Combate*: +5% por vitória seguida (até +15%) | *Golpe Decisivo* (1 RE): dobra o ganho ou a perda da rodada |
 

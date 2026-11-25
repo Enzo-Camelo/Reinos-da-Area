@@ -66,7 +66,7 @@ func _run() -> void:
 		check(gm.ended, "fase %d: terminou" % n)
 		check(gm.retreats == 10 or gm.ended, "fase %d: 10 recuos" % n)
 		check(is_equal_approx(gm.dominance, 0.0), "fase %d: recuos não passam de 0%% de domínio" % n)
-		check(AccuracyTracker.stars(gm.dominance, gm.first_reach_round, 0.0, 0) == 0, "fase %d: sem estrelas" % n)
+		check(AccuracyTracker.stars(gm.dominance, 0.0) == 0, "fase %d: sem estrelas" % n)
 		b.queue_free()
 		await get_tree().process_frame
 

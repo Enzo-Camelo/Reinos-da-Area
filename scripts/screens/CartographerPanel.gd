@@ -58,23 +58,18 @@ func on_round_start(aspect: float) -> void:
 		text = "Um reino alto e estreito. Compare com a largura do seu antes de decidir."
 	_say(text, 6.0)
 
+## Fala sobre o resultado, mostrada dentro do relatório da rodada ("" quando ela se cala).
 ## result: "WIN" | "LOSE" | "DRAW"; action: CombatResolver.ACTION_*
-func on_result(result: String, action: int) -> void:
-	if mode == "ABSENT":
-		return
-	if mode == "SILENT" and result != "LOSE":
-		return
-	var text := ""
+func comment_for(result: String, action: int) -> String:
+	if mode == "ABSENT" or (mode == "SILENT" and result != "LOSE"):
+		return ""
 	if result == "WIN":
-		text = "Muito bem. Você viu o que precisava ver."
-	elif result == "LOSE":
+		return "Muito bem. Você viu o que precisava ver."
+	if result == "LOSE":
 		if action == CombatResolver.ACTION_DEFEND:
-			text = "Você era maior do que pensava. Da próxima vez, observe mais de perto antes de recuar."
-		else:
-			text = "O reino era maior do que parecia. Observe a forma com mais calma."
-	else:
-		text = "Recuar também é decidir, Arquiteto. Mas o reino só cresce quando você confia no cálculo."
-	_say(text, 6.0)
+			return "Você era maior do que pensava. Da próxima vez, compare com mais calma antes de se defender."
+		return "O reino era maior do que parecia. Observe a forma com mais calma."
+	return "Recuar também é decidir, Arquiteto. Mas o reino só cresce quando você confia no cálculo."
 
 func _say(text: String, seconds: float) -> void:
 	_token += 1

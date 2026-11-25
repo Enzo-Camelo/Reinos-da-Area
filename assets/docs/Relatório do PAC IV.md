@@ -100,7 +100,7 @@ Os três perfis táticos substituem o modelo anterior de atributos padronizados,
 **Decisões de implementação:**
 
 - Este relatório prevalece sobre o GDD v4 nas habilidades (decisão da equipe); o GDD foi atualizado para a v5.
-- **Recursos Estratégicos (RE):** o jogador começa com 3 e ganha +1 ao concluir uma fase pela primeira vez. Cada ativa só pode ser usada **1× por fase** (selo de "usada" no botão).
+- **Recursos Estratégicos (RE):** o jogador começa com 3 e ganha +1 por medalha nova em cada fase. Cada ativa só pode ser usada **1× por fase** (selo de "usada" no botão).
 - Sem RE suficiente, o botão vibra e fica vermelho por 0,5 s, sem outra penalidade.
 - O Olho de Águia só altera o jogo onde a grade de referência é limitada (Vales em diante); nas Planícies o grid já cobre o mapa inteiro.
 - A Muralha aplica ×1,25 à força do jogador na rodada, em qualquer postura.
@@ -114,8 +114,8 @@ Um mapa geral conecta os 5 cenários, introduzindo complexidade geométrica grad
 | **Planícies** | 1–4 | Polígonos retangulares simples, com ampla discrepância entre os lados | Total | Assistência contínua | ✅ |
 | **Vales** | 5–8 | Meios-blocos e arestas diagonais | Reduzida (1 célula) | Ativa (5–6), silenciosa (7–8) | ✅ |
 | **Serras** | 9–12 | Formas trapezoidais e compostas | Suprimida | Silenciosa (9), ausente a partir da 10 | ✅ |
-| **Arquipélagos** | 13–16 | Figuras complexas e preenchidas; **45 s** por turno | Suprimida | Ausente | ✅ |
-| **Abismo Irregular** | 17–20 | Malhas vazadas (blocos internos ausentes); **30 s** por turno; Fase 20 sob **morte súbita** | Suprimida | Ausente | ✅ |
+| **Arquipélagos** | 13–16 | Figuras complexas e preenchidas; **30 s** por turno | Suprimida | Ausente | ✅ |
+| **Abismo Irregular** | 17–20 | Malhas vazadas (blocos internos ausentes); **25 s** por turno; Fase 20 sob **morte súbita** | Suprimida | Ausente | ✅ |
 
 **Decisão:** na divergência entre GDD e Relatório sobre as formas de cada cenário, valeu o **Relatório**. A tabela de fases fica em `scripts/data/CampaignData.gd`. O mapa guarda estrelas e libera a fase seguinte ao vencer; cada fase tem um briefing (terreno, tempo, formas, unidade, estado da Cartógrafa) antes de iniciar.
 
@@ -128,8 +128,8 @@ Os multiplicadores de terreno estão integrados ao cálculo de combate e destaca
 | **Planícies** (1–4) | Plano (×1,0 para ambos) | Confronto puramente numérico. |
 | **Vales** (5–8) | Defensor ×1,25 | Forças menores na defesa podem vencer; a percepção visual direta passa a requerer maior cuidado. |
 | **Serras** (9–12) | Defensor ×1,25 · Atacante ×0,85 | Ausência de linhas-guia aliada a formas compostas exige maior cálculo mental. |
-| **Arquipélagos** (13–16) | Atacante ×1,10 · Defensor ×0,90 | Privilegia posturas ofensivas e decisões ágeis contra o relógio (45 s). |
-| **Abismo Irregular** (17–20) | Modificadores mistos | Margem de erro mínima: ignorar o relevo é tão penalizante quanto errar a área (30 s). |
+| **Arquipélagos** (13–16) | Atacante ×1,10 · Defensor ×0,90 | Privilegia posturas ofensivas e decisões ágeis contra o relógio (30 s). |
+| **Abismo Irregular** (17–20) | Modificadores mistos | Margem de erro mínima: ignorar o relevo é tão penalizante quanto errar a área (25 s). |
 
 **Decisão:** no Abismo, o terreno é **sorteado a cada rodada** entre Plano, Vale, Serra e Costeiro e exibido no HUD.
 
@@ -156,7 +156,7 @@ A interface exibe a unidade correspondente com uma indicação sutil da equival�
 - ⚠️ **Calibração das curvas de dificuldade:** implementada como interpolação linear do intervalo de diferença de área (25–35% na Fase 1 até 2–5% na Fase 20). Os valores são constantes ajustáveis e **ainda precisam de validação com testes de jogo** para afinar fase a fase.
 - ✅ **Expansão do `TerritoryGenerator`:** blocos inteiros e meios-blocos triangulares; estratégias retangular, diagonal (chanfros), trapezoidal, composta (L/T/U), complexa e vazada; todas verificadas por testes automáticos (área, região e conectividade).
 - ✅ **Medidor de Recursos Estratégicos** no HUD e no mapa de campanha, para o acionamento transparente das habilidades ativas.
-- ✅ **Tutorial** (listado na apresentação): 5 passos guiados pela Cartógrafa na primeira Fase 1, com opção de pular.
+- ✅ **Tutorial** (listado na apresentação): 6 passos guiados pela Cartógrafa na primeira Fase 1, com opção de pular e de rever pelo guia *Como jogar*.
 
 ### 3.7 Decisões de design registradas na implementação
 
@@ -165,7 +165,7 @@ A interface exibe a unidade correspondente com uma indicação sutil da equival�
 | **Índice de Precisão (IP)** | Derivado das decisões, sem entrada de estimativa (evita virar um exercício). Decisão certa = 100; recuo = 70 (margem < 5%) ou 40; erro = 50 / 25 / 0 conforme a margem real (< 5% / < 15% / ≥ 15%). IP da fase = média. |
 | **Som de precisão** | IP ≥ 90: sino cristalino; 40–89: silêncio; < 40: sino grave. |
 | **Fim de fase** | Sempre 10 rodadas. Vitória: Domínio ≥ 70% ao final. |
-| **Estrelas** | Bronze: 70% ao final. Prata: 70% até a 6ª rodada. Ouro: IP ≥ 85% e nenhuma derrota. Vale a mais alta. |
+| **Estrelas** | Bronze: 70% ao final. Prata: Bronze e IP ≥ 75%. Ouro: Bronze e IP ≥ 85%. Vale a mais alta. |
 | **Derrota imediata** | Área abaixo de 4 u², ou qualquer erro na Fase 20 (morte súbita). |
 | **Cartógrafa** | Máquina de estados fixa por fase: ativa (1–6), silenciosa (7–9), ausente (10+). |
 | **Teclas** | A (atacar), D (defender), R (recuar), E (habilidade), Esc (voltar ao mapa). |

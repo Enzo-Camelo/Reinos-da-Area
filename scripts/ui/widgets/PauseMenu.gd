@@ -1,9 +1,10 @@
-## PauseMenu.gd — menu de pausa da batalha: Continuar, Opções, Abandonar fase (com confirmação).
+## PauseMenu.gd — menu de pausa da batalha: Continuar, Como jogar, Opções, Abandonar fase (com confirmação).
 class_name PauseMenu
 extends Control
 
 signal resumed
 signal quit_to_map
+signal guide_requested
 
 var _quit_btn : Button
 var _quit_armed := false
@@ -36,12 +37,16 @@ func _ready() -> void:
 	vb.add_child(UiKit.make_hline())
 
 	var b_resume := UiKit.make_menu_button("CONTINUAR", Vector2(360, 58), UiKit.C_GREEN_DIM, 22)
+	var b_guide := UiKit.make_menu_button("COMO JOGAR", Vector2(360, 58), UiKit.C_BG_PANEL, 22)
 	var b_opt := UiKit.make_menu_button("OPÇÕES", Vector2(360, 58), UiKit.C_BG_PANEL, 22)
 	_quit_btn = UiKit.make_menu_button("ABANDONAR FASE", Vector2(360, 58), UiKit.C_RED_DIM, 22)
-	for b in [b_resume, b_opt, _quit_btn]:
+	for b in [b_resume, b_guide, b_opt, _quit_btn]:
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		vb.add_child(b)
 	b_resume.pressed.connect(_resume)
+	b_guide.pressed.connect(func():
+		guide_requested.emit()
+		queue_free())
 	b_opt.pressed.connect(func(): add_child(OptionsPanel.new()))
 	_quit_btn.pressed.connect(_on_quit)
 	b_resume.grab_focus.call_deferred()

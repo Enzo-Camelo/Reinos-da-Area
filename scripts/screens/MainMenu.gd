@@ -107,9 +107,10 @@ func _build_banner() -> void:
 	var b_play := UiKit.make_menu_button("JOGAR CAMPANHA", Vector2(440, 64))
 	var b_arch := UiKit.make_menu_button("CONSELHEIRO", Vector2(440, 64))
 	var b_map := UiKit.make_menu_button("MAPA DE CENÁRIOS", Vector2(440, 64))
+	var b_guide := UiKit.make_menu_button("COMO JOGAR", Vector2(440, 64))
 	var b_opt := UiKit.make_menu_button("OPÇÕES", Vector2(440, 64))
 	var b_quit := UiKit.make_menu_button("SAIR", Vector2(440, 64), UiKit.C_RED_DIM)
-	for b in [_continue_btn, b_play, b_arch, b_map, b_opt, b_quit]:
+	for b in [_continue_btn, b_play, b_arch, b_map, b_guide, b_opt, b_quit]:
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		vb.add_child(b)
 	_first = _continue_btn if has_progress else b_play
@@ -117,6 +118,7 @@ func _build_banner() -> void:
 	b_play.pressed.connect(func(): play_pressed.emit())
 	b_arch.pressed.connect(func(): archetype_pressed.emit())
 	b_map.pressed.connect(func(): map_pressed.emit())
+	b_guide.pressed.connect(func(): add_child(GuidePanel.new()))
 	b_opt.pressed.connect(_open_options)
 	b_quit.pressed.connect(func(): quit_pressed.emit())
 

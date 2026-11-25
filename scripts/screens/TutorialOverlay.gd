@@ -1,5 +1,5 @@
 ## TutorialOverlay.gd
-## Tutorial guiado pela Cartógrafa na primeira Fase 1 (5 passos, com opção de pular).
+## Tutorial guiado pela Cartógrafa na primeira Fase 1 (6 passos, com opção de pular).
 ## Cada passo escurece a tela e deixa um "holofote" no alvo (targets[i], em coordenadas de tela).
 extends Control
 class_name TutorialOverlay
@@ -7,14 +7,15 @@ class_name TutorialOverlay
 signal finished
 
 const STEPS := [
-	"Este é o seu reino, Arquiteto-Rei. O quadriculado, à esquerda, mostra a sua área exata: cada quadrado vale uma unidade.",
-	"À direita está o reino inimigo. Ele aparece liso, sem quadriculado — só a malha ao redor serve de medida. Estime quantos quadrados cabem ali dentro.",
-	"Se achar que o SEU reino é maior, ATAQUE (tecla A). Se o INIMIGO for maior, DEFENDA (tecla D). Em dúvida, RECUE (tecla R): custa apenas 3% de Domínio.",
-	"Errar custa território: atacar errado tira 20% da sua área; defender errado, 10%. E fique de olho no relógio: quando o tempo acaba, você recua.",
-	"Depois de cada rodada o quadriculado do inimigo é revelado. Compare com a sua estimativa — é assim que se aprende. Conquiste 70% do mapa em 10 rodadas!",
+	"Este é o seu reino, Arquiteto-Rei. Cada quadradinho vale uma unidade de área. Não conte um por um: multiplique a base pela altura.",
+	"À direita está o reino inimigo, liso por dentro. Use a malha ao redor como régua: quantos quadrados tem a base? E a altura? Multiplique.",
+	"Se a SUA força for maior, ATAQUE (A). Se o INIMIGO for mais forte, DEFENDA (D). Em dúvida, RECUE (R): custa 3% de Domínio. O terreno multiplica as forças!",
+	"Fique de olho no relógio: quando ele zera, você recua. Errar custa território: atacar errado tira 20% da área; defender errado, 10%.",
+	"Cada vitória vale 10% de Domínio: conquiste 70% em 10 rodadas. Depois de cada rodada, um relatório compara os reinos e mostra o cálculo. É assim que se aprende!",
+	"Aqui está a habilidade do seu conselheiro (E), 1× por fase. E se esquecer alguma regra, abra COMO JOGAR (H): o relógio para enquanto você lê.",
 ]
 ## Posição do painel da Cartógrafa em cada passo (fora do alvo destacado).
-const PANEL_POS := [Vector2(1010, 330), Vector2(40, 330), Vector2(520, 170), Vector2(520, 300), Vector2(520, 300)]
+const PANEL_POS := [Vector2(1010, 330), Vector2(40, 330), Vector2(520, 170), Vector2(520, 300), Vector2(520, 300), Vector2(520, 300)]
 
 var targets : Array = []
 var _step := 0

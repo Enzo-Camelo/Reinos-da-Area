@@ -20,6 +20,7 @@ func _init() -> void:
 	test_units()
 	test_campaign()
 	test_generator()
+	test_shape_analyzer()
 	print("\n== %d ok, %d falhas ==" % [_ok, _fail])
 	quit(1 if _fail > 0 else 0)
 
@@ -103,11 +104,12 @@ func test_accuracy() -> void:
 	check(AccuracyTracker.round_ip({"result": "DRAW", "margin": 0.03, "action": 2}) == 70.0, "recuo margem pequena = 70")
 	check(AccuracyTracker.round_ip({"result": "DRAW", "margin": 0.30, "action": 2}) == 40.0, "recuo margem grande = 40")
 	check(AccuracyTracker.sound_for(95.0) == "precise" and AccuracyTracker.sound_for(60.0) == "" and AccuracyTracker.sound_for(20.0) == "imprecise", "faixas de som")
-	check(AccuracyTracker.stars(60.0, 0, 90.0, 0) == 0, "sem 70% = 0 estrelas")
-	check(AccuracyTracker.stars(80.0, 9, 70.0, 2) == 1, "bronze")
-	check(AccuracyTracker.stars(80.0, 6, 70.0, 2) == 2, "prata (70% até rodada 6)")
-	check(AccuracyTracker.stars(80.0, 9, 90.0, 0) == 3, "ouro (IP>=85, sem derrota)")
-	check(AccuracyTracker.stars(80.0, 6, 90.0, 1) == 2, "uma derrota impede ouro")
+	check(AccuracyTracker.stars(60.0, 90.0) == 0, "sem 70% = 0 estrelas")
+	check(AccuracyTracker.stars(80.0, 70.0) == 1, "bronze: venceu com precisão < 75")
+	check(AccuracyTracker.stars(80.0, 75.0) == 2, "prata (precisão >= 75)")
+	check(AccuracyTracker.stars(80.0, 84.4) == 2, "84% mostrado ainda é prata")
+	check(AccuracyTracker.stars(80.0, 84.6) == 3, "85% mostrado é ouro")
+	check(AccuracyTracker.stars(90.0, 90.0) == 3, "90% de precisão é ouro, mesmo com uma derrota")
 
 func test_units() -> void:
 	print("UnitFormatter")
@@ -129,7 +131,8 @@ func test_campaign() -> void:
 		var c := CampaignData.get_phase(n)
 		check(c["diff_min"] < c["diff_max"], "fase %d diff_min<diff_max" % n)
 	check(CampaignData.get_phase(4)["scenario_idx"] == 0 and CampaignData.get_phase(5)["scenario_idx"] == 1, "limite cenário 1/2")
-	check(CampaignData.get_phase(14)["time"] == 45.0 and CampaignData.get_phase(18)["time"] == 30.0, "tempos 45s e 30s")
+	check(CampaignData.get_phase(1)["time"] == 30.0 and CampaignData.get_phase(9)["time"] == 35.0, "tempos 30s e 35s")
+	check(CampaignData.get_phase(14)["time"] == 30.0 and CampaignData.get_phase(18)["time"] == 25.0, "tempos 30s e 25s")
 	check(CampaignData.get_phase(20)["sudden_death"] and not CampaignData.get_phase(19)["sudden_death"], "morte súbita só na 20")
 	check(CampaignData.get_phase(9)["cartographer"] == "SILENT" and CampaignData.get_phase(10)["cartographer"] == "ABSENT", "cartógrafa some na fase 10")
 
@@ -216,3 +219,29 @@ func test_generator() -> void:
 			check(halves == 0 and holes_total == 0, "RECT sem meios-blocos nem buracos")
 	var big := gen.generate(140.0, 0, 16, 1, "COMPLEX")
 	check(TerritoryGenerator.area_of(big) >= 120.0, "área grande (140) é atingida (>=120): %.1f" % TerritoryGenerator.area_of(big))
+
+## A explicação mostrada ao jogador precisa chegar exatamente na área real.
+func test_shape_analyzer() -> void:
+	print("ShapeAnalyzer")
+	var gen := TerritoryGenerator.new()
+	gen.grid_cols = 32
+	gen.grid_rows = 13
+	for shape in ["RECT", "HALF_DIAGONAL", "TRAPEZOID", "COMPOSITE", "COMPLEX", "HOLLOW"]:
+		var wrong := 0
+		var kinds := {}
+		for i in 300:
+			var c := gen.generate(randf_range(12.0, 65.0), 16 * (i % 2), 16, 1, shape)
+			var a := ShapeAnalyzer.analyze(c)
+			kinds[a["kind"]] = int(kinds.get(a["kind"], 0)) + 1
+			if not is_equal_approx(float(a["area"]), TerritoryGenerator.area_of(c)):
+				wrong += 1
+		print("  %-14s %s" % [shape, str(kinds)])
+		check(wrong == 0, "%s: %d explicações com área errada" % [shape, wrong])
+		if shape == "RECT":
+			check(kinds.get("RECT", 0) == 300, "retângulos usam base × altura")
+	var expected := {"RECT": "RECT", "HALF": "BOX", "TRAPEZOID": "TRAPEZOID", "COMPOSITE": "BOX", "HOLLOW": "BOX", "COMPLEX": "COUNT"}
+	for k in expected.keys():
+		var ex := StoryData.example(k)
+		var a := ShapeAnalyzer.analyze(ex)
+		check(a["kind"] == expected[k], "exemplo %s deveria ser %s, veio %s" % [k, expected[k], a["kind"]])
+		check(is_equal_approx(float(a["area"]), TerritoryGenerator.area_of(ex)), "exemplo %s: área" % k)

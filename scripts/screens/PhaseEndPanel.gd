@@ -1,5 +1,5 @@
 ## PhaseEndPanel.gd
-## "Crônica da batalha": pergaminho com insígnias (bronze/prata/ouro), Índice de Precisão, Domínio, XP e recursos.
+## "Crônica da batalha": pergaminho com insígnias (bronze/prata/ouro), Índice de Precisão, Domínio, XP, recursos e o desfecho da história.
 extends Control
 class_name PhaseEndPanel
 
@@ -26,6 +26,8 @@ var _dom_val : Label
 var _ip_val : Label
 var _xp_val : Label
 var _reward : Label
+var _goal : Label
+var _story : Label
 var _btn_next : Button
 var _btn_repeat : Button
 var _panel : PanelContainer
@@ -70,6 +72,9 @@ func _ready() -> void:
 	_star_caption = UiKit.make_label("", 20, Color8(120, 62, 10), "Cinzel")
 	_star_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(_star_caption)
+	_goal = UiKit.make_label("", 17, INK_MUTED, "Source Sans 3")
+	_goal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(_goal)
 
 	vb.add_child(_rule())
 	var cols := HBoxContainer.new()
@@ -91,6 +96,11 @@ func _ready() -> void:
 	_reward.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(_reward)
 	vb.add_child(_rule())
+	_story = UiKit.make_label("", 18, INK, "Libre Baskerville")
+	_story.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_story.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_story.custom_minimum_size = Vector2(760, 0)
+	vb.add_child(_story)
 
 	var btns := HBoxContainer.new()
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -124,8 +134,18 @@ func _stat_col(parent: Control, title: String) -> Label:
 	v.add_child(l)
 	return l
 
-## summary: dicionário de GameManager.phase_ended. gained_resource: ganhou +1 RE nesta conclusão.
-func show_summary(summary: Dictionary, has_next: bool, gained_resource: bool) -> void:
+## Diz o que falta para a próxima medalha.
+static func goal_text(won: bool, star_count: int) -> String:
+	if not won:
+		return "Vença a fase (70% de Domínio) para ganhar a medalha de Bronze."
+	if star_count == 1:
+		return "Próxima medalha: Prata com precisão de %d%% ou mais." % int(AccuracyTracker.SILVER_MIN_IP)
+	if star_count == 2:
+		return "Próxima medalha: Ouro com precisão de %d%% ou mais." % int(AccuracyTracker.GOLD_MIN_IP)
+	return "Medalha máxima conquistada!"
+
+## summary: dicionário de GameManager.phase_ended. re_gained: RE das medalhas novas.
+func show_summary(summary: Dictionary, has_next: bool, re_gained: int) -> void:
 	var won: bool = summary["won"]
 	var star_count: int = summary["stars"]
 	if won:
@@ -133,7 +153,9 @@ func show_summary(summary: Dictionary, has_next: bool, gained_resource: bool) ->
 		_title.add_theme_color_override("font_color", Color8(30, 90, 50))
 		_stats.text = "Vitórias: %d  |  Derrotas: %d  |  Recuos: %d" % [summary["wins"], summary["losses"], summary["retreats"]]
 		_reason.text = ""
-		_reward.text = "Recursos Estratégicos: %s" % ("+1" if gained_resource else "+0")
+		var medal_xp: int = AccuracyTracker.STAR_XP[star_count]
+		var re_text := "+%d" % re_gained if re_gained > 0 else "+0 (só medalhas novas rendem RE)"
+		_reward.text = "Recompensa da medalha: +%d XP  |  Recursos Estratégicos: %s" % [medal_xp, re_text]
 		_star_caption.text = "Insígnia de %s" % STAR_NAMES[star_count - 1] if star_count > 0 else ""
 	else:
 		_title.text = "FASE FRACASSADA"
@@ -143,6 +165,9 @@ func show_summary(summary: Dictionary, has_next: bool, gained_resource: bool) ->
 		_reward.text = ""
 		_star_caption.text = ""
 	_btn_next.visible = won and has_next
+	_reason.visible = _reason.text != ""
+	_goal.text = goal_text(won, star_count)
+	_story.text = StoryData.epilogue(int(summary["phase"]), won)
 	_dom_val.text = "0%"
 	_ip_val.text = "0%"
 	_xp_val.text = "0"

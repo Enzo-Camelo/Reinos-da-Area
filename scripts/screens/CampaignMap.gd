@@ -80,8 +80,21 @@ func _ready() -> void:
 
 	var focus_phase := clampi(GameState.unlocked_phase, 1, CampaignData.TOTAL_PHASES)
 	_nodes[focus_phase - 1].grab_focus.call_deferred()
-	if auto_brief > 0:
+	if not GameState.has_seen("prologue"):
+		_tell_story("prologue", StoryData.prologue(), func():
+			if auto_brief > 0:
+				_open_briefing(auto_brief))
+	elif auto_brief > 0:
 		_open_briefing.call_deferred(auto_brief)
+
+## Mostra uma cena da história, marca como vista e segue em frente.
+func _tell_story(key: String, pages: Array, then: Callable) -> void:
+	var s := StoryOverlay.new()
+	s.pages = pages
+	s.finished.connect(func():
+		GameState.mark_seen(key)
+		then.call_deferred())
+	add_child(s)
 
 func _screen_pos(i: int) -> Vector2:
 	return _map_rect.position + NODE_POS[i] * (_map_rect.size.x / MAP_SRC.x)
@@ -162,6 +175,10 @@ func _build_header() -> Control:
 	pips.set_count(GameState.resources)
 	hb.add_child(pips)
 
+	var b_guide := UiKit.make_menu_button("COMO JOGAR", Vector2(200, 50), UiKit.C_BG_PANEL, 17)
+	b_guide.pressed.connect(func(): add_child(GuidePanel.new()))
+	hb.add_child(b_guide)
+
 	var b_arch := UiKit.make_menu_button("TROCAR", Vector2(140, 50), UiKit.C_BG_PANEL, 18)
 	b_arch.pressed.connect(func(): archetype_requested.emit())
 	hb.add_child(b_arch)
@@ -175,6 +192,12 @@ func _open_briefing(p: int) -> void:
 		_brief.queue_free()
 	_brief_phase = p
 	var cfg := CampaignData.get_phase(p)
+	# primeira visita a um cenário: a história (com a lição da região) vem antes do briefing
+	var chapter_idx := int(cfg["scenario_idx"])
+	var chapter_key := "chapter_%d" % chapter_idx
+	if GameState.is_unlocked(p) and not GameState.has_seen(chapter_key):
+		_tell_story(chapter_key, StoryData.chapter(chapter_idx), _open_briefing.bind(p))
+		return
 
 	var overlay := ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.62)
@@ -197,6 +220,12 @@ func _open_briefing(p: int) -> void:
 	var t := UiKit.make_label("FASE %d — %s" % [p, str(cfg["scenario_name"]).to_upper()], 30, Color8(92, 40, 14), "Cinzel")
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
+	var foe := StoryData.rival(p)
+	var foe_lbl := UiKit.make_label("Rival: %s\n“%s”" % [foe["name"], foe["quote"]], 19, Color8(130, 40, 20), "Libre Baskerville")
+	foe_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	foe_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	foe_lbl.custom_minimum_size = Vector2(760, 0)
+	vb.add_child(foe_lbl)
 	vb.add_child(_rule())
 
 	var rows := [
@@ -222,7 +251,8 @@ func _open_briefing(p: int) -> void:
 		vb.add_child(hb)
 
 	vb.add_child(_rule())
-	var best := "Melhor: %s   Precisão: %d%%" % [UiKit.star_text(GameState.get_stars(p)), int(GameState.get_best_ip(p))]
+	var best := "Melhor: %s   Precisão: %d%%\nPrata: precisão %d%%+   •   Ouro: precisão %d%%+" % [UiKit.star_text(GameState.get_stars(p)),
+		int(GameState.get_best_ip(p)), int(AccuracyTracker.SILVER_MIN_IP), int(AccuracyTracker.GOLD_MIN_IP)]
 	var bl := UiKit.make_label(best, 19, Color8(120, 62, 10), "Source Sans 3")
 	bl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(bl)
@@ -242,13 +272,16 @@ func _open_briefing(p: int) -> void:
 	hb2.alignment = BoxContainer.ALIGNMENT_CENTER
 	hb2.add_theme_constant_override("separation", 20)
 	vb.add_child(hb2)
-	var b_cancel := UiKit.make_menu_button("VOLTAR  [Esc]", Vector2(210, 56), UiKit.C_BG_PANEL, 18)
+	var b_cancel := UiKit.make_menu_button("VOLTAR  [Esc]", Vector2(190, 56), UiKit.C_BG_PANEL, 18)
 	b_cancel.pressed.connect(_close_briefing)
 	hb2.add_child(b_cancel)
+	var b_story := UiKit.make_menu_button("HISTÓRIA", Vector2(170, 56), UiKit.C_BG_PANEL, 18)
+	b_story.pressed.connect(func(): _tell_story(chapter_key, StoryData.chapter(chapter_idx), func(): pass))
+	hb2.add_child(b_story)
 	var b_arch := UiKit.make_menu_button("TROCAR CONSELHEIRO", Vector2(300, 56), UiKit.C_BG_PANEL, 18)
 	b_arch.pressed.connect(func(): archetype_requested.emit())
 	hb2.add_child(b_arch)
-	var b_go := UiKit.make_menu_button("INICIAR FASE", Vector2(260, 56), UiKit.C_RED_DIM, 20)
+	var b_go := UiKit.make_menu_button("INICIAR FASE", Vector2(230, 56), UiKit.C_RED_DIM, 20)
 	b_go.disabled = arch == ""
 	b_go.pressed.connect(func(): phase_chosen.emit(p))
 	hb2.add_child(b_go)

@@ -42,6 +42,9 @@ func _battle(n: int, arch: String, tutorial: bool, wait: float, name: String, re
 	await get_tree().process_frame
 
 func _run() -> void:
+	var save_path := ProjectSettings.globalize_path(GameState.SAVE_PATH)
+	var backup := FileAccess.get_file_as_bytes(save_path) if FileAccess.file_exists(save_path) else PackedByteArray()
+	GameState.story_seen = ["prologue", "chapter_0", "chapter_1"]
 	await _show(TitleScreen.new(), 3.5, "00_title")
 	await _show(MainMenu.new(), 0.5, "01_menu")
 	GameState.archetype = ""
@@ -62,10 +65,10 @@ func _run() -> void:
 	b.setup(5)
 	add_child(b)
 	await get_tree().create_timer(1.0).timeout
-	b.end_panel.show_summary({"won": true, "reason": "ROUNDS", "phase": 5, "dominance": 80.0, "wins": 7, "losses": 1, "retreats": 2, "ip": 88.0, "stars": 3, "xp": 1250, "score": 950}, true, true)
+	b.end_panel.show_summary({"won": true, "reason": "ROUNDS", "phase": 5, "dominance": 80.0, "wins": 7, "losses": 1, "retreats": 2, "ip": 88.0, "stars": 3, "xp": 1250, "score": 950, "medal_xp": 600}, true, 3)
 	await get_tree().create_timer(2.6).timeout
 	await _shot("10_endpanel_win")
-	b.end_panel.show_summary({"won": false, "reason": "ROUNDS", "phase": 5, "dominance": 40.0, "wins": 3, "losses": 5, "retreats": 2, "ip": 41.0, "stars": 0, "xp": 300, "score": 300}, false, false)
+	b.end_panel.show_summary({"won": false, "reason": "ROUNDS", "phase": 5, "dominance": 40.0, "wins": 3, "losses": 5, "retreats": 2, "ip": 41.0, "stars": 0, "xp": 300, "score": 300, "medal_xp": 0}, false, 0)
 	await get_tree().create_timer(1.6).timeout
 	await _shot("11_endpanel_lose")
 	b.end_panel.visible = false
@@ -88,3 +91,32 @@ func _run() -> void:
 	await get_tree().create_timer(0.8).timeout
 	await _shot("14_briefing")
 	cm.queue_free()
+	await get_tree().process_frame
+	# história, guia e relatório pós-rodada
+	var story := StoryOverlay.new()
+	story.pages = StoryData.chapter(2)
+	add_child(story)
+	await get_tree().create_timer(0.3).timeout
+	story._go(1)
+	await get_tree().create_timer(2.5).timeout
+	await _shot("15_story_lesson")
+	story.queue_free()
+	await get_tree().process_frame
+	var guide := GuidePanel.new()
+	add_child(guide)
+	await get_tree().create_timer(0.3).timeout
+	await _shot("16_guide_goal")
+	for tab in range(1, GuidePanel.TABS.size()):
+		guide._show_tab(tab)
+		await get_tree().create_timer(0.3).timeout
+		await _shot("16_guide_tab%d" % tab)
+	guide.queue_free()
+	await get_tree().process_frame
+	for n in [1, 5, 9, 13, 17]:
+		await _battle(n, "GUERREIRO", false, 2.0, "17_report%d" % n, CombatResolver.ACTION_ATTACK, 3.5)
+	if backup.size() > 0:
+		var out := FileAccess.open(save_path, FileAccess.WRITE)
+		out.store_buffer(backup)
+		out.close()
+	elif FileAccess.file_exists(save_path):
+		DirAccess.remove_absolute(save_path)

@@ -43,7 +43,6 @@ var current_round    : int    = 0
 var player_score     : int    = 0
 var win_streak       : int    = 0
 var dominance        : float  = 0.0
-var first_reach_round: int    = 0
 var wins             : int    = 0
 var losses           : int    = 0
 var retreats         : int    = 0
@@ -59,7 +58,6 @@ var player_area      : float  = 0.0
 var enemy_area       : float  = 0.0
 var terrain          : Dictionary = {"atk": 1.0, "def": 1.0, "name": "Plano"}
 var round_time_left  : float  = 60.0
-var round_start_time : float  = 0.0
 var timer_active     : bool   = false
 var timer_paused     : bool   = false
 var last_info        : Dictionary = {}
@@ -97,7 +95,6 @@ func start_phase(phase_cfg: Dictionary, arch: String, available_resources: int) 
 	player_score = 0
 	win_streak = 0
 	dominance = 0.0
-	first_reach_round = 0
 	wins = 0
 	losses = 0
 	retreats = 0
@@ -127,7 +124,6 @@ func start_new_round(p_area: float, e_area: float, round_terrain: Dictionary) ->
 	strike_active = false
 	current_phase = Phase.ANALYSIS
 	round_time_left = float(cfg["time"])
-	round_start_time = Time.get_ticks_msec() / 1000.0
 	timer_active = true
 	_countdown_timer.start()
 	phase_changed.emit("ANALYSIS")
@@ -199,7 +195,7 @@ func resolve_action(action: Action, forced_timeout: bool = false) -> void:
 	info["ip"] = ip
 	ip_values.append(ip)
 
-	var time_taken := (Time.get_ticks_msec() / 1000.0) - round_start_time
+	var time_taken := float(cfg["time"]) - round_time_left
 	_apply_result(info, time_taken, forced_timeout)
 	last_info = info
 	round_resolved.emit(info)
@@ -224,8 +220,6 @@ func _apply_result(info: Dictionary, time_taken: float, timeout: bool) -> void:
 		win_streak = 0
 
 	dominance = clampf(dominance + float(info["dom_delta"]), 0.0, 100.0)
-	if first_reach_round == 0 and dominance >= AccuracyTracker.BRONZE_MIN_DOM:
-		first_reach_round = current_round
 	carry_area = clampf(player_area * (1.0 + float(info["area_pct"])), 0.0, MAX_AREA)
 	info["new_area"] = carry_area
 	score_updated.emit(player_score, win_streak)
@@ -251,11 +245,12 @@ func _end_phase(reason: String) -> void:
 	var ip := AccuracyTracker.phase_ip(ip_values)
 	var star_count := 0
 	if won:
-		star_count = AccuracyTracker.stars(dominance, first_reach_round, ip, losses)
-	var xp := player_score + star_count * 100
+		star_count = AccuracyTracker.stars(dominance, ip)
+	var medal_xp: int = AccuracyTracker.STAR_XP[star_count]
+	var xp := player_score + medal_xp
 	phase_ended.emit({
 		"won": won, "reason": reason, "phase": cfg["phase"],
 		"dominance": dominance, "wins": wins, "losses": losses, "retreats": retreats,
 		"ip": ip, "stars": star_count, "xp": xp, "score": player_score,
-		"rounds": current_round, "resources_gain": 1 if won else 0,
+		"medal_xp": medal_xp, "rounds": current_round,
 	})

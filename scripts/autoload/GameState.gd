@@ -18,6 +18,8 @@ var sfx_volume     : float  = 1.0
 var tutorial_done  : bool   = false
 var fullscreen     : bool   = true
 var reduce_motion  : bool   = false
+## Cenas da história já vistas: "prologue", "chapter_0" .. "chapter_4".
+var story_seen     : Array  = []
 
 func _ready() -> void:
 	load_game()
@@ -31,16 +33,27 @@ func get_stars(phase: int) -> int:
 func get_best_ip(phase: int) -> float:
 	return float(best_ip.get(phase, 0.0))
 
-## Registra o resultado de uma fase concluída.
-func record_phase(phase: int, won: bool, star_count: int, ip: float, xp_gain: int) -> void:
+func has_seen(story_key: String) -> bool:
+	return story_seen.has(story_key)
+
+func mark_seen(story_key: String) -> void:
+	if not has_seen(story_key):
+		story_seen.append(story_key)
+		save_game()
+
+## Registra o resultado de uma fase concluída. Retorna os RE ganhos: 1 por medalha nova.
+func record_phase(phase: int, won: bool, star_count: int, ip: float, xp_gain: int) -> int:
 	xp += xp_gain
+	var gained := 0
 	if won:
+		gained = maxi(0, star_count - get_stars(phase))
+		resources += gained
 		stars[phase] = maxi(get_stars(phase), star_count)
 		best_ip[phase] = maxf(get_best_ip(phase), ip)
 		if phase >= unlocked_phase:
 			unlocked_phase = mini(phase + 1, 20)
-			resources += 1   # +1 RE por fase nova concluída
 	save_game()
+	return gained
 
 func reset_progress() -> void:
 	archetype = ""
@@ -50,6 +63,7 @@ func reset_progress() -> void:
 	resources = START_RESOURCES
 	xp = 0
 	tutorial_done = false
+	story_seen = []
 	save_game()
 
 func save_game() -> void:
@@ -61,6 +75,7 @@ func save_game() -> void:
 	cfg.set_value("player", "resources", resources)
 	cfg.set_value("player", "xp", xp)
 	cfg.set_value("player", "tutorial_done", tutorial_done)
+	cfg.set_value("player", "story_seen", story_seen)
 	cfg.set_value("audio", "music", music_volume)
 	cfg.set_value("audio", "sfx", sfx_volume)
 	cfg.set_value("display", "fullscreen", fullscreen)
@@ -78,6 +93,7 @@ func load_game() -> void:
 	resources      = int(cfg.get_value("player", "resources", START_RESOURCES))
 	xp             = int(cfg.get_value("player", "xp", 0))
 	tutorial_done  = bool(cfg.get_value("player", "tutorial_done", false))
+	story_seen     = cfg.get_value("player", "story_seen", [])
 	music_volume   = float(cfg.get_value("audio", "music", 0.8))
 	sfx_volume     = float(cfg.get_value("audio", "sfx", 1.0))
 	fullscreen     = bool(cfg.get_value("display", "fullscreen", true))

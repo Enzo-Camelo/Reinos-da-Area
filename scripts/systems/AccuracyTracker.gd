@@ -5,8 +5,10 @@ class_name AccuracyTracker
 extends RefCounted
 
 const BRONZE_MIN_DOM := 70.0
-const SILVER_MAX_ROUND := 6
+const SILVER_MIN_IP := 75.0
 const GOLD_MIN_IP := 85.0
+## XP extra pela medalha, indexado pelo número de estrelas.
+const STAR_XP := [0, 150, 350, 600]
 
 ## info: resultado de CombatResolver.resolve
 static func round_ip(info: Dictionary) -> float:
@@ -39,11 +41,14 @@ static func sound_for(ip: float) -> String:
 	return ""
 
 ## Estrelas: 3 ouro, 2 prata, 1 bronze, 0 nenhuma.
-static func stars(final_dom: float, first_reach_round: int, ip: float, losses: int) -> int:
+## Bronze = vencer a fase; Prata e Ouro dependem só da precisão das decisões.
+static func stars(final_dom: float, ip: float) -> int:
 	if final_dom < BRONZE_MIN_DOM:
 		return 0
-	if ip >= GOLD_MIN_IP and losses == 0:
+	# compara o mesmo valor arredondado que a tela mostra
+	var shown := roundf(ip)
+	if shown >= GOLD_MIN_IP:
 		return 3
-	if first_reach_round > 0 and first_reach_round <= SILVER_MAX_ROUND:
+	if shown >= SILVER_MIN_IP:
 		return 2
 	return 1

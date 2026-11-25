@@ -118,7 +118,7 @@ Os modificadores ajustam o peso relativo das áreas comparadas; não adicionam a
 | **Plano** | ×1,00 | ×1,00 | Planícies (F.1–4) | Confronto puramente numérico. |
 | **Vale** | ×1,00 | ×1,25 | Vales (F.5–8) | Forças menores na defesa podem vencer. |
 | **Serra** | ×0,85 | ×1,25 | Serras (F.9–12) | Território elevado é mais difícil de conquistar; o inimigo "parece maior" ao defender. |
-| **Costeiro** | ×1,10 | ×0,90 | Arquipélagos (F.13–16) | Atacar é mais vantajoso; exige decisão rápida (45 s). |
+| **Costeiro** | ×1,10 | ×0,90 | Arquipélagos (F.13–16) | Atacar é mais vantajoso; exige decisão rápida (30 s). |
 | **Misto** | sorteado | sorteado | Abismo (F.17–20) | A cada rodada sai um dos quatro terrenos acima, exibido no HUD. Ignorar o relevo é tão penalizante quanto errar a área. |
 
 ### Objetivo da fase
@@ -182,7 +182,7 @@ Antes das trombetas soarem, o Rei entrega sua confiança a apenas um de três co
 ### Recursos Estratégicos (RE)
 
 - O jogador começa a campanha com **3 RE**.
-- Ganha **+1 RE** ao concluir uma fase pela primeira vez.
+- Ganha **+1 RE por medalha nova** em cada fase (Ouro de primeira = +3; melhorar a medalha depois paga a diferença).
 - RE gastos não voltam, mesmo que a fase seja perdida — decidir *quando* usar a ativa é parte da estratégia.
 - O medidor de RE aparece no HUD (painel de arquétipo) e no mapa de campanha.
 
@@ -248,9 +248,11 @@ Vale a insígnia mais alta conquistada.
 
 | Insígnia | Condição |
 |---|---|
-| ★ **Bronze — Conclusão** | Domínio ≥ 70% ao final da rodada 10. |
-| ★★ **Prata — Eficiência** | Bronze **e** atingir 70% de Domínio até a **6ª rodada** (≤ 60% das rodadas). |
-| ★★★ **Ouro — Precisão** | Bronze **e** IP da fase ≥ 85% **e** nenhuma derrota. |
+| ★ **Bronze — Conclusão** | Domínio ≥ 70% ao final da rodada 10. (+150 XP) |
+| ★★ **Prata — Boa precisão** | Bronze **e** IP da fase ≥ 75%. (+350 XP) |
+| ★★★ **Ouro — Precisão** | Bronze **e** IP da fase ≥ 85%. (+600 XP) |
+
+> **Recalibração após teste com jogadores.** A Prata anterior (70% até a 6ª rodada) era inalcançável sem o Golpe Decisivo, pois 6 vitórias somam no máximo 60%. O Ouro exigia zero derrotas, e quem acertava 90% recebia só Bronze.
 
 ---
 
@@ -258,7 +260,7 @@ Vale a insígnia mais alta conquistada.
 
 A progressão não é linear — é uma pressão crescente: o reino do jogador cresce a cada conquista, tornando o cálculo da própria área mais complexo; e a diferença de tamanho entre jogador e inimigos diminui a cada fase, exigindo estimativas cada vez mais precisas.
 
-**Calibração da dificuldade [v5].** O intervalo de diferença entre jogador e inimigo diminui linearmente de **25–35% na Fase 1** até **2–5% na Fase 20**. A diferença é medida na razão **efetiva** (Força_J / Força_I, já com o terreno aplicado); por isso, nos cenários com modificadores, a diferença *visível* de área engana — é o que obriga o jogador a calcular "para qual contexto" está decidindo. O tempo por rodada é fixo por cenário (60 s, 60 s, 60 s, 45 s, 30 s).
+**Calibração da dificuldade [v5].** O intervalo de diferença entre jogador e inimigo diminui linearmente de **25–35% na Fase 1** até **2–5% na Fase 20**. A diferença é medida na razão **efetiva** (Força_J / Força_I, já com o terreno aplicado); por isso, nos cenários com modificadores, a diferença *visível* de área engana — é o que obriga o jogador a calcular "para qual contexto" está decidindo. O tempo por rodada é fixo por cenário (30 s, 30 s, 35 s, 30 s, 25 s). A Serra tem 5 s a mais porque ali a grade de referência desaparece.
 
 ### O reino cresce e o grid encolhe
 
@@ -271,8 +273,8 @@ A cada vitória o jogador anexa território. O reino cresce, mas o grid mantém 
 | **I · Planícies** (F.1–4) | Retângulos simples com grande discrepância entre os lados. | Largura × altura. |
 | **II · Vales** (F.5–8) | Retângulos com **meios-blocos** e **arestas diagonais**. | Contar inteiros e somar os meios-blocos; grade de referência de 1 célula. |
 | **III · Serras** (F.9–12) | **Trapézios** e **formas compostas** (L, T, U). Sem grade de apoio. | Decompor e somar partes. |
-| **IV · Arquipélagos** (F.13–16) | Figuras **complexas e preenchidas** com bordas diagonais. 45 s por rodada. | Decomposição sob pressão de tempo. |
-| **V · Abismo** (F.17–20) | Malhas **vazadas** — blocos ausentes no interior. 30 s por rodada. | Subtração de áreas; relevo misto; Fase 20 com morte súbita. |
+| **IV · Arquipélagos** (F.13–16) | Figuras **complexas e preenchidas** com bordas diagonais. 30 s por rodada. | Decomposição sob pressão de tempo. |
+| **V · Abismo** (F.17–20) | Malhas **vazadas** — blocos ausentes no interior. 25 s por rodada. | Subtração de áreas; relevo misto; Fase 20 com morte súbita. |
 
 O jogador nunca recebe uma fórmula. Aprende geometria plana pela necessidade de sobreviver.
 
@@ -320,11 +322,11 @@ Geometria é o continente onde o jogo se passa — um mundo medieval-fantástico
 
 | # | Cenário | Fases | Terreno | Formas | Grade de referência | Tempo | Cartógrafa | Unidade |
 |---|---|---|---|---|---|---|---|---|
-| I | **Planícies de Aldrath** | 1–4 | Plano | Retângulos | Total | 60 s | Ativa | m² |
-| II | **Vales de Kheldorn** | 5–8 | Vale | Meios-blocos e diagonais | 1 célula | 60 s | Ativa (5–6), silenciosa (7–8) | m² → km² |
-| III | **Serra das Pedras Vivas** | 9–12 | Serra | Trapézios e compostas | Nenhuma | 60 s | Silenciosa (9), ausente (10+) | km² |
-| IV | **Arquipélago do Oblívio** | 13–16 | Costeiro | Complexas e preenchidas | Nenhuma | **45 s** | Ausente | ha |
-| V | **Abismo Irregular** | 17–20 | Misto | Malhas vazadas | Nenhuma | **30 s** | Ausente | ha |
+| I | **Planícies de Aldrath** | 1–4 | Plano | Retângulos | Total | 30 s | Ativa | m² |
+| II | **Vales de Kheldorn** | 5–8 | Vale | Meios-blocos e diagonais | 1 célula | 30 s | Ativa (5–6), silenciosa (7–8) | m² → km² |
+| III | **Serra das Pedras Vivas** | 9–12 | Serra | Trapézios e compostas | Nenhuma | 35 s | Silenciosa (9), ausente (10+) | km² |
+| IV | **Arquipélago do Oblívio** | 13–16 | Costeiro | Complexas e preenchidas | Nenhuma | **30 s** | Ausente | ha |
+| V | **Abismo Irregular** | 17–20 | Misto | Malhas vazadas | Nenhuma | **25 s** | Ausente | ha |
 
 - **I — Planícies de Aldrath.** Campos abertos, castelos de pedra simples com torres quadradas. Atmosfera de amanhecer medieval quente e acolhedora.
 - **II — Vales de Kheldorn.** Vales profundos, pontes de pedra, fortalezas sobre penhascos. Névoa matinal nas montanhas; tom mais sombrio.
@@ -345,6 +347,8 @@ Cada reino rival tem um castelo cuja silhueta reflete sua personalidade geométr
 **História principal.** O Grande Império das Formas Irregulares absorve reinos vizinhos, violando os tratados. Seus territórios são intencionalmente deformados — polígonos caóticos — tornando impossível aos reinos menores calcular sua força antes de um confronto. Guiado pela Cartógrafa, o Arquiteto-Rei parte em campanha pelos cinco cenários, enfrentando dez reinos por fase. Cada vitória expande seu território; cada derrota encolhe as fronteiras que jurou proteger.
 
 **Linha do tempo da campanha:** Planícies (retângulos simples) → Vales (meios-blocos e diagonais) → Serra (trapézios e compostas) → Arquipélago (complexas) → Abismo (vazadas).
+
+**Como a história aparece no jogo:** prólogo na primeira visita ao mapa; um capítulo com lição de cálculo ao chegar a cada cenário (a partir da Serra, como anotações deixadas pela Cartógrafa); um rival com provocação própria em cada fase; e o desfecho na tela de fim de fase. As cenas podem ser puladas e revistas pelo guia *Como jogar*.
 
 **Papéis:** o Arquiteto-Rei (do medo ao domínio); a Cartógrafa (guia os Cenários I e II e se cala até desaparecer, simbolizando a autonomia conquistada); o Império das Formas (caos geométrico a ser superado).
 
@@ -382,7 +386,11 @@ Insígnias (bronze/prata/ouro) que se acendem em sequência (1,5 s), **Índice d
 
 ### Tutorial **[v5]**
 
-Na primeira vez na Fase 1, a Cartógrafa conduz 5 passos (seu grid, o inimigo sem grid, os botões, o custo dos erros e a revelação), com opção **Pular**. O relógio fica pausado durante o tutorial.
+Na primeira vez na Fase 1, a Cartógrafa conduz 6 passos (seu grid, o inimigo sem grid, os botões, o relógio e o custo dos erros, a meta e o relatório, a habilidade e o guia), com destaque na tela e opção de pular. O guia **Como jogar** (menu, mapa, pausa ou tecla H) pode ser aberto a qualquer momento, com o relógio parado.
+
+### Relatório pós-rodada
+
+Um popup compara os dois reinos lado a lado, mostra como calcular cada área (retângulo, trapézio, retângulo menos recortes ou soma linha a linha), o multiplicador de terreno, a decisão certa e o efeito da rodada. A tecla V o esconde para ver o campo.
 
 ### Controles **[v5]**
 

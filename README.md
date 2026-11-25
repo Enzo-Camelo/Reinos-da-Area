@@ -67,16 +67,23 @@ Mais detalhes de instalação com imagens e passos: [`assets/docs/Guia de instal
 2. No **menu principal**, escolha **Jogar campanha**. (Se já houver progresso, aparece **Continuar** para voltar direto à próxima fase.)
 3. Na primeira vez, escolha o seu **conselheiro** (arquétipo): Estrategista, Engenheiro ou Guerreiro. Dá para trocar depois no menu ou no mapa.
 4. No **mapa de campanha**, clique no selo da **Fase 1** (as demais estão bloqueadas até vencer as anteriores). Leia o *briefing* e clique em **Iniciar fase**.
-5. Na primeira vez na Fase 1, a **Cartógrafa** conduz um tutorial curto (5 passos, dá para pular).
+5. Na primeira vez na Fase 1, a **Cartógrafa** conduz um tutorial curto (6 passos, dá para pular).
+
+### História e guia dentro do jogo
+
+- Na primeira visita ao mapa, um **prólogo** apresenta o continente de Geometria e o Império das Formas. Cada cenário abre com um **capítulo** que traz uma **lição de cálculo** desenhada para as formas daquela região.
+- Cada fase tem um **rival** próprio (no briefing), e o fim da fase conta o desfecho. Tudo pode ser pulado (**Esc**) e revisto.
+- **Como jogar** (menu, mapa, pausa ou tecla **H** na batalha, com o relógio parado) reúne objetivo, rodada, cálculo de cada forma, terreno, medalhas e controles. Dali também se revê a história e o tutorial.
+- Na batalha, uma linha acima dos botões mostra **quantas vitórias faltam** para a meta e o que fazer agora.
 
 ### O que acontece em cada rodada
 
-1. **Análise** (cerca de 1,5 s): aparecem o seu reino, à **esquerda, com o quadriculado**, e o reino inimigo, à **direita, liso**. Cada quadradinho do quadriculado vale uma unidade de área.
+1. **Análise** (cerca de 1 s): aparecem o seu reino, à **esquerda, com o quadriculado**, e o reino inimigo, à **direita, liso**. Cada quadradinho do quadriculado vale uma unidade de área.
 2. **Decisão** (tempo limitado conforme o cenário): estime visualmente a área do inimigo e compare com a sua. Em seguida escolha:
    - **Atacar:** acredite que o **seu reino é maior** (considerando o terreno).
    - **Defender:** acredite que o **inimigo é maior**.
    - **Recuar:** na dúvida, a opção segura. Custa 3% de Domínio, mas você não perde área.
-3. **Revelação:** o quadriculado do inimigo aparece e o jogo mostra o cálculo (áreas × modificadores de terreno). É assim que se aprende a estimar melhor.
+3. **Revelação:** o quadriculado do inimigo aparece e um **relatório** compara os dois reinos lado a lado, mostrando como calcular cada área (base × altura, trapézio, retângulo menos recortes ou soma linha a linha), o multiplicador de terreno e qual era a decisão certa. É assim que se aprende a estimar melhor. **V** esconde o relatório para ver o campo.
 4. Aperte **Enter** (ou clique em *Próxima rodada*) para seguir. Depois de 10 rodadas a fase termina.
 
 Se o tempo acabar, o jogo conta como **Recuo** automaticamente.
@@ -91,6 +98,8 @@ O jogo funciona com **mouse** e **teclado**.
 | **D** | Defender |
 | **R** | Recuar |
 | **E** | Ativar a habilidade ativa do conselheiro (1× por fase, gasta Recursos Estratégicos) |
+| **H** | Abrir o guia *Como jogar* na batalha (o relógio para) |
+| **V** | Esconder ou mostrar o relatório da rodada |
 | **Enter / Espaço** | Próxima rodada (na tela de resultado) e confirmar botão em foco |
 | **Esc** | Pausar (na batalha) · voltar/fechar (nos menus, mapa e opções) |
 | **Setas** | Navegar entre botões e selos de fase no teclado |
@@ -125,24 +134,24 @@ Atacar e Defender são opostos: **sempre existe exatamente uma decisão certa**.
   - terminar as 10 rodadas com Domínio abaixo de 70%;
   - ou ficar com **menos de 4 unidades de área**;
   - ou, na **Fase 20 (morte súbita)**, errar uma única decisão.
-- **Estrelas** (vale a melhor conquistada):
-  - ★ Bronze: 70% de Domínio ao final das 10 rodadas.
-  - ★★ Prata: Bronze e 70% atingidos já até a 6ª rodada.
-  - ★★★ Ouro: Bronze, Índice de Precisão ≥ 85% e nenhuma derrota.
+- **Medalhas** (vale a melhor conquistada):
+  - ★ Bronze: 70% de Domínio ao final das 10 rodadas (+150 XP).
+  - ★★ Prata: Bronze e Índice de Precisão ≥ 75% (+350 XP).
+  - ★★★ Ouro: Bronze e Índice de Precisão ≥ 85% (+600 XP).
 - **Índice de Precisão (IP):** mede o quanto suas decisões foram certas (100 por decisão certa; recuo vale 70 ou 40; erro vale 50, 25 ou 0 conforme a margem). Você não digita estimativas: o jogo calcula pelas decisões.
-- **Pontuação:** vitória na rodada = 100 pontos + bônus de sequência (+50 por vitória seguida) + bônus de velocidade (até 200); derrota = −50. XP da fase = pontos + 100 por estrela.
-- **Recursos Estratégicos (RE):** você começa com 3 e ganha +1 ao concluir uma fase pela primeira vez. São gastos nas habilidades ativas.
+- **Pontuação:** vitória na rodada = 100 pontos + bônus de sequência (+50 por vitória seguida) + bônus de velocidade (até 200); derrota = −50. XP da fase = pontos + bônus da medalha.
+- **Recursos Estratégicos (RE):** você começa com 3 e ganha **+1 por medalha nova** em cada fase (Ouro de primeira = +3; melhorar depois paga a diferença). São gastos nas habilidades ativas.
 - **Progresso salvo automaticamente** em `%APPDATA%\Godot\app_userdata\Reinos da Área\reinos_save.cfg`.
 
 ### Os 5 cenários
 
 | Cenário | Fases | Terreno (ataque / defesa) | Formas dos reinos | Quadriculado ao redor do inimigo | Tempo por rodada | Unidade |
 |---|---|---|---|---|---|---|
-| Planícies de Aldrath | 1–4 | 1,0 / 1,0 | Retângulos | Total | 60 s | m² |
-| Vales de Kheldorn | 5–8 | 1,0 / 1,25 | Meios-blocos e diagonais | 1 célula | 60 s | m² → km² |
-| Serra das Pedras Vivas | 9–12 | 0,85 / 1,25 | Trapézios e formas compostas | Nenhum | 60 s | km² |
-| Arquipélago do Oblívio | 13–16 | 1,10 / 0,90 | Formas complexas | Nenhum | 45 s | hectares |
-| Abismo Irregular | 17–20 | misto (muda a cada rodada) | Malhas com buracos | Nenhum | 30 s | hectares |
+| Planícies de Aldrath | 1–4 | 1,0 / 1,0 | Retângulos | Total | 30 s | m² |
+| Vales de Kheldorn | 5–8 | 1,0 / 1,25 | Meios-blocos e diagonais | 1 célula | 30 s | m² → km² |
+| Serra das Pedras Vivas | 9–12 | 0,85 / 1,25 | Trapézios e formas compostas | Nenhum | 35 s | km² |
+| Arquipélago do Oblívio | 13–16 | 1,10 / 0,90 | Formas complexas | Nenhum | 30 s | hectares |
+| Abismo Irregular | 17–20 | misto (muda a cada rodada) | Malhas com buracos | Nenhum | 25 s | hectares |
 
 A diferença de tamanho entre os reinos vai diminuindo ao longo da campanha (de 25–35% na Fase 1 até 2–5% na Fase 20), então estimar fica cada vez mais difícil.
 
@@ -183,7 +192,7 @@ Opcional, para quem quiser verificar o projeto (substitua pelo caminho do seu Go
 
 ```
 Godot_v4.6.3-stable_win64_console.exe --headless --path . --import
-Godot_v4.6.3-stable_win64_console.exe --headless --path . --script res://tests/run_tests.gd    # regras e gerador (497 verificações)
+Godot_v4.6.3-stable_win64_console.exe --headless --path . --script res://tests/run_tests.gd    # regras, gerador e explicação das áreas (518 verificações)
 Godot_v4.6.3-stable_win64_console.exe --headless --path . res://tests/integration_test.tscn    # fases completas (295 verificações)
 ```
 
@@ -200,12 +209,13 @@ Reinos-da-Area/
 │   ├── TerritoryRenderer.gd      ← desenho dos territórios, quadriculado e animações
 │   ├── AudioManager.gd           ← autoload: música e efeitos
 │   ├── autoload/GameState.gd     ← autoload: progresso salvo
-│   ├── data/                     ← CampaignData (20 fases), ArchetypeData
-│   ├── systems/                  ← CombatResolver, AccuracyTracker, UnitFormatter
+│   ├── data/                     ← CampaignData (20 fases), ArchetypeData, StoryData (história)
+│   ├── systems/                  ← CombatResolver, AccuracyTracker, UnitFormatter, ShapeAnalyzer
 │   ├── ui/                       ← UiKit, MedievalTheme, OrnateStyleBox, ScreenTransition
 │   │   └── widgets/              ← barra de Domínio, rodadas, relógio, moedas de RE, pausa, opções...
 │   └── screens/                  ← TitleScreen, MainMenu, ArchetypeSelect, CampaignMap, BattleScreen,
-│                                    PhaseEndPanel, CartographerPanel, TutorialOverlay
+│                                    PhaseEndPanel, CartographerPanel, TutorialOverlay,
+│                                    RoundReportPopup, StoryOverlay, GuidePanel
 ├── shaders/                      ← pergaminho por cenário, vinheta, brilho dourado
 ├── tests/                        ← testes automáticos e captura de telas
 └── assets/                       ← audios, cursor, fonts, icons, ui, docs

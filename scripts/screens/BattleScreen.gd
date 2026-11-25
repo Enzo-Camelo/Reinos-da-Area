@@ -1,6 +1,6 @@
 ## BattleScreen.gd
 ## Tela de uma fase: HUD medieval, território, rodadas, habilidades de arquétipo, Cartógrafa,
-## tutorial, pausa e painel de fim de fase. A lógica de regras fica em GameManager/CombatResolver.
+## tutorial, guia, relatório pós-rodada, pausa e painel de fim de fase. A lógica de regras fica em GameManager/CombatResolver.
 
 extends Node2D
 class_name BattleScreen
@@ -77,12 +77,9 @@ var btn_attack        : Button
 var btn_defend        : Button
 var btn_retreat       : Button
 var lbl_result_title  : Label
-var lbl_result_detail : Label
-var lbl_result_areas  : Label
-var lbl_chip_dom      : Label
-var lbl_chip_area     : Label
-var lbl_chip_ip       : Label
+var lbl_objective     : Label
 var btn_continue      : Button
+var report            : RoundReportPopup
 var btn_skill         : Button
 var pips              : ResourcePips
 var toast_panel       : PanelContainer
@@ -91,6 +88,7 @@ var lbl_toast         : Label
 var _buttons_enabled := false
 var _tutorial_open   := false
 var _pause_open      := false
+var _guide_open      := false
 var _closed          := false
 var _last_timer_sec  := -1
 var _toast_token     := 0
@@ -178,13 +176,14 @@ func _effective_ring() -> int:
 
 func _show_tutorial() -> void:
 	_tutorial_open = true
-	game_manager.set_timer_paused(true)
+	_sync_timer_pause()
+	cartographer.visible = false
 	var t := TutorialOverlay.new()
 	t.targets = get_tutorial_targets()
 	_ui.add_child(t)
 	t.finished.connect(func():
 		_tutorial_open = false
-		game_manager.set_timer_paused(false)
+		_sync_timer_pause()
 		GameState.tutorial_done = true
 		GameState.save_game())
 
@@ -196,7 +195,25 @@ func get_tutorial_targets() -> Array:
 		btn_row.get_global_rect().grow(10),
 		timer_medallion.get_global_rect().grow(8),
 		bar_dominance.get_global_rect().grow(10),
+		btn_skill.get_global_rect().grow(8),
 	]
+
+## O relógio só anda quando nada está na frente do campo.
+func _sync_timer_pause() -> void:
+	game_manager.set_timer_paused(_tutorial_open or _pause_open or _guide_open)
+
+func _open_guide() -> void:
+	if _guide_open or _tutorial_open or _pause_open or _closed:
+		return
+	_guide_open = true
+	_sync_timer_pause()
+	var g := GuidePanel.new()
+	g.in_battle = true
+	_ui.add_child(g)
+	g.closed.connect(func():
+		_guide_open = false
+		_sync_timer_pause())
+	g.tutorial_requested.connect(func(): _show_tutorial.call_deferred())
 
 # ─────────────────────────────────────────────
 #  UI
@@ -218,6 +235,11 @@ func _build_ui() -> void:
 	cartographer = CartographerPanel.new()
 	cartographer.position = Vector2(960 - 380, HUD_TOP_HEIGHT + 104)
 	_ui.add_child(cartographer)
+
+	report = RoundReportPopup.new()
+	report.continue_pressed.connect(_on_continue_pressed)
+	report.hide_pressed.connect(_toggle_report)
+	_ui.add_child(report)
 
 	_build_toast()
 
@@ -254,6 +276,11 @@ func _build_field_overlay(parent: Control) -> void:
 	timer_medallion = TimerMedallion.new()
 	timer_medallion.position = Vector2(960 - 42, HUD_TOP_HEIGHT + 6)
 	parent.add_child(timer_medallion)
+	var help := UiKit.make_menu_button("COMO JOGAR [H]", Vector2(230, 44), UiKit.C_BG_PANEL, 15)
+	help.focus_mode = Control.FOCUS_NONE
+	help.position = Vector2(14, HUD_TOP_HEIGHT + 12)
+	help.pressed.connect(_open_guide)
+	parent.add_child(help)
 
 func _build_toast() -> void:
 	toast_panel = _panel_with(OrnateStyleBox.new(Color(0.15, 0.11, 0.07, 0.96), Color(0.07, 0.05, 0.03, 0.96), C_TEXT_GOLD2))
@@ -429,12 +456,16 @@ func _build_bottom_hud(parent: Control) -> void:
 	center_vbox.add_theme_constant_override("separation", 8)
 	center_panel.add_child(center_vbox)
 
+	lbl_objective = UiKit.make_label("", 17, C_TEXT_GOLD2, "Source Sans 3")
+	lbl_objective.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	center_vbox.add_child(lbl_objective)
+
 	btn_row = HBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_row.add_theme_constant_override("separation", 22)
 	center_vbox.add_child(btn_row)
-	btn_attack  = UiKit.make_action_button("ATACAR", "Seu reino é maior", C_RED_DIM, "res://assets/icons/swords.png", Vector2(250, 128))
-	btn_defend  = UiKit.make_action_button("DEFENDER", "O inimigo é maior", C_BLUE_DIM, "res://assets/icons/shield.png", Vector2(250, 128))
+	btn_attack  = UiKit.make_action_button("ATACAR", "Sua força é maior", C_RED_DIM, "res://assets/icons/swords.png", Vector2(250, 128))
+	btn_defend  = UiKit.make_action_button("DEFENDER", "Inimigo é mais forte", C_BLUE_DIM, "res://assets/icons/shield.png", Vector2(250, 128))
 	btn_retreat = UiKit.make_action_button("RECUAR", "−3% de Domínio", C_GREEN_DIM, "res://assets/icons/boot.png", Vector2(250, 128))
 	for pair in [[btn_attack, "A"], [btn_defend, "D"], [btn_retreat, "R"]]:
 		btn_row.add_child(pair[0])
@@ -461,47 +492,39 @@ func _add_key_badge(btn: Control, key: String) -> void:
 	k.position = Vector2(btn.custom_minimum_size.x - k.custom_minimum_size.x - 10.0, 10.0)
 	btn.add_child(k)
 
+## Rodapé enxuto: os detalhes ficam no popup (RoundReportPopup).
 func _build_result_panel(center_vbox: VBoxContainer) -> void:
 	result_vbox = VBoxContainer.new()
 	result_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	result_vbox.add_theme_constant_override("separation", 6)
+	result_vbox.add_theme_constant_override("separation", 12)
 	result_vbox.visible = false
 	center_vbox.add_child(result_vbox)
 
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 20)
-	result_vbox.add_child(head)
 	lbl_result_title = UiKit.make_label("", 34, Color.WHITE, "Cinzel")
-	lbl_result_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(lbl_result_title)
-	btn_continue = UiKit.make_action_button("PRÓXIMA RODADA", "", C_GREEN_DIM, "", Vector2(370, 48))
+	lbl_result_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	result_vbox.add_child(lbl_result_title)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 20)
+	result_vbox.add_child(row)
+	var b_report := UiKit.make_action_button("VER RELATÓRIO", "", UiKit.C_BG_PANEL, "", Vector2(320, 56))
+	b_report.pressed.connect(_toggle_report)
+	row.add_child(b_report)
+	_add_key_badge(b_report, "V")
+	btn_continue = UiKit.make_action_button("PRÓXIMA RODADA", "", C_GREEN_DIM, "", Vector2(380, 56))
 	btn_continue.pressed.connect(_on_continue_pressed)
-	head.add_child(btn_continue)
+	row.add_child(btn_continue)
 	_add_key_badge(btn_continue, "Enter")
 	(btn_continue.find_child("LblTitle", true, false) as Label).add_theme_font_size_override("font_size", 17)
 
-	var chips := HBoxContainer.new()
-	chips.add_theme_constant_override("separation", 12)
-	result_vbox.add_child(chips)
-	lbl_chip_dom = _chip(chips)
-	lbl_chip_area = _chip(chips)
-	lbl_chip_ip = _chip(chips)
-
-	lbl_result_detail = UiKit.make_label("", 15, C_TEXT_WHITE, "Libre Baskerville")
-	lbl_result_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_result_detail.custom_minimum_size = Vector2(700, 0)
-	result_vbox.add_child(lbl_result_detail)
-	lbl_result_areas = UiKit.make_label("", 14, C_TEXT_MUTED, "Source Sans 3")
-	lbl_result_areas.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_result_areas.custom_minimum_size = Vector2(700, 0)
-	result_vbox.add_child(lbl_result_areas)
-
-func _chip(parent: Control) -> Label:
-	var p := _panel_with(UiKit.box(Color(0.1, 0.075, 0.045, 0.95), C_BORDER_GOLD, 1, 4, 5))
-	parent.add_child(p)
-	var l := UiKit.make_label("", 16, C_TEXT_WHITE, "Source Sans 3")
-	p.add_child(l)
-	return l
+func _toggle_report() -> void:
+	if not result_vbox.visible:
+		return
+	if report.visible:
+		report.visible = false
+	else:
+		report.open()
 
 func _build_archetype_panel(right_panel: Control) -> void:
 	var d := ArchetypeData.get_data(GameState.archetype)
@@ -626,7 +649,9 @@ func _on_phase_changed(phase: String) -> void:
 		result_vbox.visible = false
 		_last_timer_sec = -1
 		_refresh_skill_ui()
-		await get_tree().create_timer(1.5).timeout
+		report.visible = false
+		_update_objective("Observe os dois reinos...")
+		await get_tree().create_timer(0.8).timeout
 		if _closed or game_manager.current_phase != GameManager.Phase.ANALYSIS:
 			return
 		game_manager.enter_decision_phase()
@@ -634,6 +659,7 @@ func _on_phase_changed(phase: String) -> void:
 		_set_buttons_enabled(true)
 		renderer.set_enemy_pulse(true)
 		_refresh_skill_ui()
+		_update_objective("Calcule a área do inimigo e decida!")
 	elif phase == "RESULT":
 		_set_buttons_enabled(false)
 		_refresh_skill_ui()
@@ -650,7 +676,7 @@ func _on_round_started(round_num: int) -> void:
 	timer_medallion.setup(float(cfg["time"]))
 
 func _on_action(action: GameManager.Action) -> void:
-	if not _buttons_enabled or _tutorial_open or _pause_open:
+	if not _buttons_enabled or _tutorial_open or _pause_open or _guide_open:
 		return
 	_set_buttons_enabled(false)
 	renderer.set_enemy_pulse(false)
@@ -661,21 +687,15 @@ func _on_round_resolved(info: Dictionary) -> void:
 	_play_result_sequence(info)
 
 func _play_result_sequence(info: Dictionary) -> void:
-	await get_tree().create_timer(1.0).timeout
-	if _closed:
-		return
 	var action: int = info["action"]
-	var delay_acao := 2.0
 	if action == CombatResolver.ACTION_ATTACK:
 		AudioManager.play_sfx("action_attack")
-		delay_acao = 3.0
 	elif action == CombatResolver.ACTION_DEFEND:
 		AudioManager.play_sfx("action_defend")
-		delay_acao = 3.0
 	else:
 		AudioManager.play_sfx("action_retreat")
-	await get_tree().create_timer(delay_acao).timeout
-	if _closed:
+	await get_tree().create_timer(0.9).timeout
+	if _is_stale(info):
 		return
 
 	var result: String = info["result"]
@@ -697,7 +717,7 @@ func _play_result_sequence(info: Dictionary) -> void:
 	_update_area_display(float(info["new_area"]))
 	_spawn_result_effects(info)
 	lbl_ip.text = "%d%%" % int(round(AccuracyTracker.phase_ip(game_manager.ip_values)))
-	cartographer.on_result(result, action)
+	cartographer.visible = false
 
 	var will_end: bool = float(info["new_area"]) < GameManager.MIN_AREA \
 		or (cfg["sudden_death"] and result == "LOSE") \
@@ -707,6 +727,24 @@ func _play_result_sequence(info: Dictionary) -> void:
 		custom_lbl.text = "VER RESUMO" if will_end else "PRÓXIMA RODADA"
 	btn_row.visible = false
 	result_vbox.visible = true
+	_update_objective("")
+
+	# um instante para ver o quadriculado revelado no campo antes do popup
+	await get_tree().create_timer(1.4).timeout
+	if _is_stale(info) or not result_vbox.visible:
+		return
+	report.show_report({
+		"info": info, "cfg": cfg,
+		"player_cells": renderer.player_cells, "enemy_cells": renderer.enemy_cells,
+		"terrain_name": str(game_manager.terrain["name"]),
+		"detail": _result_detail(info),
+		"comment": cartographer.comment_for(result, action),
+		"last": will_end,
+	})
+
+func _is_stale(info: Dictionary) -> bool:
+	return _closed or game_manager.current_phase != GameManager.Phase.RESULT \
+		or game_manager.current_round != int(info["round"])
 
 ## Selo grande sobre o campo e números flutuantes no HUD.
 func _spawn_result_effects(info: Dictionary) -> void:
@@ -740,82 +778,66 @@ func _shake_field() -> void:
 	tw.tween_property(renderer, "position", base, 0.05)
 
 func _fill_result_text(info: Dictionary) -> void:
+	var titles := {"WIN": "VITÓRIA", "LOSE": "DERROTA", "DRAW": "RECUO"}
+	var colors := {"WIN": RoundReportPopup.WIN_COLOR, "LOSE": RoundReportPopup.LOSE_COLOR, "DRAW": RoundReportPopup.DRAW_COLOR}
+	lbl_result_title.text = titles[info["result"]]
+	lbl_result_title.add_theme_color_override("font_color", colors[info["result"]])
+
+func _result_detail(info: Dictionary) -> String:
 	var result: String = info["result"]
-	var action: int = info["action"]
-	var dom: int = int(round(float(info["dom_delta"])))
-	var pct: int = int(round(absf(float(info["area_pct"])) * 100.0))
+	var attacked: bool = info["action"] == CombatResolver.ACTION_ATTACK
+	var pct := int(round(absf(float(info["area_pct"])) * 100.0))
 	var detail := ""
-	var ap := int(round(float(info["area_pct"]) * 100.0))
 	if result == "WIN":
-		lbl_result_title.text = "VITÓRIA"
-		lbl_result_title.add_theme_color_override("font_color", Color(0.45, 0.95, 0.55))
-		if action == CombatResolver.ACTION_ATTACK:
-			detail = "ATACAR: seu território era MAIOR."
-		else:
-			detail = "DEFENDER: o inimigo era maior e você resistiu!"
+		detail = "Você atacou com a força maior." if attacked else "O inimigo era mais forte e a sua defesa resistiu!"
 	elif result == "LOSE":
-		lbl_result_title.text = "DERROTA"
-		lbl_result_title.add_theme_color_override("font_color", Color(0.95, 0.35, 0.32))
-		if action == CombatResolver.ACTION_ATTACK:
-			detail = "ATACAR FALHOU: o inimigo era maior. Você perdeu %d%% da sua área." % pct
+		if attacked:
+			detail = "O inimigo era mais forte. Atacar custou %d%% da sua área." % pct
 		else:
-			detail = "DEFENDER FALHOU: você era o maior, deveria ter atacado! O erro custou %d%% da área." % pct
+			detail = "Você era o mais forte e deveria ter atacado. O erro custou %d%% da área." % pct
+	elif info["timeout"]:
+		detail = "Tempo esgotado: você recuou automaticamente. A área fica intacta."
 	else:
-		lbl_result_title.text = "RECUO"
-		lbl_result_title.add_theme_color_override("font_color", Color(0.90, 0.80, 0.30))
-		if info["timeout"]:
-			detail = "TEMPO ESGOTADO: o relógio acabou e você recuou. A área fica intacta."
-		else:
-			detail = "RECUAR: ação segura. Sua área se mantém intacta."
+		detail = "Recuar é seguro para a área, mas custa Domínio."
 	if info["golpe"]:
 		detail += " (Golpe Decisivo dobrou o resultado.)"
-	lbl_result_detail.text = detail
+	return detail
 
-	lbl_chip_dom.text = "Domínio %+d%%" % dom
-	lbl_chip_dom.add_theme_color_override("font_color", UiKit.C_BAR_GREEN if dom > 0 else (C_RED_BORDER if dom < 0 else C_TEXT_WHITE))
-	lbl_chip_area.text = "Área %+d%%" % ap
-	lbl_chip_area.add_theme_color_override("font_color", C_BLUE_LIGHT if ap > 0 else (C_RED_BORDER if ap < 0 else C_TEXT_WHITE))
-	lbl_chip_ip.text = "Precisão da rodada: %d" % int(round(float(info["ip"])))
-
-	var pa := UnitFormatter.short(float(info["area_j"]), cfg)
-	var ea := UnitFormatter.short(float(info["area_i"]), cfg)
-	var diff_pct := absf(float(info["area_j"]) - float(info["area_i"])) / maxf(float(info["area_j"]), float(info["area_i"])) * 100.0
-	lbl_result_areas.text = "Seu território: %s   Inimigo: %s   Diferença: %s%%\n%s" % [pa, ea, UnitFormatter.fmt_number(diff_pct, 1), _calc_text(info)]
-
-## Cálculo com modificadores de terreno e habilidades (mensagem de revelação do GDD 6.1).
-func _calc_text(info: Dictionary) -> String:
-	var boost := (1.0 + float(info["embalo"])) * (CombatResolver.WALL_MULT if info["muralha"] else 1.0)
-	var pm: float = float(info["atk"]) * boost
-	var em: float = float(info["def"])
-	var tags_p : Array[String] = []
-	if not is_equal_approx(float(info["atk"]), 1.0):
-		tags_p.append("atacante, %s" % game_manager.terrain["name"])
-	if float(info["embalo"]) > 0.0:
-		tags_p.append("Embalo")
-	if info["muralha"]:
-		tags_p.append("Muralha")
-	var tp := "" if tags_p.is_empty() else " (%s)" % ", ".join(tags_p)
-	var te := ""
-	if not is_equal_approx(em, 1.0):
-		te = " (defensor, %s)" % game_manager.terrain["name"]
-	return "Você: %s ×%s%s = %s   |   Inimigo: %s ×%s%s = %s" % [
-		UnitFormatter.short(float(info["area_j"]), cfg), UnitFormatter.fmt_number(pm, 2), tp,
-		UnitFormatter.short(float(info["force_player"]), cfg),
-		UnitFormatter.short(float(info["area_i"]), cfg), UnitFormatter.fmt_number(em, 2), te,
-		UnitFormatter.short(float(info["force_enemy"]), cfg)]
+## Linha de orientação: o que falta para vencer a fase e o que fazer agora.
+func _update_objective(hint: String) -> void:
+	var rounds_left: int = GameManager.TOTAL_ROUNDS - game_manager.current_round
+	if game_manager.current_phase != GameManager.Phase.RESULT:
+		rounds_left += 1
+	var text := ""
+	if game_manager.dominance >= AccuracyTracker.BRONZE_MIN_DOM:
+		text = "Meta atingida! Segure 70%% até o fim (rodadas restantes: %d)" % rounds_left
+	else:
+		var wins_needed := int(ceil((AccuracyTracker.BRONZE_MIN_DOM - game_manager.dominance) / CombatResolver.WIN_DOMINANCE))
+		var best_possible := rounds_left
+		if GameState.archetype == "GUERREIRO" and (not game_manager.skill_used_phase or game_manager.strike_active):
+			best_possible += 1
+		if wins_needed > best_possible:
+			text = "Meta de 70% fora de alcance: treine até o fim ou recomece pela pausa (Esc)"
+		else:
+			text = "Meta: faltam %d vitória(s) em %d rodada(s)" % [wins_needed, rounds_left]
+	if hint != "":
+		text += "   •   " + hint
+	lbl_objective.text = text
 
 func _on_continue_pressed() -> void:
 	if not result_vbox.visible:
 		return
 	result_vbox.visible = false
+	report.visible = false
 	game_manager.finish_round()
 
 func _on_phase_ended(summary: Dictionary) -> void:
 	btn_row.visible = true
 	_set_buttons_enabled(false)
 	var won: bool = summary["won"]
-	var gained: bool = won and phase_n >= GameState.unlocked_phase
-	GameState.record_phase(phase_n, won, int(summary["stars"]), float(summary["ip"]), int(summary["xp"]))
+	report.visible = false
+	cartographer.visible = false
+	var gained := GameState.record_phase(phase_n, won, int(summary["stars"]), float(summary["ip"]), int(summary["xp"]))
 	AudioManager.stop_music()
 	AudioManager.play_music("phase_win" if won else "phase_lose")
 	end_panel.show_summary(summary, phase_n < CampaignData.TOTAL_PHASES, gained)
@@ -824,7 +846,7 @@ func _on_phase_ended(summary: Dictionary) -> void:
 #  HABILIDADES
 # ─────────────────────────────────────────────
 func _on_skill_pressed() -> void:
-	if _tutorial_open or _pause_open:
+	if _tutorial_open or _pause_open or _guide_open:
 		return
 	game_manager.try_activate_skill()
 
@@ -885,20 +907,29 @@ func _open_pause() -> void:
 	if _pause_open or _closed:
 		return
 	_pause_open = true
-	game_manager.set_timer_paused(true)
+	_sync_timer_pause()
 	var p := PauseMenu.new()
 	_ui.add_child(p)
 	p.resumed.connect(func():
 		_pause_open = false
-		if not _tutorial_open:
-			game_manager.set_timer_paused(false))
+		_sync_timer_pause())
+	p.guide_requested.connect(func():
+		_pause_open = false
+		_open_guide())
 	p.quit_to_map.connect(func():
 		_closed = true
 		exit_to_map.emit())
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _closed or _tutorial_open or _pause_open:
+	if _closed or _tutorial_open or _pause_open or _guide_open:
 		return
+	if event is InputEventKey and event.pressed and not event.echo and not end_panel.visible:
+		if event.keycode == KEY_H:
+			_open_guide()
+			return
+		if event.keycode == KEY_V:
+			_toggle_report()
+			return
 	if event.is_action_pressed("ui_cancel"):
 		if end_panel.visible:
 			_closed = true
@@ -931,7 +962,7 @@ func _set_buttons_enabled(enabled: bool) -> void:
 	btn_retreat.modulate.a = alpha
 
 func _on_score_updated(score: int, streak: int) -> void:
-	var txt := "%d vitórias" % streak
+	var txt := "%d vitória%s" % [streak, "" if streak == 1 else "s"]
 	var bonus := game_manager.embalo_bonus()
 	if bonus > 0.0:
 		txt += " (+%d%%)" % int(round(bonus * 100.0))

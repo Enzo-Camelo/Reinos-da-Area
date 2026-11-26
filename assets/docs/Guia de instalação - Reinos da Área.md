@@ -1,6 +1,8 @@
 # Guia de instalação — Reinos da Área
 
-> Atualizado para a **v0.2** (Godot 4.6.x). Feito por: Enzo Camelo Vieira.
+> Atualizado para a **v0.2, entrega final** (Godot 4.6.x). Feito por: Enzo Camelo Vieira.
+
+> **Só quer jogar?** Não precisa do Godot. Baixe o executável pronto em <https://github.com/Enzo-Camelo/Reinos-da-Area/releases/latest/download/ReinosDaArea-Windows.zip>, extraia o ZIP e dê dois cliques em `ReinosDaArea.exe` (detalhes na seção 7). Os passos abaixo são para abrir o **código-fonte** no editor.
 
 ---
 
@@ -91,8 +93,10 @@ C:\Desenvolvimento\ReinosDaArea\
 | **D** | Defender |
 | **R** | Recuar |
 | **E** | Ativar a habilidade do arquétipo |
+| **H** | Abrir o guia *Como jogar* (o relógio para) |
+| **V** | Esconder ou mostrar o relatório da rodada |
 | **Enter / Espaço** | Próxima rodada (na tela de resultado) |
-| **Esc** | Voltar ao mapa de campanha |
+| **Esc** | Pausar a batalha · voltar nos menus |
 
 ---
 
@@ -108,11 +112,20 @@ Para recomeçar do zero: **Menu → Opções → Reiniciar progresso** (pede con
 
 ---
 
-## 7) Rodar o build pronto (opcional)
+## 7) Jogar pelo executável (sem Godot)
 
-Existe uma versão exportada em `build\Desktop\ReinosDaArea.exe`. Basta dar dois cliques — não precisa do Godot instalado. Para gerar uma nova versão, use **Projeto → Exportar** no editor, com o preset definido em `export_presets.cfg`.
+1. Baixe `ReinosDaArea-Windows.zip` na página de versões do repositório: <https://github.com/Enzo-Camelo/Reinos-da-Area/releases/latest>.
+2. Clique com o botão direito no ZIP → **Extrair tudo…** (não rode o jogo de dentro do ZIP).
+3. Dê dois cliques em `ReinosDaArea.exe`. É um arquivo único, com tudo embutido.
+4. Se o Windows mostrar **"O Windows protegeu o computador"**, clique em **Mais informações → Executar assim mesmo**. O aviso aparece porque o executável não tem assinatura digital paga.
 
-> O build precisa ser exportado de novo para incluir as mudanças da v0.2.
+**Gerar um executável novo:** no editor, **Projeto → Exportar… → Windows Desktop → Exportar projeto…** (salva em `build/Desktop/ReinosDaArea.exe`), com os *export templates* do Godot 4.6.3 instalados. Pelo terminal:
+
+```
+Godot_v4.6.3-stable_win64_console.exe --headless --path . --export-release "Windows Desktop" build/Desktop/ReinosDaArea.exe
+```
+
+O preset (`export_presets.cfg`) embute os dados no `.exe` e deixa de fora `assets/docs/` e `tests/`.
 
 ---
 
@@ -140,7 +153,8 @@ Ao final cada um imprime `N ok, 0 falhas`. O teste de integração preserva o se
 |---|---|
 | "Identifier not found" para uma classe (ex.: `CombatResolver`) | Feche o projeto e reabra; ou rode o comando `--import` da seção 8. |
 | Sem som | Verifique os volumes em **Opções**. Os arquivos `sino_preciso.wav`, `sino_impreciso.wav` e `pagina.wav` ficam em `assets/audios/`. |
-| A janela abre em tela cheia | O `project.godot` define modo tela cheia (`window/size/mode=3`); para janela, mude **Display → Window → Mode** em *Project Settings*. |
+| A janela abre em tela cheia | É o padrão. Desmarque **Tela cheia** em **Opções** dentro do jogo. |
+| "O Windows protegeu o computador" ao abrir o `.exe` | **Mais informações → Executar assim mesmo** (executável sem assinatura digital). |
 | Fonte/ícone ausente | Confira se as pastas `assets/fonts`, `assets/icons` e `assets/ui` vieram no ZIP. |
 
 ---

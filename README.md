@@ -4,9 +4,18 @@
 
 **Reinos da Área** é um jogo de estratégia territorial feito em **Godot 4**, em que o jogador aprende **cálculo de área** jogando. A cada rodada o reino inimigo aparece inteiro, mas **sem quadriculado**: o jogador estima quantos quadrados cabem nele, compara com o seu próprio reino (que tem o quadriculado) e decide entre **Atacar**, **Defender** ou **Recuar**. São **20 fases em 5 cenários**, com 10 rodadas por fase. A meta é dominar pelo menos 60% do mapa.
 
-Versão atual: **v0.2** (protótipo jogável da campanha completa). Autores: Enzo Camelo Vieira, Gabriel Luís de Santana e Bruno Faria Travessini.
+Versão atual: **v0.2, entrega final** (campanha completa com os ajustes das devolutivas). Autores: Enzo Camelo Vieira, Gabriel Luís de Santana e Bruno Faria Travessini.
 
-**Sumário:** [Requisitos](#1-requisitos) · [Baixar](#2-baixar-o-projeto) · [Executar](#3-executar-o-jogo) · [Como jogar](#4-como-jogar) · [Controles](#5-controles) · [Regras e progressão](#6-objetivo-regras-e-progressão) · [Limitações](#7-limitações-conhecidas-e-o-que-ainda-não-existe) · [GDD e documentos](#8-gdd-e-documentação) · [Testes](#9-testes-automáticos) · [Estrutura](#10-estrutura-do-projeto)
+## ▶ Jogar agora (Windows, sem instalar nada)
+
+1. **[Baixe o jogo (ReinosDaArea-Windows.zip, ~57 MB)](https://github.com/Enzo-Camelo/Reinos-da-Area/releases/latest/download/ReinosDaArea-Windows.zip)**. Todas as versões ficam em [Releases](https://github.com/Enzo-Camelo/Reinos-da-Area/releases/latest).
+2. Clique com o botão direito no ZIP → **Extrair tudo…**
+3. Dê dois cliques em **`ReinosDaArea.exe`**.
+4. Se aparecer **"O Windows protegeu o computador"**, clique em **Mais informações → Executar assim mesmo**. O aviso aparece porque o executável não tem assinatura digital paga.
+
+Não precisa do Godot para jogar. Para abrir o código-fonte no editor, siga as seções 1 a 3.
+
+**Sumário:** [Requisitos](#1-requisitos) · [Baixar](#2-baixar-o-projeto) · [Executar](#3-executar-o-jogo) · [Como jogar](#4-como-jogar) · [Controles](#5-controles) · [Regras e progressão](#6-objetivo-regras-e-progressão) · [O que mudou na versão final](#7-o-que-mudou-na-versão-final) · [Limitações](#8-limitações-conhecidas-e-o-que-ainda-não-existe) · [GDD e documentos](#9-gdd-e-documentação) · [Testes](#10-testes-automáticos) · [Estrutura](#11-estrutura-do-projeto)
 
 ---
 
@@ -15,7 +24,7 @@ Versão atual: **v0.2** (protótipo jogável da campanha completa). Autores: Enz
 | Item | Requisito |
 |---|---|
 | Sistema operacional | Windows 10 ou 11 (64 bits). É onde o jogo foi desenvolvido e testado; Linux e macOS devem funcionar com o Godot, mas não foram testados. |
-| Engine | **Godot 4.6** ou superior (testado com a **4.6.3 stable**, versão padrão, sem .NET/C#). Download: <https://godotengine.org/download/windows/> |
+| Engine | Só para abrir o código: **Godot 4.6** ou superior (testado com a **4.6.3 stable**, versão padrão, sem .NET/C#). Download: <https://godotengine.org/download/windows/>. Para jogar pelo executável, não é necessária. |
 | Placa de vídeo | Qualquer uma com **OpenGL 3.3** (o projeto usa o renderizador *Compatibility*). |
 | Tela | Feito para **1920×1080**. Em outras resoluções a imagem escala mantendo a proporção 16:9. |
 | Git | Opcional, só se for clonar o repositório pelo terminal. |
@@ -53,9 +62,19 @@ Substitua o caminho pelo do seu Godot:
 "C:\Godot\Godot_v4.6.3-stable_win64.exe" --path "C:\Jogos\Reinos-da-Area"
 ```
 
+### Executável pronto
+
+O `.exe` (cerca de 126 MB) não fica dentro do código do repositório: ele é publicado em **[Releases](https://github.com/Enzo-Camelo/Reinos-da-Area/releases/latest)** como `ReinosDaArea-Windows.zip` (veja *Jogar agora*, no topo). É um arquivo único, com os dados do jogo embutidos.
+
 ### Gerar o executável (.exe), opcional
 
-O executável **não está no repositório** (passa de 100 MB). Para gerá-lo: no editor, abra **Projeto → Exportar…**, selecione **Windows Desktop** e clique em **Exportar projeto…**, salvando em `build/Desktop/ReinosDaArea.exe`. É preciso ter os *export templates* do Godot 4.6.3 instalados (o editor oferece baixar em **Editor → Gerenciar modelos de exportação**). Se o `.pck` for gerado como arquivo separado, mantenha o `.exe` e o `.pck` na mesma pasta.
+No editor, abra **Projeto → Exportar…**, selecione **Windows Desktop** e clique em **Exportar projeto…**, salvando em `build/Desktop/ReinosDaArea.exe`. É preciso ter os *export templates* do Godot 4.6.3 instalados (o editor oferece baixar em **Editor → Gerenciar modelos de exportação**). Pelo terminal:
+
+```
+Godot_v4.6.3-stable_win64_console.exe --headless --path . --export-release "Windows Desktop" build/Desktop/ReinosDaArea.exe
+```
+
+O preset em `export_presets.cfg` embute o `.pck` no `.exe` e deixa de fora `assets/docs/` e `tests/`.
 
 Mais detalhes de instalação com imagens e passos: [`assets/docs/Guia de instalação - Reinos da Área.md`](assets/docs/Guia%20de%20instala%C3%A7%C3%A3o%20-%20Reinos%20da%20%C3%81rea.md).
 
@@ -164,7 +183,22 @@ A diferença de tamanho entre os reinos vai diminuindo ao longo da campanha (de 
 | **Engenheiro** | *Consolidação*: errar ao atacar custa 15% em vez de 20% | *Muralha de Emergência* (2 RE): seu território vale ×1,25 por 1 rodada |
 | **Guerreiro** | *Embalo de Combate*: +5% por vitória seguida (até +15%) | *Golpe Decisivo* (1 RE): dobra o ganho ou a perda da rodada |
 
-## 7. Limitações conhecidas e o que ainda não existe
+## 7. O que mudou na versão final
+
+Ajustes feitos a partir das duas devolutivas: a **ficha técnica** preenchida por outra equipe no Dia do Analista (dificuldade avaliada em 3/5) e o **feedback da professora** (tutorial e guia, jornada intuitiva, história).
+
+| Devolutiva | Antes | Agora |
+|---|---|---|
+| Ficha: "popup pós-rodada comparando as áreas, com o cálculo" | O resultado aparecia espalhado pela tela de batalha | **Relatório da rodada** em popup: os dois reinos lado a lado, o cálculo de cada área (base × altura, trapézio, retângulo menos recortes ou soma por fileira), o terreno e qual era a decisão certa |
+| Ficha: "tempo menor para gerar tensão" | 60 / 60 / 60 / 45 / 30 s por rodada | **30 / 30 / 35 / 30 / 25 s**, e esperas mais curtas entre rodadas |
+| Ficha: "90% de acerto deu 1 medalha" | Bronze 70% de Domínio; Prata exigia 70% até a rodada 6 (quase impossível); Ouro pedia IP ≥ 85 sem derrotas | Medalhas pelo **Domínio final**: Bronze 60%, Prata 80%, Ouro 100%. Sem Bronze, a fase é perdida |
+| Ficha: "aumentar a recompensa da medalha" | +100 XP por estrela (100 / 200 / 300) e +1 RE por fase nova vencida | **+150 / +350 / +600 XP** e **+1 RE por medalha nova** (Ouro de primeira = +3 RE) |
+| Ficha: "vitória da rodada poluída" | Textos e números sobre o campo | Campo limpo; detalhes no popup (tecla **V** esconde ou mostra) |
+| Professora: tutorial e guia no jogo | Tutorial de 5 passos e nenhum guia para consultar depois | **Tutorial em 6 passos** com a Cartógrafa e guia **Como jogar** com 6 abas (menu, mapa, pausa ou tecla **H**, com o relógio parado) |
+| Professora: jornada intuitiva | Só a bandeira de 70% na barra de Domínio, sem dizer quanto faltava | Linha de **meta** acima dos botões ("faltam N vitórias"), marcas de 60% e 80% na barra, mapa com as fases seguindo a trilha e aviso de **estrelas** para liberar cada terreno (8/16/24/32) |
+| Professora: história que envolva | História só no GDD; no jogo, apenas comentários da Cartógrafa | **Prólogo**, um **capítulo por cenário** com uma lição de cálculo desenhada, **rival com provocação** em cada fase e desfecho no fim de cada cenário |
+
+## 8. Limitações conhecidas e o que ainda não existe
 
 **Ainda não implementado:**
 - Evolução visual do castelo do jogador e estados visuais dos reinos inimigos (Estável, Alerta, Vulnerável, Conquistado).
@@ -175,29 +209,29 @@ A diferença de tamanho entre os reinos vai diminuindo ao longo da campanha (de 
 - **A dificuldade ainda não foi calibrada com testes de jogadores reais.** Os testes automáticos garantem que sempre há uma decisão certa e que cada fase é vencível, mas a curva de dificuldade pode precisar de ajuste.
 - Os sons de sino (precisão) e de página (transição) foram **gerados por código** como substitutos de desenvolvimento e podem ser trocados por gravações finais.
 - Testado apenas em **Windows**. Resolução ideal: 1920×1080.
-- O executável (`.exe`) não é versionado por causa do tamanho; é preciso abrir pelo Godot ou exportar (seção 3).
-- A pasta de cache `.godot/` não vem no repositório, por isso a primeira abertura demora mais.
+- O executável não tem assinatura digital, por isso o Windows SmartScreen pode avisar na primeira execução (veja *Jogar agora*).
+- A pasta de cache `.godot/` não vem no repositório, por isso a primeira abertura no editor demora mais.
 
-## 8. GDD e documentação
+## 9. GDD e documentação
 
-O **Game Design Document (GDD) atualizado (v5)** está em:
+O **Game Design Document (GDD) atualizado (v6)**, com as mecânicas da versão entregue e telas reais do jogo, está em:
 
 - 📄 [`assets/docs/GDD/Reinos da Área - Game Design Document.md`](assets/docs/GDD/Reinos%20da%20%C3%81rea%20-%20Game%20Design%20Document.md) (versão em Markdown, legível direto no GitHub)
 - PDF e HTML da mesma pasta: [`assets/docs/GDD/`](assets/docs/GDD/)
 
 Os demais documentos do projeto estão em [`assets/docs/`](assets/docs/), cada um em **PDF** e em **Markdown atualizado** (mesmo nome): Apresentação, Documento Complementar (comparação protótipo × GDD), Guia de instalação e Relatório do PAC IV.
 
-## 9. Testes automáticos
+## 10. Testes automáticos
 
 Opcional, para quem quiser verificar o projeto (substitua pelo caminho do seu Godot em modo console):
 
 ```
 Godot_v4.6.3-stable_win64_console.exe --headless --path . --import
 Godot_v4.6.3-stable_win64_console.exe --headless --path . --script res://tests/run_tests.gd    # regras, gerador e explicação das áreas (518 verificações)
-Godot_v4.6.3-stable_win64_console.exe --headless --path . res://tests/integration_test.tscn    # fases completas (295 verificações)
+Godot_v4.6.3-stable_win64_console.exe --headless --path . res://tests/integration_test.tscn    # fases completas (cerca de 300 verificações; o total varia porque algumas fases terminam antes da 10ª rodada)
 ```
 
-## 10. Estrutura do projeto
+## 11. Estrutura do projeto
 
 ```
 Reinos-da-Area/

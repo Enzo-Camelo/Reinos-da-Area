@@ -1,4 +1,4 @@
-# Reinos da Área — Game Design Document (v5)
+# Reinos da Área — Game Design Document (v6)
 
 ![Capa](assets/capa.png)
 
@@ -12,7 +12,7 @@
 
 **Acadêmicos:** Enzo Camelo Vieira
 
-> **Sobre esta versão (v5).** Atualiza o GDD v4 com as decisões tomadas na implementação da N2 (protótipo v0.2). As mudanças em relação à v4 estão marcadas com **[v5]**. As principais: arquétipos do Relatório PAC IV, terreno "Vale", progressão de formas, Índice de Precisão (IP) derivado das decisões, estrelas, Recursos Estratégicos, unidades de medida progressivas, menu/mapa de campanha/tutorial e a fórmula de combate.
+> **Sobre esta versão (v6, novembro de 2026).** Descreve o jogo como ele está no código. As mudanças em relação à v5 estão marcadas com **[v6]** (as marcas **[v5]** foram mantidas). Principais: medalhas pelo Domínio e trava de terreno por estrelas, rodadas mais curtas, relatório pós-rodada, história e guia dentro do jogo, mapa de campanha com trilha e saltos no Abismo, e a documentação de sistemas que já existiam no código (pontuação, geração de territórios, telas, salvamento). O Apêndice lista o histórico de mudanças.
 
 ---
 
@@ -37,9 +37,9 @@ A inovação central está na **assimetria de informação visual**: o jogador v
 | | |
 |---|---|
 | **Gênero** | Strategy Puzzle · 4X Lite · Stealth Learning |
-| **Plataforma** | PC Desktop & Web Browser |
+| **Plataforma** | PC Desktop (meta: também Web). **[v6]** O protótipo é distribuído para Windows; a versão Web ainda não existe |
 | **Jogadores** | 1 — singleplayer |
-| **Status** | **[v5]** Protótipo v0.2 jogável: menu, 3 arquétipos, mapa de campanha, 20 fases |
+| **Status** | **[v6]** Protótipo v0.2 jogável: campanha de 20 fases, 3 arquétipos, história, tutorial, guia e relatório pós-rodada |
 | **Classificação** | Livre (conteúdo educacional estratégico) |
 | **Público-alvo** | 12–16 anos · 7º ano do EF ao 2º ano do EM |
 | **Conteúdo** | Geometria plana · estimativa visual de área · unidades de medida |
@@ -55,14 +55,14 @@ Os objetivos de design orientam todas as decisões criativas e técnicas. Cada m
 
 | Pilar | Descrição | Métrica |
 |---|---|---|
-| **01 · Aprendizado Invisível** | O jogador nunca recebe uma equação. Ele recebe uma decisão de guerra. A matemática é o instrumento; a conquista é o objetivo declarado. | Internaliza estimativa de área sem aula formal. |
+| **01 · Aprendizado pela Decisão** **[v6]** | Na hora de decidir, o jogador não recebe exercício nem conta pronta: recebe uma decisão de guerra. O cálculo é ensinado como estratégia (lições da Cartógrafa e guia) e explicado depois da decisão (relatório). | Internaliza estimativa de área sem aula formal. |
 | **02 · Risco com Consequência Real** | Errar uma estimativa custa território visível no mapa — feedback emocional e imediato. Nenhuma aleatoriedade anula o raciocínio correto. | 0% de aleatoriedade no resultado do combate. |
 | **03 · Profundidade Emergente** | Fácil de começar, difícil de dominar. Retângulos simples evoluem para formas compostas e irregulares sob pressão de tempo. | Curva de dificuldade sem picos abruptos entre cenários. |
-| **04 · Identidade Narrativa Medieval** | A fantasia de conquista justifica as regras sem cortes de cena longos. Castelos, a Cartógrafa e os reinos rivais dão peso às decisões geométricas. | Jogador nunca sente que está "estudando matemática". |
-| **05 · Calibração Progressiva** | O Índice de Precisão das Estimativas gamifica o aprendizado: estimar melhor rende estrelas de ouro. | Jogadores repetem fases para melhorar o índice. |
-| **06 · O que o jogo deve evitar** | Nenhuma tela de exercício explícito, nenhuma linguagem de "resposta errada", nenhuma sorte que invalide um cálculo correto. | *Nunca uma prova disfarçada de jogo.* |
+| **04 · Identidade Narrativa Medieval** | A fantasia de conquista justifica as regras. A história aparece em cenas curtas e puláveis; a Cartógrafa e os reinos rivais dão peso às decisões geométricas. | Jogador nunca sente que está "estudando matemática". |
+| **05 · Calibração Progressiva** **[v6]** | Medalhas pelo Domínio e trava de terreno incentivam repetir fases; o Índice de Precisão mostra a qualidade das decisões. | Jogadores repetem fases para melhorar a medalha. |
+| **06 · O que o jogo deve evitar** | Nenhuma tela de exercício, nenhuma linguagem punitiva (o relatório diz o que aconteceu e como calcular), nenhuma sorte que invalide um cálculo correto. | *Nunca uma prova disfarçada de jogo.* |
 
-**Resumo executivo:** Matemática Invisível · Risco Real · Profundidade Gradual (de retângulos a polígonos irregulares).
+**Resumo executivo:** Matemática em Ação · Risco Real · Profundidade Gradual (de retângulos a polígonos irregulares).
 
 ---
 
@@ -134,15 +134,16 @@ Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Á
 
 ### Mecânica 1 — Seleção e resolução de ataque
 
-1. O reino inimigo é destacado com uma **borda dourada pulsante** (0,8 s), sinalizando que a decisão está aberta.
+1. **[v6]** A rodada começa com cerca de 0,8 s de observação (botões travados; o relógio já corre). Depois o reino inimigo ganha uma **borda dourada pulsante** (ciclo de 0,8 s): a decisão está aberta.
 2. Os três botões — Atacar, Defender, Recuar — ficam disponíveis na base da tela (teclas **A / D / R**).
 3. O jogador escolhe uma ação; os outros botões esmaecem.
 4. O sistema compara as forças em segundo plano — nenhum número é mostrado, preservando a tensão da estimativa.
-5. A animação de resultado dispara: tinta azul se espalha (vitória), borda vermelha pulsa (derrota) ou ventos varrem o mapa (recuo). O Domínio é atualizado no HUD.
+5. A animação de resultado dispara cerca de 1 s depois: tinta azul se espalha (vitória), borda vermelha pulsa e a tela treme (derrota) ou ventos varrem o mapa (recuo). Selo grande de resultado e valores flutuantes mostram o efeito no Domínio e na área.
+6. **[v6]** 1,4 s depois abre o **relatório pós-rodada** (§6.2).
 
 ### Mecânica 2 — Ativação de habilidade de arquétipo **[v5]**
 
-1. O jogador clica em **ATIVAR** (ou tecla **E**). Disponível apenas se a habilidade ainda não foi usada na fase.
+1. O jogador clica no botão da habilidade (ou tecla **E**) durante a observação ou a decisão. Disponível apenas se ela ainda não foi usada na fase.
 2. O sistema verifica o custo. Sem **Recursos Estratégicos (RE)** suficientes, o botão vibra e fica vermelho por 0,5 s — sem outra penalidade.
 3. Os RE são debitados e o contador do HUD é atualizado.
 4. O efeito é aplicado à rodada (grid temporário, modificador de terreno ou dobro de ganho/perda).
@@ -153,7 +154,7 @@ Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Á
 1. O resultado é confirmado e o contador avança (ex.: 3/10 → 4/10).
 2. O sistema verifica a condição de derrota imediata (área abaixo de 4 u²; erro na Fase 20).
 3. Se as 10 rodadas terminaram, compara o Domínio final com 60%.
-4. A **Tela de Fim de Fase** exibe estrelas, Índice de Precisão, XP e Recursos.
+4. A **Tela de Fim de Fase** exibe medalha, Domínio, Índice de Precisão, XP, Recursos e o desfecho da história.
 
 ### Fluxo do ciclo de fase
 
@@ -188,17 +189,13 @@ Antes das trombetas soarem, o Rei entrega sua confiança a apenas um de três co
 
 ### 6.1 Sistema de cálculo de área
 
-O cálculo de área não é baseado em fórmulas ensinadas diretamente. O fundamento é visual e concreto: **a área de um território é o número de quadrados do grid que estão dentro dele**. Meios-blocos triangulares valem 0,5.
+**[v6]** O fundamento é visual e concreto (os atalhos de cálculo são apresentados nas lições, no guia e no relatório): **a área de um território é o número de quadrados do grid que estão dentro dele**. Meios-blocos triangulares valem 0,5.
 
 **Como o grid funciona.** O mapa é dividido por um grid uniforme. Cada quadrado representa uma unidade de área. O grid está sempre visível sobre o território do jogador.
 
 **O desafio: território inimigo sem grid.** O jogador vê a forma do reino inimigo pintada de vermelho, mas precisa estimar quantos quadrados caberiam ali. A *grade de referência* ao redor do inimigo diminui com a campanha: **total** nas Planícies, **1 célula** nos Vales, **nenhuma** da Serra em diante (o Olho de Águia soma +2 células).
 
-![HUD de batalha](assets/hud.png)
-
-**Revelação pós-combate.** Após cada rodada o grid aparece sobre o inimigo com animação de "desenho à mão" (0,4 s) e permanece por 3 s. A tela informa a área real do inimigo e mostra o cálculo com os modificadores de terreno e de habilidades, por exemplo:
-
-> *Você: 40 m² ×0,89 (atacante, Serra, Embalo) = 35,7 m² | Inimigo: 34 m² ×1,25 (defensor, Serra) = 42,5 m²* — o inimigo é visivelmente menor, mas "vale" mais; Defender era a decisão certa.
+**Revelação pós-combate.** Após cada rodada o grid aparece sobre o inimigo com animação de "desenho à mão" (0,4 s) e **[v6]** permanece visível até a próxima rodada.
 
 ### Unidades e escalas **[v5]**
 
@@ -213,13 +210,38 @@ A medida acompanha o crescimento do domínio, alinhando o jogo ao ensino de gran
 
 O HUD mostra a unidade da fase com uma indicação sutil da equivalência anterior (ex.: **2,5 km²** · *= 2.500.000 m²*). Números seguem o padrão pt-BR (milhar com ponto, decimal com vírgula).
 
+### 6.2 Relatório pós-rodada **[v6]**
+
+Um popup compara os dois reinos **lado a lado**: miniatura com grade e medidas, passo a passo do cálculo, área na unidade da fase, multiplicador (terreno, Embalo, Muralha) e força. Abaixo, a comparação das forças, a decisão certa, a escolha do jogador, o efeito em Domínio e área, a nota de precisão da rodada e a fala da Cartógrafa (quando ela está presente). **V** esconde o relatório para ver o campo; **Enter** avança.
+
+O método de cálculo é escolhido pela forma desenhada:
+
+| Forma | Como o relatório explica |
+|---|---|
+| Retângulo | base × altura |
+| Trapézio (em pé ou deitado) | (B + b) × h ÷ 2 |
+| Cantos cortados, L, T, U ou poucos buracos (até 3 recortes retangulares) | retângulo em volta − recortes − meios-blocos × ½ |
+| Irregular | blocos inteiros + meios-blocos × ½, com a soma linha a linha ao lado do desenho |
+
+![Relatório pós-rodada na Serra: o inimigo é menor, mas mais forte](assets/telas/relatorio.jpg)
+
+> Exemplo real (Fase 9, Serra): *Você: 31,5 × 0,85 = 26,77 · Inimigo: 27 × 1,25 = 33,75.* O inimigo é menor, mas "vale" mais; Defender era a decisão certa.
+
+### 6.3 Territórios: geração e limites **[v6]**
+
+- **Campo:** 32 × 13 blocos, metade para cada reino.
+- **Área inicial** sorteada por cenário (tabela em §8). Durante a fase, a área do jogador passa de uma rodada para a outra com os ganhos e perdas (máximo de 100 blocos; abaixo de 4 a fase termina). Cada fase começa com uma nova área inicial.
+- A cada rodada os dois reinos recebem **formas novas** (posição e orientação variam); o seu é redesenhado com área próxima da acumulada.
+- **Formas:** retângulos com lados bem diferentes; retângulos com 1 a 4 cantos cortados; trapézios (60%) ou formas em L, T e U (40%); figuras orgânicas preenchidas com bordas diagonais; e figuras com 1 a 3 buracos.
+- **Tamanho do inimigo:** definido pela razão entre as **forças**, dentro da diferença da fase, com 50% de chance de ser o mais forte. O sorteio gera o cenário; o resultado do combate é sempre determinístico.
+
 ---
 
 ## 7. Core Game Loop
 
 **Observar → Estimar → Decidir → Combater → Aprender → Repetir.**
 
-1. **Observação.** O jogador vê o mapa. Seu território: grid visível, área exata no HUD. O inimigo: forma inteira, sem grid. A Cartógrafa pode comentar: *"Este reino parece ocupar muitos quadrados ao norte…"*.
+1. **Observação.** O jogador vê o mapa. Seu território: grid visível, área exata no HUD. O inimigo: forma inteira, sem grid. A Cartógrafa pode comentar: *"Este reino parece amplo. Observe bem sua forma antes de agir."*.
 2. **Estimativa visual.** Observa a forma do inimigo e estima quantos quadrados cabem nela. É aqui que o aprendizado acontece de forma natural.
 3. **Decisão tática.** Atacar (se acredita ser maior), Defender (se acredita que o inimigo é maior) ou Recuar (se a incerteza for alta).
 4. **Resolução de combate.** O sistema compara as forças. O resultado é instantâneo e visível: o território muda de cor, o Domínio sobe ou desce, a área se ajusta. Nenhum texto de punição.
@@ -242,19 +264,28 @@ O IP é o fio pedagógico do jogo. Como o jogador **não digita estimativas** (i
 
 O **IP da fase** é a média das rodadas. Feedback sonoro ao final de cada rodada, sem texto de punição: IP ≥ 90 → sino cristalino curto; entre 40 e 89 → silêncio neutro; < 40 → sino grave e longo (um lembrete suave de calibração).
 
-### Sistema de estrelas **[v5]**
+O IP é um retorno sobre a qualidade das decisões. **[v6] Ele não define a medalha.**
 
-Vale a insígnia mais alta conquistada.
+### 7.1 Medalhas, pontuação e desbloqueio **[v6]**
 
-| Insígnia | Condição |
-|---|---|
-| ★ **Bronze — Conclusão** | Domínio ≥ 60% ao final da rodada 10. Sem o Bronze, a fase é perdida. (+150 XP) |
-| ★★ **Prata** | Domínio ≥ 80%. (+350 XP) |
-| ★★★ **Ouro** | Domínio de 100%. (+600 XP) |
+| Medalha (Domínio ao fim da rodada 10) | Condição | Bônus de XP |
+|---|---|---|
+| Sem medalha | menos de 60% — **fase perdida** | — |
+| ★ **Bronze** | 60% ou mais — libera a fase seguinte | +150 |
+| ★★ **Prata** | 80% ou mais | +350 |
+| ★★★ **Ouro** | 100% | +600 |
 
-O IP continua sendo exibido como retorno sobre as decisões, mas não define a medalha.
+Sem recuos e sem Golpe Decisivo, equivalem a 6, 8 e 10 vitórias. O Domínio fica sempre entre 0% e 100% (recuar com 0% não tira nada). Fica registrada a melhor medalha de cada fase.
 
-**Trava de terreno.** Para entrar em um novo cenário, além de vencer a fase anterior, é preciso somar estrelas na campanha: 8 (II), 16 (III), 24 (IV) e 32 (V).
+**Trava de terreno.** Para entrar em um novo cenário, além de vencer a fase anterior, é preciso somar estrelas na campanha:
+
+| Para entrar em | II · Vales | III · Serra | IV · Arquipélago | V · Abismo |
+|---|---|---|---|---|
+| Estrelas acumuladas | 8 | 16 | 24 | 32 |
+
+Quando faltam estrelas, o mapa e a tela de fim de fase avisam quantas são e sugerem repetir fases.
+
+**Pontuação da fase.** Vitória na rodada: 100 pontos, +50 por vitória consecutiva anterior e até +200 de velocidade (proporcional ao tempo que sobrou; pausa, guia e tutorial não contam). Derrota: −50 (nunca abaixo de zero). **XP = pontos + bônus da medalha.** O XP é acumulado no progresso e ainda não é gasto.
 
 ---
 
@@ -262,11 +293,19 @@ O IP continua sendo exibido como retorno sobre as decisões, mas não define a m
 
 A progressão não é linear — é uma pressão crescente: o reino do jogador cresce a cada conquista, tornando o cálculo da própria área mais complexo; e a diferença de tamanho entre jogador e inimigos diminui a cada fase, exigindo estimativas cada vez mais precisas.
 
-**Calibração da dificuldade [v5].** O intervalo de diferença entre jogador e inimigo diminui linearmente de **25–35% na Fase 1** até **2–5% na Fase 20**. A diferença é medida na razão **efetiva** (Força_J / Força_I, já com o terreno aplicado); por isso, nos cenários com modificadores, a diferença *visível* de área engana — é o que obriga o jogador a calcular "para qual contexto" está decidindo. O tempo por rodada é fixo por cenário (30 s, 30 s, 35 s, 30 s, 25 s). A Serra tem 5 s a mais porque ali a grade de referência desaparece.
+**Calibração da dificuldade [v5].** O intervalo de diferença entre jogador e inimigo diminui linearmente de **25–35% na Fase 1** até **2–5% na Fase 20**. A diferença é medida na razão **efetiva** (Força_J / Força_I, já com o terreno aplicado); por isso, nos cenários com modificadores, a diferença *visível* de área engana — é o que obriga o jogador a calcular "para qual contexto" está decidindo. **[v6]** O tempo por rodada é fixo por cenário e foi reduzido para gerar tensão (antes: 60, 60, 60, 45 e 30 s). A Serra tem 5 s a mais porque ali a grade de referência desaparece.
+
+| Cenário | Tempo por rodada | Diferença entre as forças | Área inicial (blocos) |
+|---|---|---|---|
+| I · Planícies (1–4) | 30 s | de 25–35% a 21–30% | 12–20 |
+| II · Vales (5–8) | 30 s | de 20–29% a 16–24% | 20–30 |
+| III · Serra (9–12) | 35 s | de 15–22% a 12–18% | 30–40 |
+| IV · Arquipélago (13–16) | 30 s | de 11–16% a 7–11% | 40–55 |
+| V · Abismo (17–20) | 25 s | de 6–10% a 2–5% | 50–65 |
 
 ### O reino cresce e o grid encolhe
 
-A cada vitória o jogador anexa território. O reino cresce, mas o grid mantém o tamanho da célula. Estimar a própria área fica progressivamente mais difícil: no início são 12–20 quadrados fáceis de contar; ao final, 50–65 em formas compostas e vazadas.
+A cada vitória o jogador anexa território dentro da fase, e a área inicial cresce de cenário para cenário. O grid mantém o tamanho da célula, e estimar fica progressivamente mais difícil: no início são 12–20 quadrados fáceis de contar; no Abismo, 50–65 em formas compostas e vazadas.
 
 ### Progressão de formas **[v5]**
 
@@ -278,7 +317,7 @@ A cada vitória o jogador anexa território. O reino cresce, mas o grid mantém 
 | **IV · Arquipélagos** (F.13–16) | Figuras **complexas e preenchidas** com bordas diagonais. 30 s por rodada. | Decomposição sob pressão de tempo. |
 | **V · Abismo** (F.17–20) | Malhas **vazadas** — blocos ausentes no interior. 25 s por rodada. | Subtração de áreas; relevo misto; Fase 20 com morte súbita. |
 
-O jogador nunca recebe uma fórmula. Aprende geometria plana pela necessidade de sobreviver.
+**[v6]** A cada cenário, uma lição curta apresenta o atalho de cálculo das novas formas. Aplicá-lo sob pressão de tempo é o que consolida a geometria.
 
 ### A caminhada não é fácil
 
@@ -312,6 +351,8 @@ Você é o **Arquiteto-Rei**, herdeiro de um pequeno reino retangular nas Planí
 
 - **Os Reinos Rivais (antagonistas).** Cada reino tem nome e personalidade geométrica. O Reino de Aldrasq é perfeitamente quadrado e orgulhoso de sua simetria. O Ducado de Kermith é um retângulo irregular expansionista. O **Império das Formas** é o vilão final — territórios caóticos que desafiam qualquer cálculo simples.
 
+**[v6]** Cada uma das 20 fases tem um rival com nome e provocação própria (§11.1).
+
 **Conflito central:** expandir o reino através de cálculo preciso enquanto o Império das Formas cresce caoticamente.
 
 ---
@@ -320,7 +361,7 @@ Você é o **Arquiteto-Rei**, herdeiro de um pequeno reino retangular nas Planí
 
 Geometria é o continente onde o jogo se passa — um mundo medieval-fantástico cujas fronteiras foram seladas pelas "Leis da Forma". A força de um reino vem da extensão de seu território. O continente tem 5 regiões, cada uma com atmosfera, arquitetura e formas próprias.
 
-![Mapa do continente](assets/mapa.png)
+![Arte conceitual do mapa do continente](assets/mapa.png)
 
 | # | Cenário | Fases | Terreno | Formas | Grade de referência | Tempo | Cartógrafa | Unidade |
 |---|---|---|---|---|---|---|---|---|
@@ -336,7 +377,9 @@ Geometria é o continente onde o jogo se passa — um mundo medieval-fantástico
 - **IV — Arquipélago do Oblívio.** Ilhas conectadas por pontes de cristal. Azuis profundos e roxos — atmosfera onírica.
 - **V — Abismo Irregular (o teste final).** Ruínas de uma civilização geométrica. Tom monocromático chumbo e dourado. **Fase 20: morte súbita** — errar uma decisão encerra a fase imediatamente.
 
-### Arquitetura dos castelos
+**[v6]** As atmosferas acima são a meta de arte. No protótipo, cada cenário tem uma textura própria de pergaminho no campo de batalha.
+
+### Arquitetura dos castelos *(futuro)*
 
 Cada reino rival tem um castelo cuja silhueta reflete sua personalidade geométrica: o Reino do Quadrado tem quatro torres idênticas; o Reino das Formas Compostas tem anexos irregulares e assimétricos. O jogador aprende a "ler" o inimigo pela arquitetura antes mesmo de ver o território.
 
@@ -354,56 +397,149 @@ Cada reino rival tem um castelo cuja silhueta reflete sua personalidade geométr
 
 **Papéis:** o Arquiteto-Rei (do medo ao domínio); a Cartógrafa (guia os Cenários I e II e se cala até desaparecer, simbolizando a autonomia conquistada); o Império das Formas (caos geométrico a ser superado).
 
+### 11.1 Roteiro no jogo **[v6]**
+
+**Prólogo (4 cenas):** O Continente de Geometria · O Império das Formas · O Arquiteto-Rei · Sua Campanha.
+
+**Capítulos (2 cenas cada: situação e lição de cálculo):**
+
+| Capítulo | Voz | Lição |
+|---|---|---|
+| I · Planícies | A Cartógrafa | Retângulo |
+| II · Vales | A Cartógrafa | Meios-blocos |
+| III · Serra | Despedida e anotação da Cartógrafa | Trapézios e formas compostas |
+| IV · Arquipélago | Anotação da Cartógrafa | Dividir para somar |
+| V · Abismo | Última carta da Cartógrafa | Subtrair os vazios |
+
+![Cena de lição no capítulo III](assets/telas/licao.jpg)
+
+**Rivais:**
+
+| Fase | Rival | Provocação |
+|---|---|---|
+| 1 | Reino de Aldrasq | *"Meu reino é um quadrado perfeito. O seu é só um rascunho."* |
+| 2 | Ducado de Kermith | *"Cresci um lado de cada vez. Adivinhe qual."* |
+| 3 | Baronato do Campo Longo | *"Sou comprido. Comprido não quer dizer grande... ou quer?"* |
+| 4 | Condado da Torre Alta | *"Olhe para cima, Arquiteto. A altura também conta."* |
+| 5 | Senhorio do Penhasco | *"Cortei os cantos das minhas muralhas. Conte as metades, se puder."* |
+| 6 | Marquesado da Névoa | *"No vale, quem defende vale mais."* |
+| 7 | Principado da Ponte Quebrada | *"Cada canto que falta é uma armadilha."* |
+| 8 | Fortaleza de Kheldorn | *"Ninguém toma o vale pelo tamanho que aparenta."* |
+| 9 | Clã da Pedra Inclinada | *"Duas bases, uma altura. Esqueça uma delas e caia."* |
+| 10 | Guarda das Raízes | *"Sem malha para contar. E a sua Cartógrafa, onde está?"* |
+| 11 | Irmandade do Machado | *"Meus anexos crescem para onde você não olha."* |
+| 12 | Rei da Serra Viva | *"Na serra, atacar custa caro. Tem certeza das suas contas?"* |
+| 13 | Ilha das Marés | *"A maré sobe depressa. Decida depressa."* |
+| 14 | Corsários do Cristal | *"Minhas costas não têm linha reta. Boa sorte."* |
+| 15 | Arquiduquesa do Oblívio | *"Quem hesita aqui é esquecido."* |
+| 16 | Almirantado Sem Nome | *"Atacar compensa no meu litoral. Será que compensa hoje?"* |
+| 17 | Vigia das Ruínas | *"O que falta por dentro também se mede."* |
+| 18 | Arauto das Formas | *"O terreno muda a cada rodada. Suas certezas também."* |
+| 19 | Guardião Vazado | *"Sou feito de buracos. Subtraia, se tiver coragem."* |
+| 20 | Império das Formas Irregulares | *"Um único erro, Arquiteto, e seu reino será nosso."* |
+
+**Desfechos de cenário:**
+
+- **I · Planícies:** As Planícies de Aldrath estão livres! Camponeses hasteiam sua bandeira. Ao norte, as fortalezas de Kheldorn pedem socorro.
+- **II · Vales:** Os Vales de Kheldorn juram lealdade. A Cartógrafa sorri em silêncio: você já mede sem precisar ouvi-la.
+- **III · Serra:** A Serra das Pedras Vivas se rendeu — e você a venceu sozinho. Do alto, avistam-se as ilhas do Oblívio.
+- **IV · Arquipélago:** O Arquipélago se lembra do seu nome. Resta apenas o Abismo, onde o Império nasceu.
+- **V · Abismo (final):** O Império das Formas caiu! As Leis da Forma voltam a reger Geometria. No último pergaminho, a Cartógrafa escreveu: “Você nunca precisou de mim para medir. Só para acreditar.”
+
+Nas demais fases, a vitória diz que o rival passou a fazer parte do reino; a derrota, que ele resiste, e convida a revisar os cálculos.
+
 ---
 
 ## 12. Interface (UI)
 
-Estrutura funcional das telas centrais. A versão final aplica a direção de arte (bordas douradas, pergaminho, tipografia Cinzel/Libre Baskerville/Source Sans 3).
+Direção visual: bordas douradas, couro e pergaminho, tipografia Cinzel / Libre Baskerville / Source Sans 3.
 
-### Menu principal **[v5: implementado]**
+**Fluxo:** Título → Menu → (prólogo na primeira visita) Mapa → (capítulo na primeira visita ao cenário) Briefing → Batalha → Fim de fase.
 
-Título **Reinos da Área**, lema *"Conquiste territórios. Calcule para vencer."* e os botões **Jogar Campanha · Selecionar Arquétipo · Mapa de Cenários · Opções · Sair**. Em Opções: volume de música, volume de efeitos e reinício do progresso (com confirmação). A transição para a campanha usa o pergaminho que se desdobra.
+### Tela de título **[v6]**
 
-### Seleção de arquétipo **[v5]**
+Brasão, título dourado com brilho, brasas animadas e "Pressione qualquer tecla" (a introdução pode ser pulada).
 
-Três cartões (Estrategista, Engenheiro, Guerreiro) com passiva, ativa, custo em RE e objetivo.
+![Tela de título](assets/telas/titulo.jpg)
 
-### Mapa de campanha **[v5]**
+### Menu principal **[v6]**
 
-Cinco colunas (cenários) com quatro fases cada. Cada fase mostra estrelas ou cadeado. Ao selecionar uma fase abre o **briefing**: terreno, tempo, formas, grade de referência, unidade, estado da Cartógrafa, melhor resultado e troca de conselheiro. Mostra o contador de RE.
+**Continuar** (quando há progresso; avisa se faltam estrelas) · **Jogar Campanha** · **Conselheiro** · **Mapa de Cenários** · **Como Jogar** · **Opções** · **Sair**.
 
-### Tela de jogo — HUD principal
+![Menu principal](assets/telas/menu.jpg)
 
-- **Barra superior:** área total (na unidade da fase), barra de Domínio com meta de 60% e marca de 80%, 10 marcadores de rodada, Mundo/Fase e terreno.
-- **Painel inferior, esquerda:** terreno da rodada, sequência de vitórias, tempo, força de ataque e de defesa (já com os modificadores) e Precisão.
-- **Painel inferior, centro:** botões **ATACAR [A] · DEFENDER [D] · RECUAR [R]**; após a decisão, o resultado, o cálculo e **PRÓXIMA RODADA**.
-- **Painel inferior, direita:** arquétipo ativo, passiva, ativa (botão **ATIVAR**, tecla E) e medidor de RE.
-- **Cartógrafa:** retrato e balão de fala sobre o mapa, conforme a fase.
+### Seleção de arquétipo
 
-![HUD](assets/hud.png)
+Três cartões com passiva, ativa, custo em RE e objetivo.
 
-### Tela de fim de fase **[v5: implementado]**
+![Escolha do conselheiro](assets/telas/conselheiros.jpg)
 
-Insígnias (bronze/prata/ouro) que se acendem em sequência (1,5 s), **Índice de Precisão**, Domínio final, vitórias/derrotas/recuos, **XP** e **Recursos**. Botões: **Repetir Fase**, **Próxima Fase**, **Mapa**.
+### Mapa de campanha **[v6]**
 
-### Tutorial **[v5]**
+Mapa ilustrado com 20 selos de cera ligados por uma trilha. As fases 1–16 seguem a estrada e as pedras do mar; as fases 17–20 ficam nas **pedras flutuantes do Abismo**, ligadas por arcos de salto. O selo mostra número, estrelas ou cadeado, e a fase atual pulsa. O trecho liberado da trilha fica dourado. No topo: conselheiro, total de estrelas, RE, **Como Jogar** e **Trocar**.
 
-Na primeira vez na Fase 1, a Cartógrafa conduz 6 passos (seu grid, o inimigo sem grid, os botões, o relógio e o custo dos erros, a meta e o relatório, a habilidade e o guia), com destaque na tela e opção de pular. O guia **Como jogar** (menu, mapa, pausa ou tecla H) pode ser aberto a qualquer momento, com o relógio parado.
+![Mapa de campanha](assets/telas/mapa.jpg)
 
-### Relatório pós-rodada
+![Aviso de trava por estrelas](assets/telas/mapa_trava.jpg)
 
-Um popup compara os dois reinos lado a lado, mostra como calcular cada área (retângulo, trapézio, retângulo menos recortes ou soma linha a linha), o multiplicador de terreno, a decisão certa e o efeito da rodada. A tecla V o esconde para ver o campo.
+### Briefing da fase **[v6]**
 
-### Controles **[v5]**
+Rival e provocação, terreno, tempo, formas, grade de referência, unidade, Cartógrafa, objetivo, melhor medalha e precisão, critérios das medalhas e conselheiro. Botões: **Voltar**, **História**, **Trocar conselheiro**, **Iniciar fase**.
+
+![Briefing](assets/telas/briefing.jpg)
+
+### Tela de jogo — HUD principal **[v6]**
+
+- **Barra superior:** área total (na unidade da fase), barra de Domínio com bandeira nos 60% e marca nos 80%, 10 escudos com o histórico das rodadas, cenário, fase e terreno.
+- **Sobre o campo:** faixas com os multiplicadores de cada reino, relógio circular ao centro (vermelho, pulsando e com batidas de guerra nos últimos 10 s) e botão **Como Jogar [H]**.
+- **Painel inferior, esquerda (Conselho de Guerra):** terreno, sequência, pontos, seu ataque, defesa inimiga e Precisão.
+- **Painel inferior, centro:** linha de meta (quantas vitórias faltam para a próxima medalha, ou aviso de meta fora de alcance) e botões **ATACAR [A] · DEFENDER [D] · RECUAR [R]**; após a rodada, **Ver relatório [V]** e **Próxima rodada**.
+- **Painel inferior, direita:** arquétipo, passiva, RE e habilidade ativa **[E]**.
+- **Cartógrafa:** balão de fala sobre o mapa, conforme a fase (clique para dispensar).
+
+![HUD de batalha](assets/telas/batalha.jpg)
+
+### Tela de fim de fase **[v6]**
+
+"Crônica da batalha": medalhas que se acendem em sequência, o que falta para a próxima, Domínio final, Precisão, XP, vitórias/derrotas/recuos, motivo da derrota, recompensa (XP e RE), desfecho da história e aviso de trava. Botões: **Repetir Fase**, **Próxima Fase** (quando liberada) e **Mapa**.
+
+![Fim de fase](assets/telas/fim_fase.jpg)
+
+### Tutorial **[v6]**
+
+Na primeira vez na Fase 1, a Cartógrafa conduz 6 passos com destaque na tela e opção de pular: seu reino; o reino inimigo; as três ações; o relógio e o custo dos erros; a meta e o relatório; a habilidade e o guia. O relógio fica parado.
+
+![Tutorial](assets/telas/tutorial.jpg)
+
+### Guia "Como Jogar" **[v6]**
+
+Disponível no menu, no mapa, na pausa e pela tecla **H** (relógio parado). Abas: Objetivo · A rodada · Calcular áreas · Terreno e habilidades · Medalhas · Controles. Permite rever a história e o tutorial.
+
+![Guia, aba Calcular áreas](assets/telas/guia.jpg)
+
+### Pausa e opções **[v6]**
+
+**Pausa** (Esc; relógio parado): Continuar, Como Jogar, Opções e Abandonar fase (com confirmação). **Opções:** volume de música e de efeitos, tela cheia (em janela, mantém 16:9), reduzir movimento (sem tremor, com menos partículas) e reiniciar progresso (com confirmação).
+
+![Menu de pausa](assets/telas/pausa.jpg)
+
+### Controles **[v6]**
 
 | Tecla | Ação |
 |---|---|
-| **A** | Atacar |
-| **D** | Defender |
-| **R** | Recuar |
+| **A / D / R** | Atacar / Defender / Recuar |
 | **E** | Ativar habilidade |
-| **Enter / Espaço** | Próxima rodada (na tela de resultado) |
-| **Esc** | Voltar ao mapa |
+| **H** | Abrir o guia na batalha |
+| **V** | Esconder ou mostrar o relatório |
+| **Enter / Espaço** | Próxima rodada e confirmar botão em foco |
+| **Esc** | Pausar na batalha; voltar ou fechar nos menus; mapa no fim da fase |
+| **Setas** | Navegar por botões e selos |
+
+O jogo também funciona só com o mouse.
+
+### Salvamento **[v6]**
+
+Automático e local (`user://reinos_save.cfg`): conselheiro, fases liberadas, medalhas, melhor precisão, RE, XP, tutorial e cenas já vistos, volumes, tela cheia e reduzir movimento.
 
 ---
 
@@ -415,13 +551,15 @@ A estética nasce da intersecção entre a cartografia medieval iluminada do sé
 
 O mapa é o protagonista visual. Fronteiras são traços dourados. A transição entre territórios conquistados e não conquistados é uma animação de "tinta se espalhando" pelo pergaminho.
 
-### Castelos e arquitetura medieval
+### Castelos e arquitetura medieval *(meta futura)*
 
 Cada reino possui um ícone de castelo estilizado em pixel art. O castelo do jogador começa como um humilde *keep* normando e evolui com o reino: torres surgem, muralhas se expandem, bandeiras aparecem nas ameias. Os castelos rivais refletem a personalidade geométrica de cada reino.
 
 ![Evolução do castelo](assets/evolucao-castelo.png)
 
-*(A evolução visual do castelo é meta de arte futura; o protótipo v0.2 usa o brasão e o castelo-ícone estáticos.)*
+*(A evolução visual do castelo é meta de arte futura; o protótipo v0.2 usa o brasão estático.)*
+
+**[v6] Implementado no protótipo:** interface de couro, ouro e pergaminho desenhada por código; um pergaminho com textura própria para cada cenário (shader); cursores temáticos; Cartógrafa e mapa ilustrados.
 
 ### Tipografia
 
@@ -454,13 +592,18 @@ Como não há personagens com locomoção livre, a lista cobre territórios, cas
 | Conquista | Território | Tinta azul se espalha sobre o território conquistado | 0,6 s | Alta | ✅ |
 | Derrota | Território do jogador | Borda vermelha pulsante + partículas "X" | 2 s | Alta | ✅ |
 | Recuo | Mapa | Linhas de vento varrem o mapa | ~1 s | Média | ✅ |
-| Revelação de grid | Território inimigo | Grid surge com efeito de "desenho à mão" | 0,4 s + 3 s | Alta | ✅ |
+| Revelação de grid | Território inimigo | Grid surge com efeito de "desenho à mão" e fica até a próxima rodada | 0,4 s | Alta | ✅ |
 | Entrada do inimigo | Território inimigo | Surge por varredura de colunas entre rodadas | ~0,9 s | Média | ✅ |
 | Evolução do castelo | Castelo do jogador | Novas torres/muralhas | 1,2 s | Média | Futuro |
 | Uso de habilidade | Botão de arquétipo | Brilho dourado no botão (ou vibração vermelha sem recursos) e aviso na tela | 0,5 s | Média | ✅ |
 | Transição de fase | Mapa / tela | Pergaminho "vira a página" | 0,9 s | Média | ✅ |
 | Menu → campanha | Tela | Pergaminho se desdobra | 0,9 s | Média | ✅ |
 | Conquista de estrela | Fim de fase | Estrelas preenchem com brilho sequencial | 1,5 s | Baixa | ✅ |
+| Abertura **[v6]** | Tela de título | Brasão desce, título brilha, brasas sobem | ~3 s | Média | ✅ |
+| Início de rodada **[v6]** | Campo | Símbolo "VS" desce ao centro | ~1 s | Baixa | ✅ |
+| Resultado **[v6]** | Campo e HUD | Selo VITÓRIA/DERROTA/RECUO, valores flutuantes, tremor na derrota | ~1 s | Alta | ✅ |
+| Cenas e janelas **[v6]** | História, briefing, relatório, fim de fase | Texto que se escreve, pergaminho que se desenrola, entrada suave | 0,2–2 s | Média | ✅ |
+| Mapa **[v6]** | Selos | Pulso na fase atual e realce ao focar | Loop | Média | ✅ |
 | Hover/press de botão | Botões | Realce dourado ao passar o cursor (troca imediata de estilo; sem interpolação ainda) | 0,15 s (meta) | Baixa | ⚠️ parcial |
 
 ---
@@ -470,11 +613,11 @@ Como não há personagens com locomoção livre, a lista cobre territórios, cas
 O design de áudio segue a mesma filosofia: medieval por estética, moderno por função. O jogador deve entender o estado do jogo mesmo de olhos fechados.
 
 - **Trilha sonora.** Orquestra de câmara medieval: alaúde e violas de gamba na exploração; percussão crescente de tambores durante a análise; fanfarra de trompas nas vitórias; melodia descendente nas derrotas. Meta: tema próprio por cenário *(futuro; o protótipo usa uma trilha única)*.
-- **Efeitos sonoros.** Pergaminho ao desdobrar mapa e virar página; choque de espadas e escudos nas decisões; arco esticando no hover e flecha ao clicar; "batidas de guerra" nos últimos 10 s do relógio; sinos de precisão (ver §7).
+- **Efeitos sonoros [v6].** No protótipo: desenrolar do mapa e virar de página; sons próprios para atacar, defender e recuar; sons de vitória, derrota e vento; passagem e clique nos botões; "batidas de guerra" nos últimos 10 s; sinos de precisão (também no acender das medalhas); músicas de resumo para vitória e derrota na fase. Os sinos e o som de página são provisórios, gerados por código.
 - **Ambientação sonora** *(futuro)*: vento e pássaros nas Planícies; eco de montanha nos Vales; folhagem na Serra; ondas no Arquipélago; quase silêncio no Abismo.
 - **Narrativa sonora da Cartógrafa** *(futuro: voz)*. Deve soar como uma avó sábia, nunca como uma professora. Exemplos usados hoje em texto:
   - *"Este reino parece largo, mas não tão alto… decida com cuidado, Arquiteto."*
-  - *"Você era maior do que pensava. Da próxima vez, observe mais de perto antes de recuar."*
+  - *"Você era maior do que pensava. Da próxima vez, compare com mais calma antes de se defender."*
 - **Infraestrutura [v5].** `AudioManager` (autoload) com buses **Music** e **SFX** independentes e volumes salvos no progresso.
 
 ### Feedback sonoro da precisão
@@ -487,47 +630,27 @@ O design de áudio segue a mesma filosofia: medieval por estética, moderno por 
 
 ---
 
-## 16. Inteligência Artificial
+## 16. Gameplay Example **[v6]**
 
-Não há inimigos com movimento ou ataque ativo; o desafio nasce da estimativa visual. Dois agentes operam por máquinas de estado finito (FSM).
+**Fase 15 — Arquipélago do Oblívio.** Rodada 5 de 10, **Domínio 30%** (3 vitórias e 1 derrota). Unidade: hectares. Terreno Costeiro: atacante ×1,10, defensor ×0,90. 30 segundos.
 
-### FSM — Reino inimigo *(futuro)*
+1. **Observação.** O HUD mostra "48 ha" e a meta: "Para passar (Bronze): 3 vitórias em 6 rodadas". O território do jogador tem grid; o inimigo é um polígono vermelho sem grid. A Cartógrafa está ausente.
+2. **Estimativa.** O jogador divide o polígono em partes e estima cerca de 53 ha. É **maior** que o seu reino.
+3. **Decisão.** Lembra que o terreno pesa: 48 × 1,10 = 52,8 contra 53 × 0,90 = 47,7. Escolhe **ATACAR**.
+4. **Resolução.** A tinta azul se espalha. Domínio de 30% para 40%; área +10%.
+5. **Revelação e relatório.** O grid aparece sobre o inimigo e o popup mostra os dois cálculos lado a lado. Precisão da rodada: 100.
 
-Quatro estados visuais, puramente cosméticos (cor da borda): **Estável** (não enfrentado) → **Em Alerta** (jogador venceu a anterior) → **Vulnerável** (área < jogador) → **Conquistado**. Nenhum altera o cálculo de área, sempre determinístico.
-
-### FSM — Cartógrafa **[v5: implementado]**
-
-Fixa por fase (não condicional ao desempenho), para que todos enfrentem a mesma autonomia:
-
-| Estado | Fases | Comportamento |
-|---|---|---|
-| **Presente · Ativa** | 1–6 | Comenta a forma do inimigo antes de cada rodada e reage ao resultado. |
-| **Presente · Silenciosa** | 7–9 | Só comenta nas derrotas. |
-| **Ausente** | 10 em diante | Nenhuma dica; o jogador depende da própria leitura. |
+**O aprendizado.** O inimigo era maior em área e mais fraco em força: o contexto (terreno) pondera a área. A decomposição usada na estimativa é conferida no relatório.
 
 ---
 
-## 17. Gameplay Example
+## 17. Tema e Aspecto Sério
 
-**Fase 15 — Arquipélago do Oblívio.** Sem grade de referência. Unidade: hectares. O jogador inicia com **48 ha** (= 480.000 m²) e **Domínio 62%** na 4ª rodada. Terreno Costeiro: atacante ×1,10, defensor ×0,90.
+**Tema abordado.** Geometria plana aplicada à estimativa de área: raciocínio espacial e estimativa visual sem exercícios formais, mais **unidades de medida de área** (m², km², hectares). A progressão parte de retângulos (Cenário 1) e avança para meios-blocos e diagonais (2), trapézios e compostas (3), complexas (4) e malhas vazadas (5).
 
-1. **Observação.** O HUD mostra "48 ha · Domínio 62% · Rodada 4/10". O território do jogador exibe o grid azul. O inimigo é um polígono vermelho sem grid. A Cartógrafa está ausente.
-2. **Estimativa.** O jogador observa o polígono e estima os blocos, lembrando que atacar dá ×1,10 ao seu lado e ×0,90 ao inimigo.
-3. **Decisão.** Acredita ser maior mesmo com a margem do terreno: **ATACAR**.
-4. **Resolução.** O sistema compara as forças. A tinta azul se espalha sobre o vermelho. Domínio sobe de 62% para 72%. O HUD mostra o cálculo: *Você: 48 ha ×1,10 = 52,8 ha | Inimigo: 44 ha ×0,90 = 39,6 ha*.
-5. **Revelação.** O grid surge sobre o território conquistado e o jogador confere a estimativa. O IP daquela rodada é 100.
+**Como aparece no jogo.** Calcular área equivale a ter poder militar; errar a estimativa significa perder território. O jogador estima, age, erra e aprende pela revelação pós-combate — e na próxima situação análoga estima melhor. **[v6]** Para orientar quem não conhece os atalhos, o jogo nomeia as formas e mostra os cálculos nas lições, no guia e no relatório, sempre dentro da ficção e fora do momento da decisão.
 
-**O aprendizado oculto.** O jogador descobre sozinho que a área de uma figura composta se obtém por decomposição, e que o contexto (terreno) pondera a área. Não houve instrução — houve necessidade estratégica.
-
----
-
-## 18. Tema e Aspecto Sério
-
-**Tema abordado.** Geometria plana aplicada à estimativa de área: raciocínio espacial e estimativa visual sem instrução explícita, mais **unidades de medida de área** (m², km², hectares). A progressão parte de retângulos (Cenário 1) e avança para meios-blocos e diagonais (2), trapézios e compostas (3), complexas (4) e malhas vazadas (5).
-
-**Como aparece no jogo.** A geometria nunca é nomeada como tal: calcular área equivale a ter poder militar; errar a estimativa significa perder território. O jogador estima, age, erra e aprende pela revelação pós-combate — e na próxima situação análoga estima melhor.
-
-**Aprendizado por indução.** O jogador descobre que a área de um retângulo é largura × altura porque precisa disso para vencer. Em formas compostas aprende decomposição; nas vazadas, subtração de áreas. Com os modificadores de terreno, desenvolve raciocínio proporcional.
+**Aprendizado pela necessidade.** O jogador usa largura × altura porque precisa disso para vencer. Em formas compostas pratica decomposição; nas vazadas, subtração de áreas. Com os modificadores de terreno, desenvolve raciocínio proporcional.
 
 | Integração aprendizado × gameplay |
 |---|
@@ -544,7 +667,9 @@ Fixa por fase (não condicional ao desempenho), para que todos enfrentem a mesma
 
 ---
 
-## Apêndice — O que mudou da v4 para a v5
+## Apêndice A — Histórico de versões
+
+### Da v4 para a v5
 
 | Tema | v4 | v5 |
 |---|---|---|
@@ -556,3 +681,25 @@ Fixa por fase (não condicional ao desempenho), para que todos enfrentem a mesma
 | Unidades | u² | m², km², hectares |
 | Telas | Wireframes | Menu, arquétipo, mapa, fim de fase e tutorial implementados |
 | Recuo | −3% de Domínio (GDD) / −5% de área (protótipo v0.1) | −3% de Domínio, sem perda de área |
+
+### Da v5 para a v6 (após avaliação com jogadores)
+
+| Tema | v5 | v6 |
+|---|---|---|
+| Medalhas | Bronze: 70% de Domínio; Prata: 70% até a rodada 6 (inalcançável sem Golpe Decisivo); Ouro: IP ≥ 85% sem derrotas | Domínio final: 60% / 80% / 100%; abaixo de 60% a fase é perdida |
+| Desbloqueio | Vencer a fase anterior | Também exige 8, 16, 24 e 32 estrelas para os novos terrenos |
+| Recompensa | XP + 100 por estrela; +1 RE por fase nova | XP +150/350/600; +1 RE por medalha nova |
+| Tempo por rodada | 60/60/60/45/30 s | 30/30/35/30/25 s |
+| Resultado da rodada | Texto no rodapé | Popup com os dois reinos lado a lado e o cálculo |
+| Orientação | Tutorial de 5 passos | Tutorial de 6 passos, guia Como Jogar e linha de meta |
+| História | Descrita no documento | Prólogo, capítulos com lições, 20 rivais e desfechos no jogo |
+| Análise de Campo | Área real e grid | Só o grid |
+| Mapa | Cinco colunas de fases | Trilha sobre o mapa ilustrado e saltos nas pedras do Abismo |
+| Seleção de arquétipo | Cartão sobe ao passar o mouse | Sem efeito de hover no cartão |
+
+## Apêndice B — Estado do protótipo **[v6]**
+
+- **Tecnologia:** Godot 4.6 (GDScript), renderizador Compatibility, resolução base 1920 × 1080. Distribuído e testado no Windows.
+- **Testes automáticos:** regras, gerador de territórios, explicação das áreas e fases completas.
+- **Ainda não implementado:** evolução do castelo, arquitetura própria dos castelos rivais, trilha e ambientação por cenário, voz da Cartógrafa e versão Web.
+- **A validar com jogadores:** os novos tempos de rodada e a dificuldade do Ouro (100%).

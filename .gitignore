@@ -8,3 +8,7 @@ build/
 
 # Capturas de teste
 tests/shots/
+
+# Trailer (HyperFrames): render e dependências
+trailer/render/
+trailer/node_modules/

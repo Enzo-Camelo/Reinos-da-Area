@@ -92,6 +92,10 @@ var _guide_open      := false
 var _closed          := false
 var _last_timer_sec  := -1
 var _toast_token     := 0
+## Treino em andamento: "" (nenhum), "BASICS" (Fase 1) ou "TERRAIN" (1ª vez com terreno).
+var _training_kind   := ""
+var _training_banner : Control
+var _btn_skip_training : Button
 
 func setup(n: int) -> void:
 	phase_n = n
@@ -164,9 +168,50 @@ func _begin_phase() -> void:
 	await get_tree().create_timer(0.4).timeout
 	if _closed:
 		return
+	_training_kind = _pick_training()
+	game_manager.training = _training_kind != ""
+	_show_training_ui(game_manager.training)
 	_start_round()
-	if phase_n == 1 and not GameState.tutorial_done:
+	if _training_kind == "BASICS":
 		_show_tutorial()
+	elif _training_kind == "TERRAIN":
+		_show_terrain_lesson()
+
+## Na 1ª vez da Fase 1 há um treino; na 1ª fase em que o terreno muda a conta, a explicação volta.
+func _pick_training() -> String:
+	if phase_n == 1 and not GameState.tutorial_done:
+		return "BASICS"
+	if _terrain_changes_math() and not GameState.has_seen("terrain_lesson"):
+		return "TERRAIN"
+	return ""
+
+func _terrain_changes_math() -> bool:
+	return bool(cfg["mixed_terrain"]) or not is_equal_approx(float(cfg["terrain_atk"]), 1.0) \
+		or not is_equal_approx(float(cfg["terrain_def"]), 1.0)
+
+## Faixa "rodada de treino" no lugar do relógio e botão para pular.
+func _show_training_ui(on: bool) -> void:
+	_training_banner.visible = on
+	_btn_skip_training.visible = on
+	timer_medallion.visible = not on
+
+func _skip_training() -> void:
+	if _tutorial_open or _pause_open or _guide_open or not game_manager.training:
+		return
+	report.visible = false
+	result_vbox.visible = false
+	renderer.set_enemy_pulse(false)
+	game_manager.end_training()
+
+func _finish_training() -> void:
+	if _training_kind == "BASICS":
+		GameState.tutorial_done = true
+		GameState.save_game()
+	elif _training_kind == "TERRAIN":
+		GameState.mark_seen("terrain_lesson")
+	_training_kind = ""
+	_show_training_ui(false)
+	_toast("Agora vale! Rodada 1 de %d." % GameManager.TOTAL_ROUNDS, 2.5)
 
 func _effective_ring() -> int:
 	var r: int = cfg["ref_ring"]
@@ -175,17 +220,56 @@ func _effective_ring() -> int:
 	return r
 
 func _show_tutorial() -> void:
+	var t := TutorialOverlay.new()
+	t.targets = get_tutorial_targets()
+	if _training_kind == "BASICS":
+		var steps := TutorialOverlay.STEPS.duplicate()
+		steps[-1] += " Antes de valer, faça uma rodada de TREINO: sem relógio e sem perder nada."
+		t.steps = steps
+		t.last_button = "TREINAR"
+	_open_overlay(t)
+
+## Abre o tutorial ou a lição por cima do campo, com o relógio parado.
+func _open_overlay(t: TutorialOverlay) -> void:
 	_tutorial_open = true
 	_sync_timer_pause()
 	cartographer.visible = false
-	var t := TutorialOverlay.new()
-	t.targets = get_tutorial_targets()
 	_ui.add_child(t)
 	t.finished.connect(func():
 		_tutorial_open = false
 		_sync_timer_pause()
-		GameState.tutorial_done = true
-		GameState.save_game())
+		# com treino pendente, o tutorial só conta como feito quando o treino acabar
+		if _training_kind == "" and not GameState.tutorial_done:
+			GameState.tutorial_done = true
+			GameState.save_game())
+
+## A Cartógrafa retoma a explicação quando o terreno passa a alterar o cálculo,
+## usando os números do próprio reino do jogador nesta rodada de treino.
+func _show_terrain_lesson() -> void:
+	var atk := float(game_manager.terrain["atk"])
+	var def := float(game_manager.terrain["def"])
+	var area := game_manager.player_area
+	var num := func(v: float) -> String: return UnitFormatter.fmt_number(v, 2)
+	var limit: String = num.call(area * atk / def)
+	var t := TutorialOverlay.new()
+	t.steps = [
+		"Um momento, Arquiteto: aqui o TERRENO muda a conta. Em %s, atacar vale ×%s e defender vale ×%s. Não basta saber qual reino é maior: compare as FORÇAS." % [
+			str(game_manager.terrain["name"]), num.call(atk), num.call(def)],
+		"Passo 1, a sua força. Seu reino tem %s quadrados. Se você atacar, a conta é %s × %s = %s." % [
+			num.call(area), num.call(area), num.call(atk), num.call(area * atk)],
+		"Passo 2, a força do inimigo é a área dele × %s. Para o seu ataque vencer, ele precisa ter MENOS que %s ÷ %s = %s quadrados." % [
+			num.call(def), num.call(area * atk), num.call(def), limit],
+		"Passo 3: estime a área dele e compare com %s. Abaixo disso, ATAQUE. Acima, DEFENDA. O tamanho sozinho engana! Treine agora, sem relógio." % limit,
+	]
+	t.panel_pos = [Vector2(520, 330), Vector2(1010, 330), Vector2(40, 330), Vector2(520, 340)]
+	t.targets = [
+		Rect2(0, HUD_TOP_HEIGHT, FIELD_W, 60),
+		Rect2(0, HUD_TOP_HEIGHT, FIELD_W / 2.0, FIELD_H),
+		Rect2(FIELD_W / 2.0, HUD_TOP_HEIGHT, FIELD_W / 2.0, FIELD_H),
+		btn_row.get_global_rect().grow(10),
+	]
+	t.last_button = "TREINAR"
+	_open_overlay(t)
 
 ## Retângulos (em tela) destacados em cada passo do tutorial.
 func get_tutorial_targets() -> Array:
@@ -281,6 +365,31 @@ func _build_field_overlay(parent: Control) -> void:
 	help.position = Vector2(14, HUD_TOP_HEIGHT + 12)
 	help.pressed.connect(_open_guide)
 	parent.add_child(help)
+	_build_training_ui(parent)
+
+func _build_training_ui(parent: Control) -> void:
+	var style := OrnateStyleBox.new(Color(0.12, 0.23, 0.15, 0.97), Color(0.06, 0.12, 0.08, 0.97), C_TEXT_GOLD2)
+	style.set_content_margin_all(5.0)
+	style.studs = false
+	_training_banner = _panel_with(style)
+	_training_banner.position = Vector2(960 - 250, HUD_TOP_HEIGHT + 6)
+	_training_banner.custom_minimum_size = Vector2(500, 0)
+	_training_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(_training_banner)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", -2)
+	_training_banner.add_child(vb)
+	for line in [["RODADA DE TREINO", 22, C_TEXT_GOLD2, "Cinzel"], ["Sem relógio  •  nada é ganho nem perdido", 16, C_TEXT_WHITE, "Source Sans 3"]]:
+		var l := UiKit.make_label(line[0], line[1], line[2], line[3])
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vb.add_child(l)
+	_btn_skip_training = UiKit.make_menu_button("PULAR TREINO", Vector2(230, 44), UiKit.C_BG_PANEL, 15)
+	_btn_skip_training.focus_mode = Control.FOCUS_NONE
+	_btn_skip_training.position = Vector2(1920 - 244, HUD_TOP_HEIGHT + 12)
+	_btn_skip_training.pressed.connect(_skip_training)
+	parent.add_child(_btn_skip_training)
+	_training_banner.visible = false
+	_btn_skip_training.visible = false
 
 func _build_toast() -> void:
 	toast_panel = _panel_with(OrnateStyleBox.new(Color(0.15, 0.11, 0.07, 0.96), Color(0.07, 0.05, 0.03, 0.96), C_TEXT_GOLD2))
@@ -602,6 +711,8 @@ func _start_round() -> void:
 	if _closed:
 		return
 	var rt := game_manager.pick_terrain()
+	if _training_kind == "TERRAIN" and game_manager.training and is_equal_approx(float(rt["atk"]), float(rt["def"])):
+		rt = {"atk": 1.0, "def": 1.25, "name": "Vale"}   # no Abismo, o treino precisa de um terreno que pese
 	var atk: float = rt["atk"]
 	var def: float = rt["def"]
 	var shape: String = cfg["shape"]
@@ -610,14 +721,22 @@ func _start_round() -> void:
 	var p_area := TerritoryGenerator.area_of(p_cells)
 	var e_cells : Dictionary = {}
 	var e_area := 0.0
-	for attempt in 30:
+	for attempt in (80 if game_manager.training else 30):
 		# A diferença é medida na razão EFETIVA (depois do terreno): força_J / força_I = 1 +- diff.
 		var diff := randf_range(cfg["diff_min"], cfg["diff_max"])
 		var dir := 1.0 if randi() % 2 == 0 else -1.0
+		var misleading_wanted: bool = game_manager.training and _training_kind == "TERRAIN"
+		if game_manager.training and _training_kind == "BASICS":
+			diff = randf_range(0.30, 0.40)   # treino: diferença fácil de enxergar
+		elif misleading_wanted:
+			# o exemplo em que o tamanho engana: o certo é o contrário do que o tamanho sugere
+			diff = randf_range(0.10, 0.14)
+			dir = -1.0 if atk < def else 1.0
 		var e_target := p_area * atk / (def * (1.0 + dir * diff))
 		e_cells = territory_gen.generate(e_target, HALF_COLS, REGION_WIDTH, 1, shape)
 		e_area = TerritoryGenerator.area_of(e_cells)
-		if CombatResolver.is_unambiguous(p_area, e_area, atk, def):
+		var shows_lesson: bool = not misleading_wanted or (e_area < p_area) == (atk < def)
+		if shows_lesson and CombatResolver.is_unambiguous(p_area, e_area, atk, def):
 			break
 
 	renderer.set_reference_ring(_effective_ring())
@@ -628,7 +747,32 @@ func _start_round() -> void:
 
 	game_manager.start_new_round(p_area, e_area, rt)
 	_update_force_labels()
-	cartographer.on_round_start(_aspect_of(e_cells))
+	if not game_manager.training:
+		_place_cartographer(p_cells, e_cells)
+		cartographer.on_round_start(_aspect_of(e_cells))
+
+## Põe o balão da Cartógrafa onde ele não esconda os reinos (a contagem precisa da grade visível).
+func _place_cartographer(p_cells: Dictionary, e_cells: Dictionary) -> void:
+	var box := Vector2(760, 76)
+	var top := HUD_TOP_HEIGHT + 104.0
+	var bottom := HUD_TOP_HEIGHT + FIELD_H - box.y - 4.0
+	var best := Vector2(960 - 380, top)
+	var best_hits := 1 << 30
+	for y in [top, bottom]:
+		for x in [960.0 - 380.0, 14.0, 1920.0 - 774.0]:
+			var area := Rect2(Vector2(x, y - HUD_TOP_HEIGHT), box)
+			var hits := _cells_under(area, p_cells) + _cells_under(area, e_cells) * 3   # cobrir o inimigo é pior
+			if hits < best_hits:
+				best_hits = hits
+				best = Vector2(x, y)
+	cartographer.position = best
+
+func _cells_under(area: Rect2, cells: Dictionary) -> int:
+	var hits := 0
+	for c in cells.keys():
+		if area.intersects(Rect2(Vector2(c) * CELL_SIZE, Vector2.ONE * CELL_SIZE)):
+			hits += 1
+	return hits
 
 func _aspect_of(cells: Dictionary) -> float:
 	var mn := Vector2i(1000, 1000)
@@ -664,6 +808,8 @@ func _on_phase_changed(phase: String) -> void:
 		_set_buttons_enabled(false)
 		_refresh_skill_ui()
 	elif phase == "RESTART":
+		if _training_kind != "" and not game_manager.training:
+			_finish_training()
 		btn_row.visible = true
 		result_vbox.visible = false
 		await get_tree().create_timer(0.4).timeout
@@ -672,7 +818,8 @@ func _on_phase_changed(phase: String) -> void:
 		_start_round()
 
 func _on_round_started(round_num: int) -> void:
-	tracker.set_current(round_num)
+	if not game_manager.training:
+		tracker.set_current(round_num)
 	timer_medallion.setup(float(cfg["time"]))
 
 func _on_action(action: GameManager.Action) -> void:
@@ -711,20 +858,25 @@ func _play_result_sequence(info: Dictionary) -> void:
 	if bell != "":
 		get_tree().create_timer(0.9).timeout.connect(func(): AudioManager.play_sfx("bell_" + bell))
 
-	tracker.add_result(result)
+	var training: bool = info.get("training", false)
+	if not training:
+		tracker.add_result(result)
 	_fill_result_text(info)
 	_update_dominance(game_manager.dominance)
 	_update_area_display(float(info["new_area"]))
 	_spawn_result_effects(info)
-	lbl_ip.text = "%d%%" % int(round(AccuracyTracker.phase_ip(game_manager.ip_values)))
+	if not training:
+		lbl_ip.text = "%d%%" % int(round(AccuracyTracker.phase_ip(game_manager.ip_values)))
 	cartographer.visible = false
 
-	var will_end: bool = float(info["new_area"]) < GameManager.MIN_AREA \
+	var will_end: bool = not training and (float(info["new_area"]) < GameManager.MIN_AREA \
 		or (cfg["sudden_death"] and result == "LOSE") \
-		or game_manager.current_round >= GameManager.TOTAL_ROUNDS
+		or game_manager.current_round >= GameManager.TOTAL_ROUNDS)
 	var custom_lbl = btn_continue.find_child("LblTitle", true, false)
 	if custom_lbl:
 		custom_lbl.text = "VER RESUMO" if will_end else "PRÓXIMA RODADA"
+		if training:
+			custom_lbl.text = "COMEÇAR A BATALHA"
 	btn_row.visible = false
 	result_vbox.visible = true
 	_update_objective("")
@@ -788,6 +940,13 @@ func _result_detail(info: Dictionary) -> String:
 	var attacked: bool = info["action"] == CombatResolver.ACTION_ATTACK
 	var pct := int(round(absf(float(info["area_pct"])) * 100.0))
 	var detail := ""
+	if info.get("training", false):
+		var right := "ATACAR" if info["correct"] == "ATTACK" else "DEFENDER"
+		if result == "WIN":
+			return "Muito bem: o certo era %s. Veja abaixo como as contas confirmam." % right
+		if result == "LOSE":
+			return "O certo era %s. Numa rodada valendo, esse erro custaria área. Compare as contas abaixo." % right
+		return "Recuar é seguro, mas numa rodada valendo custa Domínio. O certo era %s." % right
 	if result == "WIN":
 		detail = "Você atacou com a força maior." if attacked else "O inimigo era mais forte e a sua defesa resistiu!"
 	elif result == "LOSE":
@@ -805,6 +964,10 @@ func _result_detail(info: Dictionary) -> String:
 
 ## Linha de orientação: o que falta para vencer a fase e o que fazer agora.
 func _update_objective(hint: String) -> void:
+	if game_manager.training:
+		lbl_objective.text = "" if game_manager.current_phase == GameManager.Phase.RESULT \
+			else "TREINO: calcule as duas forças e escolha. Pense com calma."
+		return
 	var rounds_left: int = GameManager.TOTAL_ROUNDS - game_manager.current_round
 	if game_manager.current_phase != GameManager.Phase.RESULT:
 		rounds_left += 1
@@ -1012,9 +1175,8 @@ func _update_force_labels() -> void:
 	lbl_ribbon_enemy.text = "REINO INIMIGO · DEFESA ×%s" % UnitFormatter.fmt_number(def, 2)
 
 func _update_area_display(area: float) -> void:
-	var f := UnitFormatter.format_area(area, cfg)
-	lbl_area_value.text = str(f["main"])
-	lbl_area_unit.text = str(f["sub"]) if f["sub"] != "" else "ÁREA TOTAL"
+	lbl_area_value.text = UnitFormatter.format_area(area, cfg)
+	lbl_area_unit.text = UnitFormatter.scale_text(cfg)
 
 func _update_dominance(pct: float, instant: bool = false) -> void:
 	if instant:

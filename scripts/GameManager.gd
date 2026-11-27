@@ -52,6 +52,8 @@ var skill_used_phase : bool   = false
 var wall_active      : bool   = false
 var strike_active    : bool   = false
 var ended            : bool   = false
+## Rodada de treino: não conta como rodada, não tem relógio e nada é ganho nem perdido.
+var training         : bool   = false
 var carry_area       : float  = 0.0   # área do jogador que segue para a próxima rodada
 
 var player_area      : float  = 0.0
@@ -103,6 +105,7 @@ func start_phase(phase_cfg: Dictionary, arch: String, available_resources: int) 
 	wall_active = false
 	strike_active = false
 	ended = false
+	training = false
 	timer_active = false
 	timer_paused = false
 	carry_area = float(randi_range(int(cfg["area_min"]), int(cfg["area_max"])))
@@ -116,7 +119,8 @@ func pick_terrain() -> Dictionary:
 	return {"atk": cfg["terrain_atk"], "def": cfg["terrain_def"], "name": cfg["terrain_name"]}
 
 func start_new_round(p_area: float, e_area: float, round_terrain: Dictionary) -> void:
-	current_round += 1
+	if not training:
+		current_round += 1
 	player_area = p_area
 	enemy_area = e_area
 	terrain = round_terrain
@@ -124,8 +128,11 @@ func start_new_round(p_area: float, e_area: float, round_terrain: Dictionary) ->
 	strike_active = false
 	current_phase = Phase.ANALYSIS
 	round_time_left = float(cfg["time"])
-	timer_active = true
-	_countdown_timer.start()
+	timer_active = not training
+	if timer_active:
+		_countdown_timer.start()
+	else:
+		_countdown_timer.stop()
 	phase_changed.emit("ANALYSIS")
 	round_started.emit(current_round)
 
@@ -155,7 +162,7 @@ func skill_cost() -> int:
 	return int(ArchetypeData.get_data(archetype).get("cost", 1))
 
 func can_use_skill() -> bool:
-	return archetype != "" and not skill_used_phase and not ended \
+	return archetype != "" and not skill_used_phase and not ended and not training \
 		and (current_phase == Phase.ANALYSIS or current_phase == Phase.DECISION)
 
 ## Tenta ativar a habilidade ativa do arquétipo. Retorna false (e emite skill_denied) sem recursos.
@@ -191,8 +198,18 @@ func resolve_action(action: Action, forced_timeout: bool = false) -> void:
 	var info := CombatResolver.resolve(int(action), player_area, enemy_area, terrain, current_effects())
 	info["timeout"] = forced_timeout
 	info["round"] = current_round
+	info["training"] = training
 	var ip := AccuracyTracker.round_ip(info)
 	info["ip"] = ip
+	if training:
+		# o resultado é só para aprender: área, Domínio, pontos e precisão não mudam
+		info["dom_delta"] = 0.0
+		info["area_pct"] = 0.0
+		info["new_area"] = player_area
+		last_info = info
+		round_resolved.emit(info)
+		phase_changed.emit("RESULT")
+		return
 	ip_values.append(ip)
 
 	var time_taken := float(cfg["time"]) - round_time_left
@@ -226,6 +243,9 @@ func _apply_result(info: Dictionary, time_taken: float, timeout: bool) -> void:
 
 ## Chamado depois que o jogador confirma o resultado: encerra a fase ou prepara a próxima rodada.
 func finish_round() -> void:
+	if training:
+		end_training()
+		return
 	var reason := ""
 	if carry_area < MIN_AREA:
 		reason = "AREA"
@@ -238,6 +258,16 @@ func finish_round() -> void:
 	else:
 		current_phase = Phase.RESTART
 		phase_changed.emit("RESTART")
+
+## Encerra (ou pula) o treino: a próxima rodada já vale.
+func end_training() -> void:
+	if not training:
+		return
+	training = false
+	timer_active = false
+	_countdown_timer.stop()
+	current_phase = Phase.RESTART
+	phase_changed.emit("RESTART")
 
 func _end_phase(reason: String) -> void:
 	ended = true

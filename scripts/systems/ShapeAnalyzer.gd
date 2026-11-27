@@ -225,8 +225,8 @@ static func _count(cells: Dictionary) -> Dictionary:
 	for v in row_sums:
 		parts.append(_n(v))
 	var steps := [
-		"Blocos inteiros: %d" % full,
-		"Meios-blocos: %d × ½ = %s" % [half, _n(half * 0.5)],
+		"Quadrados inteiros: %d" % full,
+		"Meios quadrados: %d × ½ = %s" % [half, _n(half * 0.5)],
 		"%d + %s = %s" % [full, _n(half * 0.5), _n(area)],
 		"Linha a linha: %s" % " + ".join(parts),
 	]

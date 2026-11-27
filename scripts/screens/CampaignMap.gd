@@ -15,12 +15,6 @@ const SHAPE_TEXT := {
 	"COMPLEX": "Figuras complexas e preenchidas",
 	"HOLLOW": "Malhas vazadas (áreas com buracos)",
 }
-const UNIT_TEXT := {
-	"m2": "m² (1 bloco = 1 m²)",
-	"m2_km2": "m², virando km² acima de 10.000 m² (1 bloco = 400 m²)",
-	"km2": "km² (1 bloco = 50.000 m²)",
-	"ha": "hectares (1 bloco = 1 ha)",
-}
 const CARTO_TEXT := {
 	"ACTIVE": "Presente e ativa",
 	"SILENT": "Presente, comenta só nas derrotas",
@@ -341,16 +335,31 @@ func _open_briefing(p: int) -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(center)
 	var panel := UiKit.ornate_panel("scroll")
-	panel.custom_minimum_size = Vector2(860, 0)
+	panel.custom_minimum_size = Vector2(1240, 0)
 	center.add_child(panel)
 
+	var columns := HBoxContainer.new()
+	columns.add_theme_constant_override("separation", 26)
+	panel.add_child(columns)
+	columns.add_child(_build_king_column())
+
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 10)
-	panel.add_child(vb)
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vb.add_theme_constant_override("separation", 8)
+	columns.add_child(vb)
 
 	var t := UiKit.make_label("FASE %d — %s" % [p, str(cfg["scenario_name"]).to_upper()], 30, Color8(92, 40, 14), "Cinzel")
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
+	var why_title := UiKit.make_label("POR QUE VOCÊ MARCHA", 17, Color8(92, 40, 14), "Cinzel")
+	why_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(why_title)
+	var why := UiKit.make_label(StoryData.mission(p), 18, INK, "Libre Baskerville")
+	why.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	why.custom_minimum_size = Vector2(760, 0)
+	vb.add_child(why)
+	vb.add_child(_rule())
 	var foe := StoryData.rival(p)
 	var foe_lbl := UiKit.make_label("Rival: %s\n“%s”" % [foe["name"], foe["quote"]], 19, Color8(130, 40, 20), "Libre Baskerville")
 	foe_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -364,7 +373,7 @@ func _open_briefing(p: int) -> void:
 		["Tempo por rodada", "%d segundos" % int(cfg["time"])],
 		["Formas inimigas", SHAPE_TEXT[cfg["shape"]]],
 		["Grade de referência", _ring_text(int(cfg["ref_ring"]))],
-		["Unidade de medida", UNIT_TEXT[cfg["unit_mode"]]],
+		["Escala do mapa", UnitFormatter.scale_text(cfg)],
 		["Cartógrafa", CARTO_TEXT[cfg["cartographer"]]],
 		["Objetivo", "Terminar as 10 rodadas com 60% de Domínio ou mais" + (" — MORTE SÚBITA: um erro encerra a fase" if cfg["sudden_death"] else "")],
 	]
@@ -429,6 +438,23 @@ func _open_briefing(p: int) -> void:
 	tw.tween_property(overlay, "modulate:a", 1.0, 0.12)
 	tw.parallel().tween_property(panel, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	AudioManager.play_sfx("map_unroll")
+
+## Retrato do protagonista no briefing: o jogador vê quem ele é nesta guerra.
+func _build_king_column() -> Control:
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 6)
+	var portrait := TextureRect.new()
+	portrait.texture = UiKit.load_texture(StoryData.PORTRAIT_KING)
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.custom_minimum_size = Vector2(290, 515)
+	col.add_child(portrait)
+	for line in [["ARQUITETO-REI", 24, Color8(92, 40, 14), "Cinzel"], ["Este é você", 16, INK_MUTED, "Source Sans 3"]]:
+		var l := UiKit.make_label(line[0], line[1], line[2], line[3])
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		col.add_child(l)
+	return col
 
 func _rule() -> ColorRect:
 	var r := ColorRect.new()

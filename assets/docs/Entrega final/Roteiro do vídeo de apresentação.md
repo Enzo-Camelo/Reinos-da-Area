@@ -6,8 +6,6 @@ Vídeo de tela no estilo live gravada, com **cerca de 12 minutos** (o mínimo é
 - **Fala:** o que comentar.
 - **[CORTE: vídeo antigo]:** inserir um trecho da gravação da versão anterior, para o antes e depois.
 
-Se forem gravar em grupo, dá para dividir os blocos entre os três integrantes (sugestão: Enzo nos blocos 1, 2 e 7; Gabriel nos blocos 3 e 4; Bruno nos blocos 5 e 6).
-
 ---
 
 ## Antes de gravar (checklist)
@@ -27,7 +25,7 @@ Se forem gravar em grupo, dá para dividir os blocos entre os três integrantes 
 **Na tela:** tela de título, com a música tocando. Não aperte nenhuma tecla ainda.
 
 **Fala:**
-> "Olá! Nós somos o grupo do **Reinos da Área**: Enzo Camelo Vieira, Gabriel Luís de Santana e Bruno Faria Travessini. Este é o vídeo da versão final do nosso jogo. Hoje vamos jogar ao vivo, mostrar como alguém que nunca jogou aprende a jogar e, principalmente, o que mudou depois das duas devolutivas que recebemos: a ficha técnica da outra equipe no Dia do Analista e o feedback da professora."
+> "Olá! Eu sou o Enzo Camelo Vieira e o jogo que eu desenvolvi é o **Reinos da Área**. Este é o vídeo da versão final do jogo. Hoje vou jogar ao vivo, mostrar como alguém que nunca jogou aprende a jogar e, principalmente, o que mudou depois das duas devolutivas que recebi: a ficha técnica da outra equipe no Dia do Analista e o feedback da professora."
 
 > "O Reinos da Área é um jogo de estratégia feito na Godot 4 em que você aprende **cálculo de área** sem perceber que está estudando. O lema é este aqui: *conquiste territórios, calcule para vencer*."
 

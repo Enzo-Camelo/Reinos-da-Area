@@ -7,11 +7,11 @@ extends Node2D
 class_name TerritoryRenderer
 ## Parâmetros do pergaminho por cenário: base, mancha, tinta, motivo, intensidade, cor da grade
 const SCENARIO_LOOK := [
-	{"base": Color(0.80, 0.72, 0.52), "stain": Color(0.55, 0.42, 0.22), "ink": Color(0.25, 0.17, 0.08), "motif": 0, "str": 0.0, "grid": Color(0.28, 0.18, 0.08, 0.40)},
-	{"base": Color(0.77, 0.67, 0.46), "stain": Color(0.50, 0.38, 0.20), "ink": Color(0.30, 0.20, 0.08), "motif": 1, "str": 0.16, "grid": Color(0.28, 0.18, 0.08, 0.40)},
-	{"base": Color(0.67, 0.63, 0.56), "stain": Color(0.36, 0.33, 0.28), "ink": Color(0.18, 0.16, 0.14), "motif": 2, "str": 0.14, "grid": Color(0.15, 0.13, 0.11, 0.42)},
-	{"base": Color(0.56, 0.67, 0.72), "stain": Color(0.25, 0.38, 0.50), "ink": Color(0.10, 0.20, 0.30), "motif": 3, "str": 0.16, "grid": Color(0.07, 0.15, 0.25, 0.42)},
-	{"base": Color(0.32, 0.27, 0.40), "stain": Color(0.12, 0.08, 0.18), "ink": Color(0.85, 0.65, 0.95), "motif": 4, "str": 0.20, "grid": Color(0.88, 0.78, 1.00, 0.34)},
+	{"base": Color(0.80, 0.72, 0.52), "stain": Color(0.55, 0.42, 0.22), "ink": Color(0.25, 0.17, 0.08), "motif": 0, "str": 0.0, "grid": Color(0.24, 0.15, 0.06, 0.66)},
+	{"base": Color(0.77, 0.67, 0.46), "stain": Color(0.50, 0.38, 0.20), "ink": Color(0.30, 0.20, 0.08), "motif": 1, "str": 0.16, "grid": Color(0.24, 0.15, 0.06, 0.66)},
+	{"base": Color(0.67, 0.63, 0.56), "stain": Color(0.36, 0.33, 0.28), "ink": Color(0.18, 0.16, 0.14), "motif": 2, "str": 0.14, "grid": Color(0.13, 0.11, 0.09, 0.66)},
+	{"base": Color(0.56, 0.67, 0.72), "stain": Color(0.25, 0.38, 0.50), "ink": Color(0.10, 0.20, 0.30), "motif": 3, "str": 0.16, "grid": Color(0.05, 0.12, 0.21, 0.66)},
+	{"base": Color(0.32, 0.27, 0.40), "stain": Color(0.12, 0.08, 0.18), "ink": Color(0.85, 0.65, 0.95), "motif": 4, "str": 0.20, "grid": Color(0.90, 0.82, 1.00, 0.58)},
 ]
 var grid_line_color : Color = COLOR_GRID_LINE
 var _bg : ColorRect
@@ -21,7 +21,9 @@ var _bg_mat : ShaderMaterial
 #  PALETA MEDIEVAL
 # ─────────────────────────────────────────────
 const COLOR_GRID_BG       := Color("#bba375")
-const COLOR_GRID_LINE     := Color(0.28, 0.18, 0.08, 0.40)
+const COLOR_GRID_LINE     := Color(0.24, 0.15, 0.06, 0.66)
+## Linha da grade por cima dos reinos: clara, para contrastar com o azul e o vermelho.
+const COLOR_GRID_ON_FILL  := Color(1.00, 0.95, 0.80, 0.62)
 const COLOR_PLAYER_FILL   := Color(0.12, 0.30, 0.66, 0.74)
 const COLOR_PLAYER_BORDER := Color(0.55, 0.76, 1.00, 0.85)
 const COLOR_PLAYER_INK    := Color(0.05, 0.10, 0.28, 0.95)
@@ -32,7 +34,8 @@ const COLOR_ENEMY_BORDER  := Color(0.95, 0.55, 0.45, 0.70)
 const COLOR_GOLD          := Color(0.96, 0.78, 0.30, 1.0)
 const COLOR_DIVIDER       := Color(0.76, 0.58, 0.18, 0.82)
 
-const GRID_LINE_WIDTH     := 1.0
+## Espessura da grade em pixels de TELA numa janela 1920×1080 (nunca some ao reduzir).
+const GRID_LINE_PIXELS    := 2.0
 const BORDER_LINE_WIDTH   := 3.5
 const DIVIDER_WIDTH       := 3.5
 
@@ -72,6 +75,8 @@ var vs_icon          : Sprite2D
 
 func _ready() -> void:
 	set_process(true)
+	# a grade é alinhada aos pixels da tela: redesenha quando a janela muda de tamanho
+	get_viewport().size_changed.connect(queue_redraw)
 	_bg = ColorRect.new()
 	_bg.show_behind_parent = true
 	_bg.size = Vector2(cell_size * grid_cols, cell_size * grid_rows)
@@ -461,7 +466,12 @@ func _draw_ink() -> void:
 			c.a = 0.85
 			_fill_cell(k, int(enemy_cells[k]), c)
 
+## A grade é desenhada com retângulos alinhados aos pixels reais da tela. Uma linha de 1 unidade
+## some quando a tela é reduzida (em 1600×900 ela cai entre os pixels e as horizontais desaparecem).
 func _draw_grid() -> void:
+	var xf := get_viewport().get_final_transform() * get_global_transform_with_canvas()
+	var scale_px := Vector2(maxf(xf.x.length(), 0.01), maxf(xf.y.length(), 0.01))
+	var thick := maxf(1.0, roundf(GRID_LINE_PIXELS * scale_px.y))
 	var s := cell_size
 	for cx in grid_cols:
 		for cy in grid_rows:
@@ -471,12 +481,30 @@ func _draw_grid() -> void:
 			var x := cx * s
 			var y := cy * s
 			# topo e esquerda sempre; base e direita só na fronteira do grid visível
-			draw_line(Vector2(x, y + 0.5), Vector2(x + s, y + 0.5), grid_line_color, GRID_LINE_WIDTH)
-			draw_line(Vector2(x + 0.5, y), Vector2(x + 0.5, y + s), grid_line_color, GRID_LINE_WIDTH)
+			_grid_line(cell, 0, Vector2(x, y), true, xf.origin, scale_px, thick)
+			_grid_line(cell, 2, Vector2(x, y), false, xf.origin, scale_px, thick)
 			if not _grid_visible(Vector2i(cx + 1, cy)):
-				draw_line(Vector2(x + s - 0.5, y), Vector2(x + s - 0.5, y + s), grid_line_color, GRID_LINE_WIDTH)
+				_grid_line(cell, 3, Vector2(x + s, y), false, xf.origin, scale_px, thick)
 			if not _grid_visible(Vector2i(cx, cy + 1)):
-				draw_line(Vector2(x, y + s - 0.5), Vector2(x + s, y + s - 0.5), grid_line_color, GRID_LINE_WIDTH)
+				_grid_line(cell, 1, Vector2(x, y + s), true, xf.origin, scale_px, thick)
+
+## Um lado de célula (side: 0 topo, 1 base, 2 esquerda, 3 direita) com "thick" pixels exatos.
+func _grid_line(cell: Vector2i, side: int, from: Vector2, horizontal: bool, origin: Vector2, scale_px: Vector2, thick: float) -> void:
+	var col := COLOR_GRID_ON_FILL if _side_on_fill(cell, side) else grid_line_color
+	var start := ((origin + from * scale_px - Vector2.ONE * (thick / 2.0)).round() - origin) / scale_px
+	var length := float(cell_size)
+	var size := Vector2(length, thick / scale_px.y) if horizontal else Vector2(thick / scale_px.x, length)
+	draw_rect(Rect2(start, size), col)
+
+## O lado encosta em área preenchida (desta célula ou da vizinha)?
+func _side_on_fill(cell: Vector2i, side: int) -> bool:
+	var nb: Vector2i = cell + SIDE_DIRS[side]
+	for cells in [player_cells, enemy_cells]:
+		if cells.has(cell) and _has_full_side(int(cells[cell]), side):
+			return true
+		if cells.has(nb) and _has_full_side(int(cells[nb]), OPPOSITE[side]):
+			return true
+	return false
 
 func _draw_star_sparkle(pos: Vector2, size: float, rot: float, alpha: float, phase: float) -> void:
 	var pulse := (sin(phase) * 0.4 + 0.6) * alpha

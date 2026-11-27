@@ -1,9 +1,7 @@
 ## UnitFormatter.gd
-## Converte área em células para m², km² ou hectares conforme a fase (Relatório §3.5).
+## Converte área em quadrados para m² ou km², conforme a escala do mapa na fase.
 class_name UnitFormatter
 extends RefCounted
-
-const KM2_THRESHOLD_M2 := 10000.0
 
 ## Número no padrão pt-BR: milhar com ponto, decimal com vírgula.
 static func fmt_number(v: float, decimals: int = 0) -> String:
@@ -25,21 +23,23 @@ static func fmt_number(v: float, decimals: int = 0) -> String:
 			out += "," + dec
 	return ("-" if neg else "") + out
 
-## Retorna { "main": "2,5 km²", "sub": "= 2.500.000 m²" }. "sub" vazio quando não há conversão.
-static func format_area(cells_area: float, cfg: Dictionary) -> Dictionary:
-	var m2: float = cells_area * float(cfg.get("unit_scale", 1.0))
-	var mode := str(cfg.get("unit_mode", "m2"))
-	if mode == "m2":
-		return {"main": "%s m²" % fmt_number(m2, 1), "sub": ""}
-	if mode == "m2_km2":
-		if m2 > KM2_THRESHOLD_M2:
-			return {"main": "%s km²" % fmt_number(m2 / 1000000.0, 3), "sub": "= %s m²" % fmt_number(m2, 0)}
-		return {"main": "%s m²" % fmt_number(m2, 0), "sub": ""}
-	if mode == "km2":
-		return {"main": "%s km²" % fmt_number(m2 / 1000000.0, 2), "sub": "= %s m²" % fmt_number(m2, 0)}
-	if mode == "ha":
-		return {"main": "%s ha" % fmt_number(m2 / 10000.0, 1), "sub": "= %s m²" % fmt_number(m2, 0)}
-	return {"main": "%s u²" % fmt_number(cells_area, 1), "sub": ""}
+## Área do território na unidade da fase: "2.500 m²" ou "27,5 km²" (uma unidade só, sem conversões).
+static func format_area(cells_area: float, cfg: Dictionary) -> String:
+	var side := side_m(cfg)
+	if side >= 1000:
+		return "%s km²" % fmt_number(cells_area * pow(side / 1000.0, 2), 1)
+	return "%s m²" % fmt_number(cells_area * side * side, 1)
 
-static func short(cells_area: float, cfg: Dictionary) -> String:
-	return str(format_area(cells_area, cfg)["main"])
+## Lado de um quadrado do mapa, em metros.
+static func side_m(cfg: Dictionary) -> int:
+	return int(cfg.get("side_m", 1))
+
+## "10 m" ou "1 km".
+static func side_text(cfg: Dictionary) -> String:
+	var side := side_m(cfg)
+	return "%d km" % int(side / 1000.0) if side >= 1000 else "%d m" % side
+
+## Legenda da escala: "1 quadrado = 10 m × 10 m = 100 m²".
+static func scale_text(cfg: Dictionary) -> String:
+	var side := side_text(cfg)
+	return "1 quadrado = %s × %s = %s" % [side, side, format_area(1.0, cfg)]

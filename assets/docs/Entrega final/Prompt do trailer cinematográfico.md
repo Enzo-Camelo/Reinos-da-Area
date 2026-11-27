@@ -163,7 +163,7 @@ Montagem rápida, com cortes no ritmo da música. Cada print entra com zoom de c
 ### Cena 6 — Título (0:35 – 0:40)
 
 - **Imagem:** corte seco para preto, um segundo de silêncio (só um eco do vento). O `brasao.png` surge com brilho dourado varrendo da esquerda para a direita. Abaixo, **REINOS DA ÁREA** em Cinzel `#F0D278`, grande, com contorno escuro. Embaixo, em Baskerville: "*Conquiste territórios. Calcule para vencer.*"
-- **Rodapé** (pequeno, SourceSans, `#A0947A`, a partir de 0:37,5): "Enzo Camelo Vieira · Gabriel Luís de Santana · Bruno Faria Travessini" e, na linha de baixo, "Disponível para Windows".
+- **Rodapé** (pequeno, SourceSans, `#A0947A`, a partir de 0:37,5): "Enzo Camelo Vieira" e, na linha de baixo, "Disponível para Windows".
 - **Som:** `brilho_da_vitoria.mp3` na entrada do brasão. A trilha termina com fade-out até 0:40.
 
 ## Áudio

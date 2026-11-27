@@ -47,7 +47,9 @@ func show_report(data: Dictionary) -> void:
 
 	var titles := {"WIN": "VITÓRIA", "LOSE": "DERROTA", "DRAW": "RECUO"}
 	var colors := {"WIN": WIN_COLOR, "LOSE": LOSE_COLOR, "DRAW": DRAW_COLOR}
-	_center(UiKit.make_label("RELATÓRIO DA RODADA %d" % int(info["round"]), 15, UiKit.C_TEXT_MUTED, "Cinzel"))
+	var training: bool = info.get("training", false)
+	var header := "RODADA DE TREINO" if training else "RELATÓRIO DA RODADA %d" % int(info["round"])
+	_center(UiKit.make_label(header, 15, UiKit.C_TEXT_MUTED, "Cinzel"))
 	var title := UiKit.make_label(titles[result], 44, colors[result], "Cinzel")
 	_center(title)
 	_center(_wrapped(str(data["detail"]), 17, UiKit.C_TEXT_WHITE, "Libre Baskerville", COL_W * 2.0))
@@ -58,9 +60,14 @@ func show_report(data: Dictionary) -> void:
 	_body.add_child(chips)
 	var dom := int(round(float(info["dom_delta"])))
 	var ap := int(round(float(info["area_pct"]) * 100.0))
-	_chip(chips, "Domínio %+d%%" % dom, UiKit.C_BAR_GREEN if dom > 0 else (UiKit.C_RED_BORDER if dom < 0 else UiKit.C_TEXT_WHITE))
-	_chip(chips, "Sua área %+d%%" % ap, UiKit.C_BLUE_LIGHT if ap > 0 else (UiKit.C_RED_BORDER if ap < 0 else UiKit.C_TEXT_WHITE))
-	_chip(chips, "Precisão da rodada: %d%%" % int(round(float(info["ip"]))), UiKit.C_TEXT_GOLD2)
+	if training:
+		_chip(chips, "Treino: nada foi ganho nem perdido", UiKit.C_TEXT_GOLD2)
+	else:
+		_chip(chips, "Domínio %+d%%" % dom, UiKit.C_BAR_GREEN if dom > 0 else (UiKit.C_RED_BORDER if dom < 0 else UiKit.C_TEXT_WHITE))
+		_chip(chips, "Sua área %+d%%" % ap, UiKit.C_BLUE_LIGHT if ap > 0 else (UiKit.C_RED_BORDER if ap < 0 else UiKit.C_TEXT_WHITE))
+		_chip(chips, "Precisão da rodada: %d%%" % int(round(float(info["ip"]))), UiKit.C_TEXT_GOLD2)
+
+	_center(UiKit.make_label("ESCALA DO MAPA:  %s" % UnitFormatter.scale_text(cfg), 16, UiKit.C_TEXT_GOLD2, "Source Sans 3"))
 
 	_body.add_child(UiKit.make_hline())
 
@@ -104,7 +111,10 @@ func show_report(data: Dictionary) -> void:
 	b_hide.pressed.connect(func(): hide_pressed.emit())
 	btns.add_child(b_hide)
 	_badge(b_hide, "V")
-	var b_next := UiKit.make_action_button("VER RESUMO" if data["last"] else "PRÓXIMA RODADA", "", UiKit.C_GREEN_DIM, "", Vector2(400, 56))
+	var next_text := "VER RESUMO" if data["last"] else "PRÓXIMA RODADA"
+	if training:
+		next_text = "COMEÇAR A BATALHA"
+	var b_next := UiKit.make_action_button(next_text, "", UiKit.C_GREEN_DIM, "", Vector2(400, 56))
 	b_next.pressed.connect(func(): continue_pressed.emit())
 	btns.add_child(b_next)
 	_badge(b_next, "Enter")
@@ -138,13 +148,8 @@ func _column(parent: Control, who: String, who_color: Color, cells: Dictionary, 
 	for s in a["steps"]:
 		_center(_wrapped(str(s), 17, UiKit.C_TEXT_WHITE, "Source Sans 3", COL_W - 20.0), steps)
 
-	var f := UnitFormatter.format_area(area, cfg)
-	var unit_line := "Área: %s blocos" % UnitFormatter.fmt_number(area, 1)
-	var scale := float(cfg.get("unit_scale", 1.0))
-	if not is_equal_approx(scale, 1.0) or str(cfg.get("unit_mode", "")) != "m2":
-		unit_line += "  =  %s" % f["main"]
-	else:
-		unit_line = "Área: %s" % f["main"]
+	var unit_line := "Área: %s quadrados × %s = %s" % [UnitFormatter.fmt_number(area, 1),
+			UnitFormatter.format_area(1.0, cfg), UnitFormatter.format_area(area, cfg)]
 	_center(UiKit.make_label(unit_line, 21, who_color, "Cinzel"), v)
 
 	var why := "" if tags.is_empty() else "  (%s)" % ", ".join(tags)

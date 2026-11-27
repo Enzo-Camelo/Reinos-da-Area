@@ -4,7 +4,7 @@
 
 **Reinos da Área** é um jogo de estratégia territorial feito em **Godot 4**, em que o jogador aprende **cálculo de área** jogando. A cada rodada o reino inimigo aparece inteiro, mas **sem quadriculado**: o jogador estima quantos quadrados cabem nele, compara com o seu próprio reino (que tem o quadriculado) e decide entre **Atacar**, **Defender** ou **Recuar**. São **20 fases em 5 cenários**, com 10 rodadas por fase. A meta é dominar pelo menos 60% do mapa.
 
-Versão atual: **v0.2, entrega final** (campanha completa com os ajustes das devolutivas). Autores: Enzo Camelo Vieira, Gabriel Luís de Santana e Bruno Faria Travessini.
+Versão atual: **v0.2, entrega final** (campanha completa com os ajustes das devolutivas). Autor: Enzo Camelo Vieira.
 
 ## ▶ Jogar agora (Windows, sem instalar nada)
 
@@ -86,7 +86,8 @@ Mais detalhes de instalação com imagens e passos: [`assets/docs/Guia de instal
 2. No **menu principal**, escolha **Jogar campanha**. (Se já houver progresso, aparece **Continuar** para voltar direto à próxima fase.)
 3. Na primeira vez, escolha o seu **conselheiro** (arquétipo): Estrategista, Engenheiro ou Guerreiro. Dá para trocar depois no menu ou no mapa.
 4. No **mapa de campanha**, clique no selo da **Fase 1** (as demais estão bloqueadas até vencer as anteriores). Leia o *briefing* e clique em **Iniciar fase**.
-5. Na primeira vez na Fase 1, a **Cartógrafa** conduz um tutorial curto (6 passos, dá para pular).
+5. Na primeira vez na Fase 1, a **Cartógrafa** conduz um tutorial curto (6 passos) e depois uma **rodada de treino**: sem relógio e sem ganhar nem perder nada. As duas coisas podem ser puladas.
+6. Na primeira fase em que o **terreno altera o cálculo** (Fase 5), a Cartógrafa retoma a explicação, usando os números do seu próprio reino, e há uma nova rodada de treino.
 
 ### História e guia dentro do jogo
 
@@ -97,7 +98,7 @@ Mais detalhes de instalação com imagens e passos: [`assets/docs/Guia de instal
 
 ### O que acontece em cada rodada
 
-1. **Análise** (cerca de 1 s): aparecem o seu reino, à **esquerda, com o quadriculado**, e o reino inimigo, à **direita, liso**. Cada quadradinho do quadriculado vale uma unidade de área.
+1. **Análise** (cerca de 1 s): aparecem o seu reino, à **esquerda, com o quadriculado**, e o reino inimigo, à **direita, liso**. No canto superior esquerdo, abaixo da área do seu reino, o jogo mostra quanto mede cada quadradinho (veja a escala na tabela dos cenários).
 2. **Decisão** (tempo limitado conforme o cenário): estime visualmente a área do inimigo e compare com a sua. Em seguida escolha:
    - **Atacar:** acredite que o **seu reino é maior** (considerando o terreno).
    - **Defender:** acredite que o **inimigo é maior**.
@@ -165,13 +166,13 @@ Atacar e Defender são opostos: **sempre existe exatamente uma decisão certa**.
 
 ### Os 5 cenários
 
-| Cenário | Fases | Terreno (ataque / defesa) | Formas dos reinos | Quadriculado ao redor do inimigo | Tempo por rodada | Unidade |
+| Cenário | Fases | Terreno (ataque / defesa) | Formas dos reinos | Quadriculado ao redor do inimigo | Tempo por rodada | Lado de 1 quadrado (área) |
 |---|---|---|---|---|---|---|
-| Planícies de Aldrath | 1–4 | 1,0 / 1,0 | Retângulos | Total | 30 s | m² |
-| Vales de Kheldorn | 5–8 | 1,0 / 1,25 | Meios-blocos e diagonais | 1 célula | 30 s | m² → km² |
-| Serra das Pedras Vivas | 9–12 | 0,85 / 1,25 | Trapézios e formas compostas | Nenhum | 35 s | km² |
-| Arquipélago do Oblívio | 13–16 | 1,10 / 0,90 | Formas complexas | Nenhum | 30 s | hectares |
-| Abismo Irregular | 17–20 | misto (muda a cada rodada) | Malhas com buracos | Nenhum | 25 s | hectares |
+| Planícies de Aldrath | 1–4 | 1,0 / 1,0 | Retângulos | Total | 30 s | 1 m (1 m²) |
+| Vales de Kheldorn | 5–8 | 1,0 / 1,25 | Meios-blocos e diagonais | 1 célula | 30 s | 10 m (100 m²) |
+| Serra das Pedras Vivas | 9–12 | 0,85 / 1,25 | Trapézios e formas compostas | Nenhum | 35 s | 100 m (10.000 m²) |
+| Arquipélago do Oblívio | 13–16 | 1,10 / 0,90 | Formas complexas | Nenhum | 30 s | 1 km (1 km²) |
+| Abismo Irregular | 17–20 | misto (muda a cada rodada) | Malhas com buracos | Nenhum | 25 s | 1 km (1 km²) |
 
 A diferença de tamanho entre os reinos vai diminuindo ao longo da campanha (de 25–35% na Fase 1 até 2–5% na Fase 20), então estimar fica cada vez mais difícil.
 
@@ -197,6 +198,15 @@ Ajustes feitos a partir das duas devolutivas: a **ficha técnica** preenchida po
 | Professora: tutorial e guia no jogo | Tutorial de 5 passos e nenhum guia para consultar depois | **Tutorial em 6 passos** com a Cartógrafa e guia **Como jogar** com 6 abas (menu, mapa, pausa ou tecla **H**, com o relógio parado) |
 | Professora: jornada intuitiva | Só a bandeira de 70% na barra de Domínio, sem dizer quanto faltava | Linha de **meta** acima dos botões ("faltam N vitórias"), marcas de 60% e 80% na barra, mapa com as fases seguindo a trilha e aviso de **estrelas** para liberar cada terreno (8/16/24/32) |
 | Professora: história que envolva | História só no GDD; no jogo, apenas comentários da Cartógrafa | **Prólogo**, um **capítulo por cenário** com uma lição de cálculo desenhada, **rival com provocação** em cada fase e desfecho no fim de cada cenário |
+
+### Ajustes da avaliação da professora para a versão final
+
+| Devolutiva | Antes | Agora |
+|---|---|---|
+| "Em 1600×900 as linhas horizontais da grade praticamente somem" | Linha de 1 px, que ao reduzir a tela caía entre os pixels; pouco contraste sobre os reinos | Grade de **2 px alinhada aos pixels da tela** em qualquer resolução, **clara sobre os reinos** e escura no pergaminho; o balão da Cartógrafa passa a procurar um lugar que não cubra os reinos |
+| "Acrescentar uma rodada de treino curta" | A primeira rodada já valia | **Rodada de treino** na Fase 1: sem relógio, sem perder área ou Domínio, com o relatório das contas |
+| "Retomar a explicação quando o terreno passar a alterar o cálculo" | Só o texto do capítulo avisava do terreno | **Lição de terreno** em 3 passos na própria batalha (sua força, limite de área do inimigo, decisão), seguida de um treino em que **o tamanho engana** |
+| "Aproveitar o briefing para apresentar o Arquiteto-Rei e o conflito" | O briefing trazia o rival e os dados da fase | Retrato do **Arquiteto-Rei** e o bloco **"Por que você marcha"** em todos os briefings; na Fase 1, ele apresenta o protagonista e o Império |
 
 ## 8. Limitações conhecidas e o que ainda não existe
 
@@ -228,7 +238,7 @@ Opcional, para quem quiser verificar o projeto (substitua pelo caminho do seu Go
 ```
 Godot_v4.6.3-stable_win64_console.exe --headless --path . --import
 Godot_v4.6.3-stable_win64_console.exe --headless --path . --script res://tests/run_tests.gd    # regras, gerador e explicação das áreas (518 verificações)
-Godot_v4.6.3-stable_win64_console.exe --headless --path . res://tests/integration_test.tscn    # fases completas (cerca de 300 verificações; o total varia porque algumas fases terminam antes da 10ª rodada)
+Godot_v4.6.3-stable_win64_console.exe --headless --path . res://tests/integration_test.tscn    # fases completas (cerca de 600 verificações; o total varia porque algumas fases terminam antes da 10ª rodada)
 ```
 
 ## 11. Estrutura do projeto

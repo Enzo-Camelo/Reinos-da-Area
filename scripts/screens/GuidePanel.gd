@@ -85,16 +85,16 @@ func _show_tab(index: int) -> void:
 		0:
 			_p("Você é o Arquiteto-Rei. Para libertar cada região do Império das Formas, termine as 10 rodadas de cada fase com pelo menos 60% de Domínio.")
 			_p("Cada vitória vale +10% de Domínio. Na prática: vença pelo menos 6 das 10 rodadas.")
-			_p("Recuar custa 3% de Domínio. Se sua área cair abaixo de 4 blocos, a fase termina.")
+			_p("Recuar custa 3% de Domínio. Se sua área cair abaixo de 4 quadrados, a fase termina.")
 			_p("A linha dourada acima dos botões mostra, o tempo todo, quantas vitórias ainda faltam.")
 		1:
-			_p("1.  OBSERVE — seu reino (azul, à esquerda) e o inimigo (vermelho, à direita). Um quadradinho = 1 bloco.")
-			_p("2.  ESTIME — calcule quantos blocos cabem no inimigo. Aplique o multiplicador do terreno que aparece nas faixas sobre o campo.")
+			_p("1.  OBSERVE — seu reino (azul, à esquerda) e o inimigo (vermelho, à direita). No canto superior esquerdo, abaixo da sua área, está quanto mede 1 quadrado: 1 m de lado nas fases 1–4, 10 m nas 5–8, 100 m nas 9–12 e 1 km da 13 em diante.")
+			_p("2.  ESTIME — calcule quantos quadrados cabem no inimigo. Aplique o multiplicador do terreno que aparece nas faixas sobre o campo.")
 			_p("3.  DECIDA antes do relógio zerar:\n      ATACAR [A] se a SUA força é maior.\n      DEFENDER [D] se a força do INIMIGO é maior.\n      RECUAR [R] se estiver em dúvida.")
 			_p("4.  APRENDA — o relatório compara os dois reinos lado a lado e mostra como calcular cada área.")
 			_p("Errar ao atacar tira 20% da sua área; errar ao defender, 10%. Se o tempo acabar, você recua.")
 		2:
-			_p("Não conte bloco por bloco: escolha o atalho certo para cada forma.")
+			_p("Não conte quadrado por quadrado: escolha o atalho certo para cada forma.")
 			var grid := GridContainer.new()
 			grid.columns = 3
 			grid.add_theme_constant_override("h_separation", 18)

@@ -38,7 +38,7 @@ func _draw() -> void:
 	var bb := ShapeAnalyzer.bounds(cells)
 	var dim := Vector2(bb.size) * cell_px
 	var origin := ((size - dim) / 2.0).floor()
-	var line_col := Color(1.0, 0.95, 0.8, 0.35)
+	var line_col := Color(1.0, 0.95, 0.8, 0.65)
 
 	# contorno tracejado do retângulo que envolve a forma
 	if str(analysis.get("kind", "")) == "BOX":
@@ -62,7 +62,7 @@ func _draw() -> void:
 			pts.remove_at(1)
 		draw_colored_polygon(pts, fill)
 		pts.append(pts[0])
-		draw_polyline(pts, line_col, 1.0)
+		draw_polyline(pts, line_col, 2.0, true)
 
 	var f := UiKit.get_font("Cinzel")
 	var labels: Dictionary = analysis.get("labels", {})

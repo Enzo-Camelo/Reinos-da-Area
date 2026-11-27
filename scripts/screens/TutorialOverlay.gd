@@ -7,7 +7,7 @@ class_name TutorialOverlay
 signal finished
 
 const STEPS := [
-	"Este é o seu reino, Arquiteto-Rei. Cada quadradinho vale uma unidade de área. Não conte um por um: multiplique a base pela altura.",
+	"Este é o seu reino, Arquiteto-Rei. Cada quadradinho é um pedaço de terra: no canto superior esquerdo, abaixo da sua área, está quanto ele mede. Não conte um por um: multiplique a base pela altura.",
 	"À direita está o reino inimigo, liso por dentro. Use a malha ao redor como régua: quantos quadrados tem a base? E a altura? Multiplique.",
 	"Se a SUA força for maior, ATAQUE (A). Se o INIMIGO for mais forte, DEFENDA (D). Em dúvida, RECUE (R): custa 3% de Domínio. O terreno multiplica as forças!",
 	"Fique de olho no relógio: quando ele zera, você recua. Errar custa território: atacar errado tira 20% da área; defender errado, 10%.",
@@ -18,6 +18,10 @@ const STEPS := [
 const PANEL_POS := [Vector2(1010, 330), Vector2(40, 330), Vector2(520, 170), Vector2(520, 300), Vector2(520, 300), Vector2(520, 300)]
 
 var targets : Array = []
+## Textos e posições dos passos (a lição de terreno usa os seus próprios).
+var steps : Array = STEPS
+var panel_pos : Array = PANEL_POS
+var last_button := "COMEÇAR"
 var _step := 0
 var _text : Label
 var _counter : Label
@@ -93,15 +97,15 @@ func _process(_d: float) -> void:
 	queue_redraw()
 
 func _show_step() -> void:
-	_text.text = STEPS[_step]
-	_counter.text = "%d / %d" % [_step + 1, STEPS.size()]
-	_next.text = "COMEÇAR" if _step == STEPS.size() - 1 else "PRÓXIMO"
-	_panel.position = PANEL_POS[_step]
+	_text.text = str(steps[_step])
+	_counter.text = "%d / %d" % [_step + 1, steps.size()]
+	_next.text = last_button if _step == steps.size() - 1 else "PRÓXIMO"
+	_panel.position = panel_pos[_step]
 	queue_redraw()
 
 func _advance() -> void:
 	_step += 1
-	if _step >= STEPS.size():
+	if _step >= steps.size():
 		_finish()
 	else:
 		_show_step()

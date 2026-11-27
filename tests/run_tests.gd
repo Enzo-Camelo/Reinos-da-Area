@@ -115,15 +115,21 @@ func test_units() -> void:
 	print("UnitFormatter")
 	check(UnitFormatter.fmt_number(2500000.0, 0) == "2.500.000", "milhar pt-BR")
 	check(UnitFormatter.fmt_number(2.5, 1) == "2,5", "decimal pt-BR")
+	var sides := [1, 10, 100, 1000, 1000]
+	for n in range(1, 21):
+		check(CampaignData.get_phase(n)["side_m"] == sides[(n - 1) / 4], "fase %d: lado do quadrado" % n)
 	var p1 := CampaignData.get_phase(1)
-	check(UnitFormatter.format_area(15.0, p1)["main"] == "15 m²", "planície em m²")
+	check(UnitFormatter.format_area(15.0, p1) == "15 m²", "1 m de lado: 15 quadrados = 15 m²")
+	check(UnitFormatter.scale_text(p1) == "1 quadrado = 1 m × 1 m = 1 m²", "legenda de 1 m")
 	var p5 := CampaignData.get_phase(5)
-	check(str(UnitFormatter.format_area(20.0, p5)["main"]).ends_with(" m²"), "vale abaixo de 10.000 m² fica em m²")
-	check(str(UnitFormatter.format_area(30.0, p5)["main"]).ends_with(" km²"), "vale acima de 10.000 m² vira km²")
+	check(UnitFormatter.format_area(25.5, p5) == "2.550 m²", "10 m de lado: 25,5 quadrados = 2.550 m²")
+	check(UnitFormatter.scale_text(p5) == "1 quadrado = 10 m × 10 m = 100 m²", "legenda de 10 m")
 	var p9 := CampaignData.get_phase(9)
-	check(UnitFormatter.format_area(50.0, p9)["main"] == "2,5 km²" and UnitFormatter.format_area(50.0, p9)["sub"] == "= 2.500.000 m²", "serra: 2,5 km² = 2.500.000 m²")
+	check(UnitFormatter.format_area(31.5, p9) == "315.000 m²", "100 m de lado: 31,5 quadrados = 315.000 m²")
+	check(UnitFormatter.scale_text(p9) == "1 quadrado = 100 m × 100 m = 10.000 m²", "legenda de 100 m")
 	var p13 := CampaignData.get_phase(13)
-	check(UnitFormatter.format_area(45.0, p13)["main"] == "45 ha", "arquipélago em hectares")
+	check(UnitFormatter.format_area(45.5, p13) == "45,5 km²", "1 km de lado: 45,5 quadrados = 45,5 km²")
+	check(UnitFormatter.scale_text(p13) == "1 quadrado = 1 km × 1 km = 1 km²", "legenda de 1 km")
 
 func test_campaign() -> void:
 	print("CampaignData")

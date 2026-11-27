@@ -48,6 +48,19 @@ static func prologue() -> Array:
 		"text": "São cinco regiões até o coração do Império. Em cada batalha, compare o seu reino com o inimigo: ataque se for mais forte, defenda se for mais fraco. Eu caminho ao seu lado... enquanto você precisar de mim."},
 	]
 
+## O que o briefing conta: quem o jogador é e por que parte para a conquista.
+const FIRST_MISSION := "Você é o Arquiteto-Rei, o novo governante de um reino pequeno em Geometria, onde vence quem tem mais área. O Império das Formas Irregulares deforma fronteiras para ninguém conseguir calculá-las e já engoliu os seus vizinhos. Você parte para a conquista para salvar o seu povo, com a única arma que tem: saber medir."
+const MISSIONS := [
+	"O Império já encosta nas suas fronteiras. Como Arquiteto-Rei, liberte as Planícies antes que ele tome o seu reino.",
+	"O Império ocupa os vales e corta os cantos das muralhas para confundir quem mede. Liberte as fortalezas de Kheldorn. Atenção: aqui o terreno muda a conta.",
+	"A Serra caiu para o Império. Sem malha para contar, o Arquiteto-Rei precisa confiar nas próprias contas para abrir caminho.",
+	"O Império esconde seus reinos nas ilhas do Oblívio. Vencê-las é o último passo do Arquiteto-Rei antes do Abismo.",
+	"No Abismo está o trono do Império. Se o Arquiteto-Rei errar aqui, Geometria perde as fronteiras que se podem medir.",
+]
+
+static func mission(phase: int) -> String:
+	return FIRST_MISSION if phase <= 1 else str(MISSIONS[CampaignData.scenario_index(phase)])
+
 ## Aberturas dos cenários (índice 0..4). A segunda página é a lição da região, com um exemplo desenhado.
 static func chapter(index: int) -> Array:
 	match index:
@@ -56,7 +69,7 @@ static func chapter(index: int) -> Array:
 				{"title": "CAPÍTULO I — PLANÍCIES DE ALDRATH", "speaker": CARTO, "portrait": PORTRAIT_CARTO,
 				"text": "Aqui você nasceu. Os primeiros a se curvar ao Império foram seus vizinhos. Liberte as planícies antes que as fronteiras deles encostem nas suas."},
 				{"title": "LIÇÃO: O RETÂNGULO", "speaker": CARTO, "portrait": PORTRAIT_CARTO, "shape": example("RECT"),
-				"text": "Não é preciso contar bloco por bloco. Conte uma fileira (a base) e quantas fileiras existem (a altura). Multiplique os dois."},
+				"text": "Não é preciso contar quadrado por quadrado. Conte uma fileira (a base) e quantas fileiras existem (a altura). Multiplique os dois."},
 			]
 		1:
 			return [

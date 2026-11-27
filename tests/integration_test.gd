@@ -56,8 +56,73 @@ func _play_phase(n: int, arch: String, action: int) -> BattleScreen:
 		await get_tree().create_timer(0.7).timeout
 	return b
 
+## Treino: não vale nada, não gasta RE e depois dele começa a rodada 1.
+func _test_training() -> void:
+	var gs = get_tree().root.get_node("GameState")
+	# [fase, tutorial já feito, tipo esperado]
+	for case in [[1, false, "BASICS"], [5, true, "TERRAIN"], [9, true, "TERRAIN"], [13, true, "TERRAIN"], [17, true, "TERRAIN"]]:
+		for attempt in 6:
+			gs.archetype = "GUERREIRO"
+			gs.resources = 3
+			gs.tutorial_done = case[1]
+			gs.story_seen = []
+			var b := BattleScreen.new()
+			b.setup(case[0])
+			add_child(b)
+			await get_tree().create_timer(0.7).timeout
+			var gm: GameManager = b.game_manager
+			check(b._training_kind == case[2] and gm.training, "fase %d: treino %s (%s)" % [case[0], case[2], b._training_kind])
+			check(gm.current_round == 0 and not gm.timer_active, "fase %d: treino sem rodada e sem relógio" % case[0])
+			check(not gm.try_activate_skill() and gm.resources == 3, "fase %d: treino não gasta RE" % case[0])
+			if case[2] == "TERRAIN":
+				var atk := float(gm.terrain["atk"])
+				var def := float(gm.terrain["def"])
+				check((gm.enemy_area < gm.player_area) == (atk < def),
+						"fase %d: no treino o tamanho engana (J %s, I %s, ×%s/×%s)" % [case[0], gm.player_area, gm.enemy_area, atk, def])
+			var area := gm.carry_area
+			var player := gm.player_area
+			gm.resolve_action(GameManager.Action.ATTACK)
+			check(gm.ip_values.is_empty() and gm.wins + gm.losses + gm.retreats == 0, "fase %d: treino fora das estatísticas" % case[0])
+			check(is_equal_approx(gm.dominance, 0.0) and is_equal_approx(gm.carry_area, area) and gm.player_score == 0,
+					"fase %d: treino não muda Domínio, área nem pontos" % case[0])
+			check(is_equal_approx(float(gm.last_info["new_area"]), player), "fase %d: treino mantém a área" % case[0])
+			gm.finish_round()
+			await get_tree().create_timer(0.7).timeout
+			check(not gm.training and gm.current_round == 1 and gm.timer_active, "fase %d: depois do treino vale a rodada 1" % case[0])
+			check(b._training_kind == "" and b.timer_medallion.visible, "fase %d: relógio de volta" % case[0])
+			if case[2] == "BASICS":
+				check(gs.tutorial_done, "fase 1: tutorial marcado após o treino")
+			else:
+				check(gs.has_seen("terrain_lesson"), "fase %d: lição de terreno marcada" % case[0])
+			b.queue_free()
+			await get_tree().process_frame
+
+	# pular o treino também leva à rodada 1, e a lição não se repete
+	gs.tutorial_done = true
+	gs.story_seen = []
+	var b2 := BattleScreen.new()
+	b2.setup(5)
+	add_child(b2)
+	await get_tree().create_timer(0.7).timeout
+	b2._tutorial_open = false
+	b2._skip_training()
+	await get_tree().create_timer(0.7).timeout
+	check(b2.game_manager.current_round == 1 and not b2.game_manager.training, "pular o treino começa a rodada 1")
+	b2.queue_free()
+	await get_tree().process_frame
+	var b3 := BattleScreen.new()
+	b3.setup(6)
+	add_child(b3)
+	await get_tree().create_timer(0.7).timeout
+	check(b3._training_kind == "" and b3.game_manager.current_round == 1, "lição de terreno aparece uma vez só")
+	b3.queue_free()
+	await get_tree().process_frame
+
 func _run() -> void:
 	_backup_save()
+	print("Treino e lição de terreno")
+	await _test_training()
+	get_tree().root.get_node("GameState").story_seen = ["terrain_lesson"]
 	print("Fluxo de fases")
 	for n in [1, 5, 9, 13, 17, 20]:
 		var b := await _play_phase(n, "GUERREIRO", GameManager.Action.RETREAT)

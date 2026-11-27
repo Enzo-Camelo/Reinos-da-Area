@@ -12,7 +12,7 @@
 
 **Acadêmicos:** Enzo Camelo Vieira
 
-> **Sobre esta versão (v6, novembro de 2026).** Descreve o jogo como ele está no código. As mudanças em relação à v5 estão marcadas com **[v6]** (as marcas **[v5]** foram mantidas). Principais: medalhas pelo Domínio e trava de terreno por estrelas, rodadas mais curtas, relatório pós-rodada, história e guia dentro do jogo, mapa de campanha com trilha e saltos no Abismo, e a documentação de sistemas que já existiam no código (pontuação, geração de territórios, telas, salvamento). O Apêndice lista o histórico de mudanças.
+> **Sobre esta versão (v6, novembro de 2026).** Descreve o jogo como ele está no código. As mudanças em relação à v5 estão marcadas com **[v6]** (as marcas **[v5]** foram mantidas). Principais: medalhas pelo Domínio e trava de terreno por estrelas, rodadas mais curtas, relatório pós-rodada, história e guia dentro do jogo, mapa de campanha com trilha e saltos no Abismo, e a documentação de sistemas que já existiam no código (pontuação, geração de territórios, telas, salvamento). O Apêndice lista o histórico de mudanças, incluindo os **ajustes finais da N3**: grade legível em qualquer resolução, rodada de treino, lição de terreno, briefing que apresenta o Arquiteto-Rei e nova escala do mapa.
 
 ---
 
@@ -152,7 +152,7 @@ Cada fase tem **10 rodadas** contra 10 reinos inimigos. O jogador começa com Á
 ### Mecânica 3 — Avanço de rodada e fim de fase
 
 1. O resultado é confirmado e o contador avança (ex.: 3/10 → 4/10).
-2. O sistema verifica a condição de derrota imediata (área abaixo de 4 u²; erro na Fase 20).
+2. O sistema verifica a condição de derrota imediata (área abaixo de 4 quadrados; erro na Fase 20).
 3. Se as 10 rodadas terminaram, compara o Domínio final com 60%.
 4. A **Tela de Fim de Fase** exibe medalha, Domínio, Índice de Precisão, XP, Recursos e o desfecho da história.
 
@@ -191,28 +191,30 @@ Antes das trombetas soarem, o Rei entrega sua confiança a apenas um de três co
 
 **[v6]** O fundamento é visual e concreto (os atalhos de cálculo são apresentados nas lições, no guia e no relatório): **a área de um território é o número de quadrados do grid que estão dentro dele**. Meios-blocos triangulares valem 0,5.
 
-**Como o grid funciona.** O mapa é dividido por um grid uniforme. Cada quadrado representa uma unidade de área. O grid está sempre visível sobre o território do jogador.
+**Como o grid funciona.** O mapa é dividido por um grid uniforme. Cada quadrado representa um pedaço de terra cuja medida depende da fase (tabela abaixo). O grid está sempre visível sobre o território do jogador.
+
+**Legibilidade da grade [v6, N3].** As linhas têm 2 px e são alinhadas aos pixels da tela, por isso não somem em resoluções menores (como 1600×900). São **claras sobre os reinos** e escuras sobre o pergaminho. O balão da Cartógrafa procura uma posição que não cubra os reinos.
 
 **O desafio: território inimigo sem grid.** O jogador vê a forma do reino inimigo pintada de vermelho, mas precisa estimar quantos quadrados caberiam ali. A *grade de referência* ao redor do inimigo diminui com a campanha: **total** nas Planícies, **1 célula** nos Vales, **nenhuma** da Serra em diante (o Olho de Águia soma +2 células).
 
 **Revelação pós-combate.** Após cada rodada o grid aparece sobre o inimigo com animação de "desenho à mão" (0,4 s) e **[v6]** permanece visível até a próxima rodada.
 
-### Unidades e escalas **[v5]**
+### Unidades e escalas **[v6, N3]**
 
-A medida acompanha o crescimento do domínio, alinhando o jogo ao ensino de grandezas:
+A escala é definida pelo **lado de um quadrado** e cresce dez vezes a cada região, até chegar a 1 km:
 
-| Cenário | Unidade | Valor de 1 bloco | Observação |
-|---|---|---|---|
-| Planícies (F.1–4) | m² | 1 m² | Compreensão espacial imediata. |
-| Vales (F.5–8) | m² → km² | 400 m² | Muda para km² ao ultrapassar 10.000 m². |
-| Serras (F.9–12) | km² | 50.000 m² | Salto de grandeza. |
-| Arquipélagos e Abismo (F.13–20) | hectares | 1 ha | Medida agrária contextualizada pela narrativa. |
+| Cenário | Lado de 1 quadrado | Área de 1 quadrado | Área mostrada em | Exemplo |
+|---|---|---|---|---|
+| Planícies (F.1–4) | 1 m | 1 m² | m² | 14 quadrados = 14 m² |
+| Vales (F.5–8) | 10 m | 100 m² | m² | 25 quadrados = 2.500 m² |
+| Serra (F.9–12) | 100 m | 10.000 m² | m² | 35 quadrados = 350.000 m² |
+| Arquipélago e Abismo (F.13–20) | 1 km | 1 km² | km² | 48 quadrados = 48 km² |
 
-O HUD mostra a unidade da fase com uma indicação sutil da equivalência anterior (ex.: **2,5 km²** · *= 2.500.000 m²*). Números seguem o padrão pt-BR (milhar com ponto, decimal com vírgula).
+Cada tela usa **uma única unidade**, sem segunda linha de conversão. Em batalha, a escala fica no canto superior esquerdo, abaixo da área do reino (ex.: *1 quadrado = 10 m × 10 m = 100 m²*); ela também aparece no briefing e no relatório. Números no padrão pt-BR (milhar com ponto, decimal com vírgula). As **forças** são comparadas em quadrados, já que os dois reinos usam a mesma escala.
 
 ### 6.2 Relatório pós-rodada **[v6]**
 
-Um popup compara os dois reinos **lado a lado**: miniatura com grade e medidas, passo a passo do cálculo, área na unidade da fase, multiplicador (terreno, Embalo, Muralha) e força. Abaixo, a comparação das forças, a decisão certa, a escolha do jogador, o efeito em Domínio e área, a nota de precisão da rodada e a fala da Cartógrafa (quando ela está presente). **V** esconde o relatório para ver o campo; **Enter** avança.
+Um popup compara os dois reinos **lado a lado**: miniatura com grade e medidas, passo a passo do cálculo, a conta da área (quadrados × área de 1 quadrado), a escala do mapa, multiplicador (terreno, Embalo, Muralha) e força. Abaixo, a comparação das forças, a decisão certa, a escolha do jogador, o efeito em Domínio e área, a nota de precisão da rodada e a fala da Cartógrafa (quando ela está presente). **V** esconde o relatório para ver o campo; **Enter** avança.
 
 O método de cálculo é escolhido pela forma desenhada:
 
@@ -220,17 +222,17 @@ O método de cálculo é escolhido pela forma desenhada:
 |---|---|
 | Retângulo | base × altura |
 | Trapézio (em pé ou deitado) | (B + b) × h ÷ 2 |
-| Cantos cortados, L, T, U ou poucos buracos (até 3 recortes retangulares) | retângulo em volta − recortes − meios-blocos × ½ |
-| Irregular | blocos inteiros + meios-blocos × ½, com a soma linha a linha ao lado do desenho |
+| Cantos cortados, L, T, U ou poucos buracos (até 3 recortes retangulares) | retângulo em volta − recortes − meios quadrados × ½ |
+| Irregular | quadrados inteiros + meios quadrados × ½, com a soma linha a linha ao lado do desenho |
 
 ![Relatório pós-rodada na Serra: o inimigo é menor, mas mais forte](assets/telas/relatorio.jpg)
 
-> Exemplo real (Fase 9, Serra): *Você: 31,5 × 0,85 = 26,77 · Inimigo: 27 × 1,25 = 33,75.* O inimigo é menor, mas "vale" mais; Defender era a decisão certa.
+> Exemplo real (Fase 9, Serra): *Você: 35 × 0,85 = 29,75 · Inimigo: 28,5 × 1,25 = 35,63.* O inimigo é menor, mas "vale" mais; Defender era a decisão certa.
 
 ### 6.3 Territórios: geração e limites **[v6]**
 
-- **Campo:** 32 × 13 blocos, metade para cada reino.
-- **Área inicial** sorteada por cenário (tabela em §8). Durante a fase, a área do jogador passa de uma rodada para a outra com os ganhos e perdas (máximo de 100 blocos; abaixo de 4 a fase termina). Cada fase começa com uma nova área inicial.
+- **Campo:** 32 × 13 quadrados, metade para cada reino.
+- **Área inicial** sorteada por cenário (tabela em §8). Durante a fase, a área do jogador passa de uma rodada para a outra com os ganhos e perdas (máximo de 100 quadrados; abaixo de 4 a fase termina). Cada fase começa com uma nova área inicial.
 - A cada rodada os dois reinos recebem **formas novas** (posição e orientação variam); o seu é redesenhado com área próxima da acumulada.
 - **Formas:** retângulos com lados bem diferentes; retângulos com 1 a 4 cantos cortados; trapézios (60%) ou formas em L, T e U (40%); figuras orgânicas preenchidas com bordas diagonais; e figuras com 1 a 3 buracos.
 - **Tamanho do inimigo:** definido pela razão entre as **forças**, dentro da diferença da fase, com 50% de chance de ser o mais forte. O sorteio gera o cenário; o resultado do combate é sempre determinístico.
@@ -295,7 +297,7 @@ A progressão não é linear — é uma pressão crescente: o reino do jogador c
 
 **Calibração da dificuldade [v5].** O intervalo de diferença entre jogador e inimigo diminui linearmente de **25–35% na Fase 1** até **2–5% na Fase 20**. A diferença é medida na razão **efetiva** (Força_J / Força_I, já com o terreno aplicado); por isso, nos cenários com modificadores, a diferença *visível* de área engana — é o que obriga o jogador a calcular "para qual contexto" está decidindo. **[v6]** O tempo por rodada é fixo por cenário e foi reduzido para gerar tensão (antes: 60, 60, 60, 45 e 30 s). A Serra tem 5 s a mais porque ali a grade de referência desaparece.
 
-| Cenário | Tempo por rodada | Diferença entre as forças | Área inicial (blocos) |
+| Cenário | Tempo por rodada | Diferença entre as forças | Área inicial (quadrados) |
 |---|---|---|---|
 | I · Planícies (1–4) | 30 s | de 25–35% a 21–30% | 12–20 |
 | II · Vales (5–8) | 30 s | de 20–29% a 16–24% | 20–30 |
@@ -363,13 +365,13 @@ Geometria é o continente onde o jogo se passa — um mundo medieval-fantástico
 
 ![Arte conceitual do mapa do continente](assets/mapa.png)
 
-| # | Cenário | Fases | Terreno | Formas | Grade de referência | Tempo | Cartógrafa | Unidade |
+| # | Cenário | Fases | Terreno | Formas | Grade de referência | Tempo | Cartógrafa | Lado do quadrado |
 |---|---|---|---|---|---|---|---|---|
-| I | **Planícies de Aldrath** | 1–4 | Plano | Retângulos | Total | 30 s | Ativa | m² |
-| II | **Vales de Kheldorn** | 5–8 | Vale | Meios-blocos e diagonais | 1 célula | 30 s | Ativa (5–6), silenciosa (7–8) | m² → km² |
-| III | **Serra das Pedras Vivas** | 9–12 | Serra | Trapézios e compostas | Nenhuma | 35 s | Silenciosa (9), ausente (10+) | km² |
-| IV | **Arquipélago do Oblívio** | 13–16 | Costeiro | Complexas e preenchidas | Nenhuma | **30 s** | Ausente | ha |
-| V | **Abismo Irregular** | 17–20 | Misto | Malhas vazadas | Nenhuma | **25 s** | Ausente | ha |
+| I | **Planícies de Aldrath** | 1–4 | Plano | Retângulos | Total | 30 s | Ativa | 1 m |
+| II | **Vales de Kheldorn** | 5–8 | Vale | Meios-blocos e diagonais | 1 célula | 30 s | Ativa (5–6), silenciosa (7–8) | 10 m |
+| III | **Serra das Pedras Vivas** | 9–12 | Serra | Trapézios e compostas | Nenhuma | 35 s | Silenciosa (9), ausente (10+) | 100 m |
+| IV | **Arquipélago do Oblívio** | 13–16 | Costeiro | Complexas e preenchidas | Nenhuma | **30 s** | Ausente | 1 km |
+| V | **Abismo Irregular** | 17–20 | Misto | Malhas vazadas | Nenhuma | **25 s** | Ausente | 1 km |
 
 - **I — Planícies de Aldrath.** Campos abertos, castelos de pedra simples com torres quadradas. Atmosfera de amanhecer medieval quente e acolhedora.
 - **II — Vales de Kheldorn.** Vales profundos, pontes de pedra, fortalezas sobre penhascos. Névoa matinal nas montanhas; tom mais sombrio.
@@ -484,13 +486,13 @@ Mapa ilustrado com 20 selos de cera ligados por uma trilha. As fases 1–16 segu
 
 ### Briefing da fase **[v6]**
 
-Rival e provocação, terreno, tempo, formas, grade de referência, unidade, Cartógrafa, objetivo, melhor medalha e precisão, critérios das medalhas e conselheiro. Botões: **Voltar**, **História**, **Trocar conselheiro**, **Iniciar fase**.
+O briefing apresenta **quem o jogador é e por que parte para a conquista**: à esquerda, o retrato do **Arquiteto-Rei** ("Este é você"); no topo, o bloco **"Por que você marcha"**, que na Fase 1 apresenta o protagonista e o conflito com o Império das Formas Irregulares e, nas demais, o que está em jogo na região **[v6, N3]**. Em seguida: rival e provocação, terreno, tempo, formas, grade de referência, escala do mapa, Cartógrafa, objetivo, melhor medalha e precisão, critérios das medalhas e conselheiro. Botões: **Voltar**, **História**, **Trocar conselheiro**, **Iniciar fase**.
 
 ![Briefing](assets/telas/briefing.jpg)
 
 ### Tela de jogo — HUD principal **[v6]**
 
-- **Barra superior:** área total (na unidade da fase), barra de Domínio com bandeira nos 60% e marca nos 80%, 10 escudos com o histórico das rodadas, cenário, fase e terreno.
+- **Barra superior:** área do reino e, logo abaixo, quanto mede 1 quadrado; barra de Domínio com bandeira nos 60% e marca nos 80%, 10 escudos com o histórico das rodadas, cenário, fase e terreno.
 - **Sobre o campo:** faixas com os multiplicadores de cada reino, relógio circular ao centro (vermelho, pulsando e com batidas de guerra nos últimos 10 s) e botão **Como Jogar [H]**.
 - **Painel inferior, esquerda (Conselho de Guerra):** terreno, sequência, pontos, seu ataque, defesa inimiga e Precisão.
 - **Painel inferior, centro:** linha de meta (quantas vitórias faltam para a próxima medalha, ou aviso de meta fora de alcance) e botões **ATACAR [A] · DEFENDER [D] · RECUAR [R]**; após a rodada, **Ver relatório [V]** e **Próxima rodada**.
@@ -510,6 +512,18 @@ Rival e provocação, terreno, tempo, formas, grade de referência, unidade, Car
 Na primeira vez na Fase 1, a Cartógrafa conduz 6 passos com destaque na tela e opção de pular: seu reino; o reino inimigo; as três ações; o relógio e o custo dos erros; a meta e o relatório; a habilidade e o guia. O relógio fica parado.
 
 ![Tutorial](assets/telas/tutorial.jpg)
+
+### Rodada de treino **[v6, N3]**
+
+Na primeira vez na Fase 1, depois do tutorial, há **uma rodada de treino**: sem relógio, sem contar como rodada e sem alterar Domínio, área, pontos, precisão ou Recursos Estratégicos (a habilidade fica bloqueada). A diferença entre os reinos é fácil de enxergar (30–40%). O relatório mostra as contas e o botão **Começar a batalha** inicia a rodada 1. O treino pode ser pulado.
+
+![Rodada de treino](assets/telas/treino.jpg)
+
+### Lição de terreno **[v6, N3]**
+
+Na primeira fase em que o **terreno altera o cálculo** (normalmente a Fase 5), a Cartógrafa retoma a explicação na própria batalha, com os números do reino do jogador: (1) o aviso de que o terreno muda a conta; (2) a sua força (área × ataque); (3) o limite de área do inimigo (sua força ÷ defesa); (4) a regra de decisão. Segue um treino em que **o tamanho engana**: a decisão certa é o contrário do que o tamanho sugere. A lição aparece uma única vez.
+
+![Lição de terreno: o limite de área do inimigo](assets/telas/licao_terreno.jpg)
 
 ### Guia "Como Jogar" **[v6]**
 
@@ -632,10 +646,10 @@ O design de áudio segue a mesma filosofia: medieval por estética, moderno por 
 
 ## 16. Gameplay Example **[v6]**
 
-**Fase 15 — Arquipélago do Oblívio.** Rodada 5 de 10, **Domínio 30%** (3 vitórias e 1 derrota). Unidade: hectares. Terreno Costeiro: atacante ×1,10, defensor ×0,90. 30 segundos.
+**Fase 15 — Arquipélago do Oblívio.** Rodada 5 de 10, **Domínio 30%** (3 vitórias e 1 derrota). Escala: 1 quadrado = 1 km² (1 km de lado). Terreno Costeiro: atacante ×1,10, defensor ×0,90. 30 segundos.
 
-1. **Observação.** O HUD mostra "48 ha" e a meta: "Para passar (Bronze): 3 vitórias em 6 rodadas". O território do jogador tem grid; o inimigo é um polígono vermelho sem grid. A Cartógrafa está ausente.
-2. **Estimativa.** O jogador divide o polígono em partes e estima cerca de 53 ha. É **maior** que o seu reino.
+1. **Observação.** O HUD mostra "48 km²" e a meta: "Para passar (Bronze): 3 vitórias em 6 rodadas". O território do jogador tem grid; o inimigo é um polígono vermelho sem grid. A Cartógrafa está ausente.
+2. **Estimativa.** O jogador divide o polígono em partes e estima cerca de 53 quadrados (53 km²). É **maior** que o seu reino.
 3. **Decisão.** Lembra que o terreno pesa: 48 × 1,10 = 52,8 contra 53 × 0,90 = 47,7. Escolhe **ATACAR**.
 4. **Resolução.** A tinta azul se espalha. Domínio de 30% para 40%; área +10%.
 5. **Revelação e relatório.** O grid aparece sobre o inimigo e o popup mostra os dois cálculos lado a lado. Precisão da rodada: 100.
@@ -646,7 +660,7 @@ O design de áudio segue a mesma filosofia: medieval por estética, moderno por 
 
 ## 17. Tema e Aspecto Sério
 
-**Tema abordado.** Geometria plana aplicada à estimativa de área: raciocínio espacial e estimativa visual sem exercícios formais, mais **unidades de medida de área** (m², km², hectares). A progressão parte de retângulos (Cenário 1) e avança para meios-blocos e diagonais (2), trapézios e compostas (3), complexas (4) e malhas vazadas (5).
+**Tema abordado.** Geometria plana aplicada à estimativa de área: raciocínio espacial e estimativa visual sem exercícios formais, mais **unidades de medida de área** (m² e km²) e escala: o lado do quadrado passa de 1 m para 10 m, 100 m e 1 km. A progressão parte de retângulos (Cenário 1) e avança para meios-blocos e diagonais (2), trapézios e compostas (3), complexas (4) e malhas vazadas (5).
 
 **Como aparece no jogo.** Calcular área equivale a ter poder militar; errar a estimativa significa perder território. O jogador estima, age, erra e aprende pela revelação pós-combate — e na próxima situação análoga estima melhor. **[v6]** Para orientar quem não conhece os atalhos, o jogo nomeia as formas e mostra os cálculos nas lições, no guia e no relatório, sempre dentro da ficção e fora do momento da decisão.
 
@@ -697,9 +711,19 @@ O design de áudio segue a mesma filosofia: medieval por estética, moderno por 
 | Mapa | Cinco colunas de fases | Trilha sobre o mapa ilustrado e saltos nas pedras do Abismo |
 | Seleção de arquétipo | Cartão sobe ao passar o mouse | Sem efeito de hover no cartão |
 
+### Ajustes finais da N3 (feedback da professora)
+
+| Devolutiva | Antes | Agora |
+|---|---|---|
+| Em 1600×900 as linhas horizontais da grade quase sumiam | Linha de 1 px e pouco contraste sobre os reinos | 2 px alinhados aos pixels, clara sobre os reinos; balão da Cartógrafa sem cobrir os reinos |
+| Acrescentar uma rodada de treino curta | A primeira rodada já valia | Rodada de treino na Fase 1, sem relógio e sem consequências |
+| Retomar a explicação quando o terreno altera o cálculo | Apenas o texto do capítulo | Lição de terreno na batalha e treino em que o tamanho engana |
+| Apresentar no briefing o Arquiteto-Rei e o conflito | Briefing com rival e dados da fase | Retrato do Arquiteto-Rei e bloco "Por que você marcha" |
+| Conversões de unidade confusas (ex.: 0,016 km²) | m², km² e hectares, com escalas de 400 m² e 50.000 m² por quadrado | Lado de 1 m, 10 m, 100 m e 1 km; uma unidade por tela |
+
 ## Apêndice B — Estado do protótipo **[v6]**
 
 - **Tecnologia:** Godot 4.6 (GDScript), renderizador Compatibility, resolução base 1920 × 1080. Distribuído e testado no Windows.
-- **Testes automáticos:** regras, gerador de territórios, explicação das áreas e fases completas.
+- **Testes automáticos:** regras, gerador de territórios, explicação das áreas, escala do mapa, treino e fases completas.
 - **Ainda não implementado:** evolução do castelo, arquitetura própria dos castelos rivais, trilha e ambientação por cenário, voz da Cartógrafa e versão Web.
 - **A validar com jogadores:** os novos tempos de rodada e a dificuldade do Ouro (100%).
